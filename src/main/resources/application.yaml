@@ -1,0 +1,52 @@
+project:
+  name: Hotspot User Domain API
+  version: 1.0.0
+
+server:
+  port: 8080
+
+  # 프론트 주소
+  domain:
+    local: ${LOCAL_SERVER_URL}
+    dev: ${DEV_SERVER_URL}
+
+spring:
+  application:
+    name: backend
+
+  profiles:
+    default: local
+
+  config:
+    import:
+      - classpath:postgres.yml
+      - classpath:redis.yml
+
+  web:
+    resources:
+      add-mappings: false
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
+    root: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: INFO
