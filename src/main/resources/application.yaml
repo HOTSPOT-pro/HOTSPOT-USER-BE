@@ -21,6 +21,7 @@ spring:
     import:
       - classpath:postgres.yml
       - classpath:redis.yml
+      - classpath:kafka.yml
 
   web:
     resources:
