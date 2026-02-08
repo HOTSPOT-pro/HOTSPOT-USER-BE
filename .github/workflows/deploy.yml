@@ -39,8 +39,8 @@ jobs:
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login \
             -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-          docker build -t hotspot/user-be:dev .
-          docker push hotspot/user-be:dev
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/user-be:dev .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/user-be:dev
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
@@ -49,7 +49,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull hotspot/user-be:dev
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/user-be:dev
 
             docker stop user-be || true
             docker rm user-be || true
@@ -60,6 +60,6 @@ jobs:
               --env-file /srv/hotspot/.env \
               --env-file /srv/hotspot/.env.user \
               --restart always \
-              hotspot/user-be:dev
+              ${{ secrets.DOCKERHUB_USERNAME }}/user-be:dev
             
             docker image prune -f
