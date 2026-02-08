@@ -53,7 +53,6 @@ jobs:
 
             docker stop user-be || true
             docker rm user-be || true
-            docker image prune -f
 
             docker run -d \
               --name user-be \
