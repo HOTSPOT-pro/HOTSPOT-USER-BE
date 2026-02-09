@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<module name="Checker"
+        xmlns="http://checkstyle.sourceforge.net/schema/checkstyle"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://checkstyle.sourceforge.net/schema/checkstyle
+            https://checkstyle.org/dtds/checkstyle.xsd">
+
+    <!-- =========================
+         Global
+    ========================== -->
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- =========================
+         File Level
+    ========================== -->
+    <module name="NewlineAtEndOfFile"/>
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <!-- =========================
+         TreeWalker
+    ========================== -->
+    <module name="TreeWalker">
+
+        <!-- Formatting -->
+        <module name="LineLength">
+            <property name="max" value="120"/>
+            <property name="ignorePattern"
+                      value="^package.*|^import.*|https?://.*"/>
+        </module>
+
+        <module name="Indentation">
+            <property name="basicOffset" value="4"/>
+            <property name="braceAdjustment" value="0"/>
+            <property name="caseIndent" value="4"/>
+            <property name="lineWrappingIndentation" value="8"/>
+            <property name="tabWidth" value="4"/>
+        </module>
+
+        <!-- Naming -->
+        <module name="PackageName"/>
+        <module name="TypeName"/>
+        <module name="MethodName"/>
+        <module name="ParameterName"/>
+        <module name="LocalVariableName"/>
+
+        <!-- Imports -->
+        <module name="AvoidStarImport"/>
+        <module name="UnusedImports"/>
+        <module name="ImportOrder">
+            <property name="groups" value="java,javax,org,com"/>
+            <property name="ordered" value="true"/>
+            <property name="separated" value="true"/>
+        </module>
+
+        <!-- Code Quality -->
+        <module name="EmptyBlock"/>
+        <module name="NeedBraces"/>
+        <module name="EqualsHashCode"/>
+        <module name="FallThrough"/>
+        <module name="SimplifyBooleanExpression"/>
+
+        <!-- Whitespace -->
+        <module name="WhitespaceAfter"/>
+        <module name="WhitespaceAround"/>
+
+    </module>
+</module>
