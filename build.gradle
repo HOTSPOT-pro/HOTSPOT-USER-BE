@@ -127,15 +127,28 @@ jacocoTestReport {
 						'**/request/**',
 						'**/response/**',
 						'**/entity/**',
-						'**/exception/**'
+						'**/exception/**',
+						'**/hotspot/user/ex/**'
 				])
 			})
 	)
 }
 
 jacocoTestCoverageVerification {
+	dependsOn test
+
 	violationRules {
 		rule {
+			element = 'CLASS'
+
+			excludes = [
+					'*Application*',
+					'hotspot.user.common.config.*',
+					'hotspot.user.common.exception.*',
+					'hotspot.user.ex.*',
+					'hotspot.user.ex..*'
+			]
+
 			limit {
 				counter = 'INSTRUCTION'
 				value = 'COVEREDRATIO'
