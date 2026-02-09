@@ -25,7 +25,7 @@ spring:
 
   web:
     resources:
-      add-mappings: false
+      add-mappings: true
 
   servlet:
     multipart:

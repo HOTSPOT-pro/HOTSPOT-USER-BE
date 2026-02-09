@@ -1,65 +1,46 @@
 package hotspot.user.common.config;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.servers.Server;
-
-import java.util.List;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${project.name:Backend API}")
-    private String projectName;
-
-    @Value("${project.version:1.0.0}")
-    private String projectVersion;
+    private static final String SECURITY_SCHEME_NAME = "BearerAuth";
 
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(apiInfo())
-                .servers(servers())
-
-                // JWT 인증 API
-                .components(securityComponents())
-                .addSecurityItem(securityRequirement());
+                .addSecurityItem(securityRequirement())
+                .components(securityComponents());
     }
 
     private Info apiInfo() {
         return new Info()
-                .title(projectName)
-                .version(projectVersion);
+                .title("Hotspot User API")
+                .version("v1")
+                .description("Hotspot 사용자 API 명세");
     }
 
-    private List<Server> servers() {
-        return List.of(
-                new Server()
-                        .url("http://localhost:8080")
-                        .description("Local Server")
-                // 나중에 필요하면 추가
-                // new Server().url("https://dev.api.example.com").description("Dev Server"),
-                // new Server().url("https://api.example.com").description("Production Server")
-        );
+    private SecurityRequirement securityRequirement() {
+        return new SecurityRequirement().addList(SECURITY_SCHEME_NAME);
     }
 
     private Components securityComponents() {
         return new Components()
-                .addSecuritySchemes("bearerAuth",
+                .addSecuritySchemes(
+                        SECURITY_SCHEME_NAME,
                         new SecurityScheme()
+                                .name(SECURITY_SCHEME_NAME)
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
-                                .bearerFormat("JWT"));
-    }
-
-    private SecurityRequirement securityRequirement() {
-        return new SecurityRequirement().addList("bearerAuth");
+                                .bearerFormat("JWT")
+                );
     }
 }
