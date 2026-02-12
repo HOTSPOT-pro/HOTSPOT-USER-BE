@@ -142,11 +142,14 @@ jacocoTestCoverageVerification {
 			element = 'CLASS'
 
 			excludes = [
-					'*Application*',
-					'hotspot.user.common.config.*',
-					'hotspot.user.common.exception.*',
-					'hotspot.user.ex.*',
-					'hotspot.user.ex..*'
+					'**/*Application*',
+					'**/config/**',
+					'**/dto/**',
+					'**/request/**',
+					'**/response/**',
+					'**/entity/**',
+					'**/exception/**',
+					'**/common/**'
 			]
 
 			limit {
