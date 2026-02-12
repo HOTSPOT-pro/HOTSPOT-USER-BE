@@ -15,7 +15,6 @@ import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.GlobalErrorCode;
 import hotspot.user.common.util.CookieUtil;
-
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -28,7 +27,8 @@ public class AuthController {
     private final LogoutService logoutService;
 
     @PostMapping("/reissue")
-    public ResponseEntity<TokenResponse> reissue(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<TokenResponse> reissue(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
         if (refreshToken == null) {
             throw new ApplicationException(GlobalErrorCode.BAD_REQUEST);
         }
