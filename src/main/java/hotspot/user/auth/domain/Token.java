@@ -4,16 +4,19 @@ import hotspot.user.auth.controller.request.TokenRequest;
 import lombok.Builder;
 import lombok.Getter;
 
-// 토큰 (회원 id, RefreshToken)
+// 토큰 (회원 id, AccessToken, RefreshToken)
 @Getter
 public class Token {
     private Long memberId;
 
+    private String accessToken;
+
     private String refreshToken;
 
     @Builder
-    public Token(Long memberId, String refreshToken) {
+    public Token(Long memberId, String accessToken, String refreshToken) {
         this.memberId = memberId;
+        this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
 

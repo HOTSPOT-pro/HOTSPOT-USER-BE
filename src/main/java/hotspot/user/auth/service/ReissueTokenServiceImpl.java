@@ -8,6 +8,7 @@ import hotspot.user.auth.controller.port.ReissueTokenService;
 import hotspot.user.auth.controller.request.TokenRequest;
 import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.auth.domain.Token;
+import hotspot.user.auth.domain.mapper.TokenResponseMapper;
 import hotspot.user.auth.service.port.TokenRepository;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.GlobalErrorCode;
@@ -29,7 +30,7 @@ public class ReissueTokenServiceImpl implements ReissueTokenService {
 
         // 1. 토큰 유효성 검증
         if (!jwtProvider.validateToken(refreshToken)) {
-            throw new ApplicationException(GlobalErrorCode.BAD_REQUEST); // 공통 에러 코드로 변경
+            throw new ApplicationException(GlobalErrorCode.BAD_REQUEST);
         }
 
         // 2. 인증 객체 추출
@@ -38,22 +39,25 @@ public class ReissueTokenServiceImpl implements ReissueTokenService {
 
         // 3. Redis에 저장된 Refresh Token 확인
         Token savedToken = tokenRepository.findByMemberId(principal.getId())
-                .orElseThrow(() -> new ApplicationException(GlobalErrorCode.BAD_REQUEST)); // 공통 에러 코드로 변경
+                .orElseThrow(() -> new ApplicationException(GlobalErrorCode.BAD_REQUEST));
 
         if (!savedToken.getRefreshToken().equals(refreshToken)) {
-            throw new ApplicationException(GlobalErrorCode.BAD_REQUEST); // 공통 에러 코드로 변경
+            throw new ApplicationException(GlobalErrorCode.BAD_REQUEST);
         }
 
         // 4. 새로운 토큰 생성 (RTR)
         String newAccessToken = jwtProvider.createAccessToken(authentication);
         String newRefreshToken = jwtProvider.createRefreshToken(authentication);
 
-        // 5. Redis 토큰 업데이트
-        tokenRepository.save(Token.builder()
+        // 5. Redis 토큰 업데이트 및 도메인 객체 생성
+        Token newToken = Token.builder()
                 .memberId(principal.getId())
+                .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
-                .build());
+                .build();
 
-        return new TokenResponse(newAccessToken, newRefreshToken);
+        tokenRepository.save(newToken);
+
+        return TokenResponseMapper.toTokenResponse(newToken);
     }
 }
