@@ -111,8 +111,41 @@ jacoco {
 	toolVersion = "0.8.11"
 }
 
+/*
+ * 1️⃣ 리포트에서 제외할 것 (파일 경로 패턴)
+ * 실제 HTML/XML 리포트에서 빠짐
+ */
+def reportExcludes = [
+		'**/*Application*',
+		'**/config/**',
+		'**/dto/**',
+		'**/request/**',
+		'**/response/**',
+		'**/entity/**',
+		'**/exception/**',
+		'**/common/**',
+		'**/HealthController'
+]
+
+/*
+ * 2️⃣ 커버리지 검증에서 제외할 것 (패키지 패턴)
+ * violationRules 에서 사용
+ */
+def verificationExcludes = [
+		'hotspot.user.*Application*',
+		'hotspot.user.config.*',
+		'hotspot.user.dto.*',
+		'hotspot.user.request.*',
+		'hotspot.user.response.*',
+		'hotspot.user.entity.*',
+		'hotspot.user.exception.*',
+		'hotspot.user.common.*',
+		'hotspot.user.HealthController'
+]
+
 jacocoTestReport {
 	dependsOn test
+
 	reports {
 		xml.required = true
 		html.required = true
@@ -120,16 +153,7 @@ jacocoTestReport {
 
 	classDirectories.setFrom(
 			files(classDirectories.files.collect {
-				fileTree(dir: it, exclude: [
-						'**/*Application*',
-						'**/config/**',
-						'**/dto/**',
-						'**/request/**',
-						'**/response/**',
-						'**/entity/**',
-						'**/exception/**',
-						'**/hotspot/user/ex/**'
-				])
+				fileTree(dir: it, exclude: reportExcludes)
 			})
 	)
 }
@@ -141,16 +165,7 @@ jacocoTestCoverageVerification {
 		rule {
 			element = 'CLASS'
 
-			excludes = [
-					'**/*Application*',
-					'**/config/**',
-					'**/dto/**',
-					'**/request/**',
-					'**/response/**',
-					'**/entity/**',
-					'**/exception/**',
-					'**/common/**'
-			]
+			excludes = verificationExcludes
 
 			limit {
 				counter = 'INSTRUCTION'
