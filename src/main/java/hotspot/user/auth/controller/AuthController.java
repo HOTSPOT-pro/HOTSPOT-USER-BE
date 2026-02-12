@@ -15,14 +15,15 @@ import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.GlobalErrorCode;
 import hotspot.user.common.util.CookieUtil;
-import io.swagger.v3.oas.annotations.Operation;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
+    // [To-Do] 공통 응답 코드 생성 후 응답 수정 하기
     private final ReissueTokenService reissueTokenService;
     private final LogoutService logoutService;
 
@@ -36,6 +37,7 @@ public class AuthController {
         TokenResponse response = reissueTokenService.reissue(request);
 
         // 신규 Refresh Token 쿠키 설정
+        // [To-Do] 만료 시간 하드 코딩 삭제
         ResponseCookie cookie = CookieUtil.createCookie("refreshToken", response.refreshToken(), 60 * 60 * 24 * 7);
 
         return ResponseEntity.ok()
