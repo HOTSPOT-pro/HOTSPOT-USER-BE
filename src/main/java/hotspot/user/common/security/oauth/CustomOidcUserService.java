@@ -8,9 +8,14 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.member.controller.port.LoadSocialUserService;
+import hotspot.user.member.controller.request.CreateSocialAccountRequest;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.member.domain.Member;
+import hotspot.user.member.domain.Provider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,7 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class CustomOidcUserService extends OidcUserService {
 
+    private final LoadSocialUserService loadSocialUserService;
+
     @Override
+    @Transactional
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         // ID Token 가져오기 (Spring Security가 이미 서명 검증 및 유효성 체크를 완료한 상태)
         OidcIdToken idToken = userRequest.getIdToken();
@@ -35,7 +43,8 @@ public class CustomOidcUserService extends OidcUserService {
         log.debug("[OIDC] ID Token Claims: {}", claims);
 
         String email = null;
-        String name = null; // 필요 시 사용
+        String name = null;
+        String socialId = idToken.getSubject(); // sub claim
 
         // Provider별 Claim 파싱 (표준 OIDC 및 카카오 커스텀)
         if ("kakao".equals(registrationId)) {
@@ -48,25 +57,34 @@ public class CustomOidcUserService extends OidcUserService {
         } else {
             // 기타 OIDC Provider (표준 따름)
             email = (String) claims.get("email");
+            name = (String) claims.get("name"); // name claim 추가 확인
         }
 
         // 필수 정보 누락 체크
         if (email == null) {
             log.error("[OIDC] ID Token에 이메일이 없습니다. Provider 설정을 확인하세요. Claims: {}", claims);
-            throw new OAuth2AuthenticationException("ID Token에 이메일 정보가 누락되었습니다."); // 공통 에러 코드 필요
+            throw new OAuth2AuthenticationException("ID Token에 이메일 정보가 누락되었습니다.");
         }
 
         // 비즈니스 로직 (회원가입/갱신)
-        // [TODO] Member 모듈의 서비스(RegisterSocialMemberUseCase)를 호출하여 가입/갱신 처리
-        // Member member = memberService.findOrRegister(email, registrationId);
+        Provider provider = Provider.valueOf(registrationId.toUpperCase());
 
-        log.info("[OIDC] 로그인 성공 (UserInfo 호출 Skip): provider={}, email={}", registrationId, email);
-
-        // 5. PrincipalDetails 반환
-        return new PrincipalDetails(
-                1L, // member.getId()
+        CreateSocialAccountRequest request = new CreateSocialAccountRequest(
                 email,
-                FamilyRole.CHILD, // member.getRole()
+                socialId,
+                provider,
+                null // memberId는 서비스 내부에서 처리
+        );
+
+        Member member = loadSocialUserService.loadOrCreateMember(name, request);
+
+        log.info("[OIDC] 로그인 성공: provider={}, email={}, memberId={}", registrationId, email, member.getId());
+
+        // 5. PrincipalDetails 반환 (DB에서 가져온 실제 Member 정보 사용)
+        return new PrincipalDetails(
+                member.getId(),
+                member.getSocialAccountList().get(0).getEmail(), // 대표 이메일 사용
+                FamilyRole.CHILD, // [To-Do] 추후 수정 필요
                 claims // attributes 자리에 claims 저장
         );
     }
