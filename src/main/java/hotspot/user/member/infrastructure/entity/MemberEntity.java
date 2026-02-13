@@ -1,6 +1,5 @@
 package hotspot.user.member.infrastructure.entity;
 
-import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -72,16 +71,16 @@ public class MemberEntity extends BaseEntity {
     }
 
     /**
-     * SocialAccount 목록을 포함하여 Member 도메인 객체로 변환합니다.
+     * SocialAccount를 포함하여 Member 도메인 객체로 변환합니다.
      * RepositoryImpl에서 각 테이블의 데이터를 조회한 후 조립할 때 사용합니다.
      */
-    public Member entityToDomain(List<SocialAccount> socialAccountList) {
+    public Member entityToDomain(SocialAccount socialAccount) {
         return Member.builder()
                 .id(this.id)
                 .name(this.name)
                 .birth(this.birth)
                 .status(this.status)
-                .socialAccountList(socialAccountList)
+                .socialAccount(socialAccount)
                 .build();
     }
 }

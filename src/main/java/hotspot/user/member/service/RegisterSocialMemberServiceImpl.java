@@ -1,8 +1,5 @@
 package hotspot.user.member.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +27,6 @@ public class RegisterSocialMemberServiceImpl implements RegisterSocialMemberServ
         Member member = Member.builder()
                 .name(request.name())
                 .status(Status.PENDING)
-                .socialAccountList(new ArrayList<>())
                 .build();
 
         // 2. Member 저장하여 ID 확보
@@ -48,14 +44,11 @@ public class RegisterSocialMemberServiceImpl implements RegisterSocialMemberServ
         SocialAccount socialAccount = SocialAccount.create(accountRequest);
 
         // 4. Member에 소셜 계정 추가 후 최종 저장
-        List<SocialAccount> socialAccounts = new ArrayList<>();
-        socialAccounts.add(socialAccount);
-
         Member finalMember = Member.builder()
                 .id(savedMember.getId())
                 .name(savedMember.getName())
                 .status(savedMember.getStatus())
-                .socialAccountList(socialAccounts)
+                .socialAccount(socialAccount)
                 .build();
 
         return memberRepository.save(finalMember);

@@ -1,4 +1,4 @@
-package hotspot.user.common.config;
+package hotspot.user.common.security.jwt;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

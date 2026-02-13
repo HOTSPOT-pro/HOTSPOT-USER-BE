@@ -16,7 +16,6 @@ import hotspot.user.member.controller.request.CreateSocialAccountRequest;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.Provider;
-import hotspot.user.member.domain.SocialAccount;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -85,8 +84,8 @@ public class CustomOidcUserService extends OidcUserService {
         // 5. PrincipalDetails 반환 (DB에서 가져온 실제 Member 정보 사용)
         return new PrincipalDetails(
                 member.getId(),
-                member.getSocialAccountList().stream().findFirst().map(SocialAccount::getEmail).orElse(null),
-                FamilyRole.CHILD, // [To-Do] 추후 수정 필요
+                member.getSocialAccount().getEmail(), // 대표 이메일 사용
+                FamilyRole.CHILD, // [To-Do] 추후 회선 추가 되면 거기서 받아오도록 수정
                 claims // attributes 자리에 claims 저장
         );
     }

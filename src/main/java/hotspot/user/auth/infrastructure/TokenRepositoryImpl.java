@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import hotspot.user.auth.domain.Token;
 import hotspot.user.auth.infrastructure.entity.TokenEntity;
 import hotspot.user.auth.service.port.TokenRepository;
-import hotspot.user.common.config.JwtProperties;
+import hotspot.user.common.security.jwt.JwtProperties;
 import lombok.RequiredArgsConstructor;
 
 /**

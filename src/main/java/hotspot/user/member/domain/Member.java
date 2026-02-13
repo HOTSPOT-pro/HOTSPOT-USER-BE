@@ -1,7 +1,5 @@
 package hotspot.user.member.domain;
 
-import java.util.List;
-
 import hotspot.user.member.controller.request.CreateMemberRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +13,7 @@ public class Member {
     private final String name;
     private final String birth;
     private final Status status;
-    private List<SocialAccount> socialAccountList;
+    private final SocialAccount socialAccount;
     // private Subscription subscription; [To-Do] subscription 패키지 생성 (phone, role 존재)
 
     public static Member create(CreateMemberRequest request) {
