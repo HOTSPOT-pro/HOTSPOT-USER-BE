@@ -52,22 +52,15 @@ public class MemberRepositoryImpl implements MemberRepository {
                 });
     }
 
-    // 내부적으로 사용하거나 추후 인터페이스에 추가될 수 있는 메서드
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Member> findById(Long id) {
-        Optional<MemberEntity> memberEntityOpt = memberJpaRepository.findById(id);
-
-        if (memberEntityOpt.isEmpty()) {
-            return Optional.empty();
-        }
-
-        MemberEntity memberEntity = memberEntityOpt.get();
-
-        Optional<SocialAccountEntity> socialAccountOpt = socialAccountJpaRepository.findByMemberId(id);
-
-        if (socialAccountOpt.isEmpty()) {
-            return Optional.of(memberEntity.entityToDomain());
-        }
-
-        return Optional.of(memberEntity.entityToDomain(socialAccountOpt.get().entityToDomain()));
+        return memberJpaRepository.findById(id)
+                .map(memberEntity -> {
+                    SocialAccount socialAccount = socialAccountJpaRepository.findByMemberId(id)
+                            .map(SocialAccountEntity::entityToDomain)
+                            .orElse(null);
+                    return memberEntity.entityToDomain(socialAccount);
+                });
     }
 }
