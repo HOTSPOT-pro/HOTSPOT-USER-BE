@@ -15,7 +15,7 @@ public class Member {
     private final String name;
     private final String birth;
     private final Status status;
-    private List<SocialAccount> socialAccountList; // email 존재
+    private SocialAccount socialAccount; // email 존재 [To-Do] List<SocialAccount> 가지도록 변경 필요
     // private Subscription subscription; [To-Do] subscription 패키지 생성 (phone, role 존재)
 
     public static Member create(CreateMemberRequest request) {
