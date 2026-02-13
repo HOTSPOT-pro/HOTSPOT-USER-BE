@@ -2,6 +2,7 @@ package hotspot.user.auth.infrastructure.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
 import org.springframework.data.redis.core.index.Indexed;
 
 import hotspot.user.auth.domain.Token;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash(value = "refreshToken", timeToLive = 60 * 60 * 24 * 7 * 2)
+@RedisHash(value = "refreshToken")
 public class TokenEntity {
 
     @Id
@@ -26,10 +27,14 @@ public class TokenEntity {
     @Indexed
     private String refreshToken;
 
-    public static TokenEntity domainToEntity(Token token) {
+    @TimeToLive
+    private Long expiration;
+
+    public static TokenEntity domainToEntity(Token token, Long expiration) {
         return TokenEntity.builder()
                 .memberId(token.getMemberId())
                 .refreshToken(token.getRefreshToken())
+                .expiration(expiration)
                 .build();
     }
 

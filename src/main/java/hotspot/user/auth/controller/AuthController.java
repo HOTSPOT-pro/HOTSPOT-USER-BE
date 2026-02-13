@@ -12,6 +12,7 @@ import hotspot.user.auth.controller.port.LogoutService;
 import hotspot.user.auth.controller.port.ReissueTokenService;
 import hotspot.user.auth.controller.request.TokenRequest;
 import hotspot.user.auth.controller.response.TokenResponse;
+import hotspot.user.common.config.JwtProperties;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.GlobalErrorCode;
 import hotspot.user.common.util.CookieUtil;
@@ -22,9 +23,9 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    // [To-Do] 공통 응답 코드 생성 후 응답 수정 하기
     private final ReissueTokenService reissueTokenService;
     private final LogoutService logoutService;
+    private final JwtProperties jwtProperties;
 
     @PostMapping("/reissue")
     public ResponseEntity<TokenResponse> reissue(
@@ -37,8 +38,9 @@ public class AuthController {
         TokenResponse response = reissueTokenService.reissue(request);
 
         // 신규 Refresh Token 쿠키 설정
-        // [To-Do] 만료 시간 하드 코딩 삭제
-        ResponseCookie cookie = CookieUtil.createCookie("refreshToken", response.refreshToken(), 60 * 60 * 24 * 7);
+        ResponseCookie cookie = CookieUtil.createCookie("refreshToken",
+                response.refreshToken(),
+                jwtProperties.getRefreshExpiration());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())

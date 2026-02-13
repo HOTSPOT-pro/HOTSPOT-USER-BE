@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import hotspot.user.auth.domain.Token;
 import hotspot.user.auth.infrastructure.entity.TokenEntity;
 import hotspot.user.auth.service.port.TokenRepository;
+import hotspot.user.common.config.JwtProperties;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -17,10 +18,11 @@ import lombok.RequiredArgsConstructor;
 public class TokenRepositoryImpl implements TokenRepository {
 
     private final TokenCrudRepository tokenCrudRepository;
+    private final JwtProperties jwtProperties;
 
     @Override
     public void save(Token token) {
-        tokenCrudRepository.save(TokenEntity.domainToEntity(token));
+        tokenCrudRepository.save(TokenEntity.domainToEntity(token, jwtProperties.getRefreshExpiration()));
     }
 
     @Override
