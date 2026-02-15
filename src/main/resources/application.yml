@@ -22,6 +22,8 @@ spring:
       - classpath:postgres.yml
       - classpath:redis.yml
       - classpath:kafka.yml
+      - classpath:oauth.yml
+      - classpath:jwt.yml
 
   web:
     resources:
