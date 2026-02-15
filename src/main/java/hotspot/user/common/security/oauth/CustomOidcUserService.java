@@ -46,7 +46,9 @@ public class CustomOidcUserService extends OidcUserService {
         return processLogin(request, claims);
     }
 
-    private CreateSocialAccountRequest extractUserInfo(String registrationId, Map<String, Object> claims, String socialId) {
+    private CreateSocialAccountRequest extractUserInfo(String registrationId,
+                                                       Map<String, Object> claims,
+                                                       String socialId) {
         String email;
         String name;
 
@@ -78,10 +80,11 @@ public class CustomOidcUserService extends OidcUserService {
         }
     }
 
-    private PrincipalDetails processLogin(CreateSocialAccountRequest request, Map<String, Object> claims) {
+    private PrincipalDetails processLogin(CreateSocialAccountRequest request,
+                                          Map<String, Object> claims) {
         Member member = socialLoginService.login(request);
 
-        log.info("[OIDC] 로그인 성공: provider={}, email={}, memberId={}", request.provider(), request.email(), member.getId());
+        log.info("[OIDC] 로그인 성공: provider={}, email={}", request.provider(), request.email());
 
         return new PrincipalDetails(
             member.getId(),
