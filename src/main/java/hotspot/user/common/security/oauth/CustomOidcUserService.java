@@ -32,61 +32,62 @@ public class CustomOidcUserService extends OidcUserService {
     @Override
     @Transactional
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
-        // ID Token 가져오기 (Spring Security가 이미 서명 검증 및 유효성 체크를 완료한 상태)
+        // 1. ID Token 파싱 및 검증
         OidcIdToken idToken = userRequest.getIdToken();
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-
-        // ID Token 내부의 정보(Claims) 추출
         Map<String, Object> claims = idToken.getClaims();
 
-        // 로그: 실제 들어온 클레임 확인용
         log.debug("[OIDC] ID Token Claims: {}", claims);
 
-        String email = null;
-        String name = null;
-        String socialId = idToken.getSubject(); // sub claim
+        // 2. 사용자 정보 추출
+        CreateSocialAccountRequest request = extractUserInfo(registrationId, claims, idToken.getSubject());
 
-        // Provider별 Claim 파싱 (표준 OIDC 및 카카오 커스텀)
+        // 3. 비즈니스 로직 수행 (로그인/회원가입)
+        return processLogin(request, claims);
+    }
+
+    private CreateSocialAccountRequest extractUserInfo(String registrationId, Map<String, Object> claims, String socialId) {
+        String email;
+        String name;
+
+        // Provider별 Claim 파싱
         if ("kakao".equals(registrationId)) {
             email = (String) claims.get("email");
             name = (String) claims.get("nickname");
-        } else if ("google".equals(registrationId)) {
-            // 구글: 표준 클레임 사용
+        } else {
+            // Google 및 표준 OIDC
             email = (String) claims.get("email");
             name = (String) claims.get("name");
-        } else {
-            // 기타 OIDC Provider (표준 따름)
-            email = (String) claims.get("email");
-            name = (String) claims.get("name"); // name claim 추가 확인
         }
 
-        // 필수 정보 누락 체크
+        validateAttributes(email, claims);
+
+        return new CreateSocialAccountRequest(
+            name,
+            email,
+            socialId,
+            Provider.valueOf(registrationId.toUpperCase()),
+            null
+        );
+    }
+
+    private void validateAttributes(String email, Map<String, Object> claims) {
         if (email == null) {
             log.error("[OIDC] ID Token에 이메일이 없습니다. Provider 설정을 확인하세요. Claims: {}", claims);
             throw new OAuth2AuthenticationException("ID Token에 이메일 정보가 누락되었습니다.");
         }
+    }
 
-        // 비즈니스 로직 (회원가입/갱신)
-        Provider provider = Provider.valueOf(registrationId.toUpperCase());
-
-        CreateSocialAccountRequest request = new CreateSocialAccountRequest(
-                name,
-                email,
-                socialId,
-                provider,
-                null // memberId는 서비스 내부에서 처리
-        );
-
+    private PrincipalDetails processLogin(CreateSocialAccountRequest request, Map<String, Object> claims) {
         Member member = socialLoginService.login(request);
 
-        log.info("[OIDC] 로그인 성공: provider={}, email={}, memberId={}", registrationId, email, member.getId());
+        log.info("[OIDC] 로그인 성공: provider={}, email={}, memberId={}", request.provider(), request.email(), member.getId());
 
-        // 5. PrincipalDetails 반환 (DB에서 가져온 실제 Member 정보 사용)
         return new PrincipalDetails(
-                member.getId(),
-                member.getSocialAccount().getEmail(), // 대표 이메일 사용
-                FamilyRole.CHILD, // [To-Do] 추후 회선 추가 되면 거기서 받아오도록 수정
-                claims // attributes 자리에 claims 저장
+            member.getId(),
+            member.getSocialAccount().getEmail(),
+            FamilyRole.CHILD, // [To-Do] 추후 회선 추가 시 수정 필요
+            claims
         );
     }
 }
