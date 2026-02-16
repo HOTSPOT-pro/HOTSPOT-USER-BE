@@ -1,0 +1,17 @@
+package hotspot.user.subscription.domain.mapper;
+
+import hotspot.user.subscription.controller.response.SubscriptionResponse;
+import hotspot.user.subscription.domain.Subscription;
+
+/**
+ * request Dto -> 도메인
+ * 도메인 -> response Dto
+ */
+public class SubscriptionMapper {
+    // request -> domain
+
+    // domain -> response
+    public static SubscriptionResponse toSubscriptionResponse(Subscription subscription) {
+        return SubscriptionResponse.from(subscription);
+    }
+}

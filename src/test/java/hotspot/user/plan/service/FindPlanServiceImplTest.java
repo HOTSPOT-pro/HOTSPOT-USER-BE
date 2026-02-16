@@ -34,7 +34,7 @@ class FindPlanServiceImplTest {
 
     @Test
     @DisplayName("요금제 ID로 조회 시 존재하는 경우 PlanResponse를 반환한다")
-    void findById_success() {
+    void findByIdSuccess() {
         // given
         Long planId = 1L;
         Plan plan = Plan.builder()
@@ -57,7 +57,7 @@ class FindPlanServiceImplTest {
 
     @Test
     @DisplayName("요금제 ID로 조회 시 존재하지 않는 경우 예외가 발생한다")
-    void findById_fail() {
+    void findByIdFail() {
         // given
         Long planId = 999L;
         given(planRepository.findById(planId)).willReturn(Optional.empty());
