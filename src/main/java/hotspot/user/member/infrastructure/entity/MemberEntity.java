@@ -15,7 +15,6 @@ import org.hibernate.annotations.Where;
 
 import hotspot.user.common.BaseEntity;
 import hotspot.user.member.domain.Member;
-import hotspot.user.member.domain.SocialAccount;
 import hotspot.user.member.domain.Status;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -72,20 +71,6 @@ public class MemberEntity extends BaseEntity {
                 .name(this.name)
                 .birth(this.birth)
                 .status(this.status)
-                .build();
-    }
-
-    /**
-     * SocialAccount를 포함하여 Member 도메인 객체로 변환합니다.
-     * RepositoryImpl에서 각 테이블의 데이터를 조회한 후 조립할 때 사용합니다.
-     */
-    public Member entityToDomain(SocialAccount socialAccount) {
-        return Member.builder()
-                .id(this.id)
-                .name(this.name)
-                .birth(this.birth)
-                .status(this.status)
-                .socialAccount(socialAccount)
                 .build();
     }
 }

@@ -88,7 +88,7 @@ public class CustomOidcUserService extends OidcUserService {
 
         return new PrincipalDetails(
             member.getId(),
-            member.getSocialAccount().getEmail(),
+            request.email(), // Member 객체 대신 request에서 이메일 가져옴
             FamilyRole.CHILD, // [To-Do] 추후 회선 추가 시 수정 필요
             claims
         );

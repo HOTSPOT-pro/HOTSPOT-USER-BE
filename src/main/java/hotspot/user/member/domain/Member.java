@@ -13,8 +13,6 @@ public class Member {
     private final String name;
     private final String birth;
     private final Status status;
-    private final SocialAccount socialAccount;
-    // private Subscription subscription; [To-Do] subscription 패키지 생성 (phone, role 존재)
 
     public static Member create(CreateMemberRequest request) {
         return Member.builder()

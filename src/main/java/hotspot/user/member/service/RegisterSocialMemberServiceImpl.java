@@ -7,32 +7,35 @@ import hotspot.user.member.controller.port.RegisterSocialMemberService;
 import hotspot.user.member.controller.request.CreateSocialAccountRequest;
 import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.SocialAccount;
-import hotspot.user.member.domain.Status;
+import hotspot.user.member.domain.mapper.MemberMapper;
+import hotspot.user.member.domain.mapper.SocialAccountMapper;
 import hotspot.user.member.service.port.MemberRepository;
+import hotspot.user.member.service.port.SocialAccountRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
  * RegisterSocialMemberService 구현체
  */
+
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class RegisterSocialMemberServiceImpl implements RegisterSocialMemberService {
 
     private final MemberRepository memberRepository;
+    private final SocialAccountRepository socialAccountRepository;
 
     @Override
     public Member register(CreateSocialAccountRequest request) {
-        // 1. 소셜 계정 정보 생성
-        SocialAccount socialAccount = SocialAccount.create(request);
+        // 1. Member 생성 및 저장
+        Member member = memberRepository.save(MemberMapper.toMember(request));
 
-        // 2. 소셜 계정을 포함한 Member 객체 생성 후 저장
-        Member member = Member.builder()
-                .name(request.name())
-                .status(Status.PENDING)
-                .socialAccount(socialAccount)
-                .build();
+        // 2. 소셜 계정 정보 생성 (Mapper 사용)
+        SocialAccount socialAccount = SocialAccountMapper.toSocialAccount(request, member.getId());
 
-        return memberRepository.save(member);
+        // 3. 소셜 계정 저장
+        socialAccountRepository.save(socialAccount);
+
+        return member;
     }
 }
