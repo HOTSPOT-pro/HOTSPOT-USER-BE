@@ -5,8 +5,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
+import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.controller.port.FindMemberService;
 import hotspot.user.member.controller.response.MemberResponse;
+import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.SocialAccount;
 import hotspot.user.member.domain.mapper.MemberMapper;
@@ -27,6 +30,7 @@ public class FindMemberServiceImpl implements FindMemberService {
     private final MemberRepository memberRepository;
     private final SocialAccountRepository socialAccountRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final FamilySubscriptionRepository familySubscriptionRepository;
 
     @Override
     public MemberResponse findById(Long id) {
@@ -37,6 +41,13 @@ public class FindMemberServiceImpl implements FindMemberService {
         SocialAccount socialAccount = socialAccountRepository.findByMemberId(id).orElse(null);
         Subscription subscription = subscriptionRepository.findByMemberId(id).orElse(null);
 
-        return MemberMapper.toResponse(member, socialAccount, subscription);
+        FamilyRole familyRole = null;
+        if (subscription != null) {
+            familyRole = familySubscriptionRepository.findBySubId(subscription.getId())
+                    .map(FamilySubscription::getFamilyRole)
+                    .orElse(null);
+        }
+
+        return MemberMapper.toResponse(member, socialAccount, subscription, familyRole);
     }
 }
