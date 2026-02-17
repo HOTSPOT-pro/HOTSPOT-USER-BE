@@ -1,0 +1,21 @@
+package hotspot.user.common.exception.code;
+
+import org.springframework.http.HttpStatus;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * 가족 도메인 관련 에러 코드
+ */
+@Getter
+@RequiredArgsConstructor
+public enum FamilyErrorCode implements BaseErrorCode {
+    FAMILY_NOT_FOUND(HttpStatus.NOT_FOUND, "FAMILY_001", "가족 정보를 찾을 수 없습니다."),
+    FAMILY_SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "FAMILY_002", "가족에 가입된 회선 정보를 찾을 수 없습니다."),
+    ;
+
+    private final HttpStatus httpStatus;
+    private final String customCode;
+    private final String message;
+}
