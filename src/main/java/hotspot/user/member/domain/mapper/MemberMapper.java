@@ -22,7 +22,10 @@ public class MemberMapper {
     }
 
     // Domain -> Response (회원 정보 조회 시 조립)
-    public static MemberResponse toResponse(Member member, SocialAccount socialAccount, Subscription subscription, FamilyRole familyRole) {
+    public static MemberResponse toResponse(Member member,
+                                            SocialAccount socialAccount,
+                                            Subscription subscription,
+                                            FamilyRole familyRole) {
         String email = (socialAccount != null) ? socialAccount.getEmail() : null;
         String phone = (subscription != null) ? subscription.getPhoneEnc() : null;
 
