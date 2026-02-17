@@ -46,7 +46,7 @@ class FindSubscriptionServiceImplTest {
                 .dataAmount(10)
                 .dataPeriod(DataPeriod.MONTH)
                 .build();
-        
+
         Member member = Member.builder()
                 .id(1L)
                 .name("테스트유저")
@@ -101,7 +101,7 @@ class FindSubscriptionServiceImplTest {
                 .name("테스트유저")
                 .status(Status.APPROVED)
                 .build();
-        
+
         Subscription subscription = Subscription.builder()
                 .id(1L)
                 .plan(plan)
