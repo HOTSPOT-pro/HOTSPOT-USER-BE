@@ -83,7 +83,7 @@ public class OnboardingServiceImpl implements OnboardingService {
 
     // 새로 생성된 소셜 계정을 기존 회원에게 연결하고 임시 멤버를 삭제
     private Member mergeWithExistingMember(Member existingMember, Member pendingMember, SocialAccount socialAccount) {
-        log.info("기존 APPROVED 회원 발견: 기존 memberId={}, 신규 memberId={}", 
+        log.info("기존 APPROVED 회원 발견: 기존 memberId={}, 신규 memberId={}",
                 existingMember.getId(), pendingMember.getId());
 
         // 소셜 계정의 주인을 기존 회원으로 교체
