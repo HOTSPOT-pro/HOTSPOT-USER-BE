@@ -140,15 +140,16 @@ def reportExcludes = [
  * violationRules 에서 사용
  */
 def verificationExcludes = [
-		'hotspot.user.*Application*',
-		'hotspot.user.config.*',
-		'hotspot.user.dto.*',
-		'hotspot.user.request.*',
-		'hotspot.user.response.*',
-		'hotspot.user.entity.*',
-		'hotspot.user.exception.*',
-		'hotspot.user.common.*',
-		'hotspot.user.HealthController'
+		'*.config.*',
+		'*.dto.*',
+		'*.request.*',
+		'*.response.*',
+		'*.entity.*',
+		'*.exception.*',
+		'*.mapper.*',
+		'*.common.*',
+		'**.*Application*',    // 메인 애플리케이션
+		'**.*HealthController' // 특정 컨트롤러
 ]
 
 jacocoTestReport {

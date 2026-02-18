@@ -23,4 +23,14 @@ public class SocialAccount {
                 .memberId(request.memberId())
                 .build();
     }
+
+    public SocialAccount updateMemberId(Long newMemberId) {
+        return SocialAccount.builder()
+                .id(this.id)
+                .email(this.email)
+                .socialId(this.socialId)
+                .provider(this.provider)
+                .memberId(newMemberId)
+                .build();
+    }
 }

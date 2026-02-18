@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.member.domain.Status;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,19 +23,22 @@ public class PrincipalDetails implements UserDetails, OidcUser {
     private final Long id;
     private final String email;
     private final FamilyRole role;
+    private final Status status;
     private final Map<String, Object> attributes;
 
-    public PrincipalDetails(Long id, String email, FamilyRole role) {
+    public PrincipalDetails(Long id, String email, FamilyRole role, Status status) {
         this.id = id;
         this.email = email;
         this.role = role;
+        this.status = status;
         this.attributes = null;
     }
 
-    public PrincipalDetails(Long id, String email, FamilyRole role, Map<String, Object> attributes) {
+    public PrincipalDetails(Long id, String email, FamilyRole role, Status status, Map<String, Object> attributes) {
         this.id = id;
         this.email = email;
         this.role = role;
+        this.status = status;
         this.attributes = attributes;
     }
 

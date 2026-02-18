@@ -9,6 +9,7 @@ server:
   domain:
     local: ${LOCAL_SERVER_URL}
     dev: ${DEV_SERVER_URL}
+    onboarding: ${ONBOARDING}
 
 spring:
   application:
