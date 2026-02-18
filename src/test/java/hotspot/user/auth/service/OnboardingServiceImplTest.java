@@ -156,7 +156,8 @@ class OnboardingServiceImplTest {
         given(socialAccountRepository.findByMemberId(pendingMemberId)).willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySubscription));
         
-        given(socialAccountRepository.save(any(SocialAccount.class))).willAnswer(invocation -> invocation.getArgument(0));
+        given(socialAccountRepository.save(any(SocialAccount.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
         
         given(jwtProvider.createAccessToken(any(Authentication.class))).willReturn("access-token");
         given(jwtProvider.createRefreshToken(any(Authentication.class))).willReturn("refresh-token");
