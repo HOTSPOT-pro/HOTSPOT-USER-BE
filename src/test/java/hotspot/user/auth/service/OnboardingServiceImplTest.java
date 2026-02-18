@@ -94,10 +94,10 @@ class OnboardingServiceImplTest {
         given(memberRepository.findById(memberId)).willReturn(Optional.of(pendingMember));
         given(socialAccountRepository.findByMemberId(memberId)).willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySubscription));
-        
+
         given(memberRepository.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
         given(subscriptionRepository.save(any(Subscription.class))).willAnswer(invocation -> invocation.getArgument(0));
-        
+
         given(jwtProvider.createAccessToken(any(Authentication.class))).willReturn("access-token");
         given(jwtProvider.createRefreshToken(any(Authentication.class))).willReturn("refresh-token");
 
@@ -107,7 +107,7 @@ class OnboardingServiceImplTest {
         // then
         assertThat(response.accessToken()).isEqualTo("access-token");
         assertThat(response.refreshToken()).isEqualTo("refresh-token");
-        
+
         verify(memberRepository).save(any(Member.class));
         verify(subscriptionRepository).save(any(Subscription.class));
         verify(saveTokenService).saveToken(any(Long.class), any(TokenRequest.class));
@@ -133,7 +133,7 @@ class OnboardingServiceImplTest {
                 .id(existingMemberId)
                 .status(Status.APPROVED)
                 .build();
-        
+
         SocialAccount socialAccount = SocialAccount.builder()
                 .id(10L)
                 .memberId(pendingMemberId)
@@ -155,10 +155,10 @@ class OnboardingServiceImplTest {
         given(memberRepository.findById(pendingMemberId)).willReturn(Optional.of(pendingMember));
         given(socialAccountRepository.findByMemberId(pendingMemberId)).willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySubscription));
-        
+
         given(socialAccountRepository.save(any(SocialAccount.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
-        
+
         given(jwtProvider.createAccessToken(any(Authentication.class))).willReturn("access-token");
         given(jwtProvider.createRefreshToken(any(Authentication.class))).willReturn("refresh-token");
 
@@ -167,7 +167,7 @@ class OnboardingServiceImplTest {
 
         // then
         assertThat(response.accessToken()).isEqualTo("access-token");
-        
+
         verify(memberRepository).delete(pendingMember);
         verify(socialAccountRepository).save(any(SocialAccount.class));
         verify(memberRepository, never()).save(any(Member.class));
