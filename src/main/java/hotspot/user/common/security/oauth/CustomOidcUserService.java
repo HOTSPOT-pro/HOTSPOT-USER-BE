@@ -10,11 +10,10 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import hotspot.user.auth.controller.response.LoginResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.member.controller.port.SocialLoginService;
 import hotspot.user.member.controller.request.CreateSocialAccountRequest;
-import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.Provider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,14 +81,15 @@ public class CustomOidcUserService extends OidcUserService {
 
     private PrincipalDetails processLogin(CreateSocialAccountRequest request,
                                           Map<String, Object> claims) {
-        Member member = socialLoginService.login(request);
+        LoginResponse loginResult = socialLoginService.login(request);
 
         log.info("[OIDC] 로그인 성공: provider={}, email={}", request.provider(), request.email());
 
         return new PrincipalDetails(
-            member.getId(),
-            request.email(), // Member 객체 대신 request에서 이메일 가져옴
-            FamilyRole.CHILD, // [To-Do] 추후 회선 추가 시 수정 필요
+            loginResult.memberId(),
+            loginResult.email(),
+            loginResult.familyRole(),
+            loginResult.status(),
             claims
         );
     }

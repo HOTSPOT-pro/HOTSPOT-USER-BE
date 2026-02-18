@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.member.domain.Status;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -39,6 +40,7 @@ public class JwtProvider {
     // 토큰 발행시 액세스 / 리프레시 토큰 구분을 위해 claim에 토큰 타입 명시하기 위해 추가
     private static final String TYPE_CLAIM = "type";
     private static final String ROLE_CLAIM = "role";
+    private static final String STATUS_CLAIM = "status";
     private static final String ACCESS_TOKEN_TYPE = "ACCESS";
     private static final String REFRESH_TOKEN_TYPE = "REFRESH";
 
@@ -70,6 +72,7 @@ public class JwtProvider {
                 .claim("memberId", principal.getId())
                 .claim(TYPE_CLAIM, type) // 토큰 타입 명시
                 .claim(ROLE_CLAIM, principal.getRole().name()) // 모든 토큰에 권한 정보 포함 (재발급 시 필요)
+                .claim(STATUS_CLAIM, principal.getStatus().name())
                 .subject(authentication.getName())
                 .issuedAt(now)
                 .expiration(expiredDate)
@@ -109,13 +112,15 @@ public class JwtProvider {
         String email = claims.getSubject();
         Long memberId = claims.get("memberId", Long.class);
         String roleStr = claims.get(ROLE_CLAIM, String.class);
+        String statusStr = claims.get(STATUS_CLAIM, String.class);
 
         // 2. 권한 정보 검증 (기본값 제거)
-        if (roleStr == null) {
-            throw new MalformedJwtException("권한 정보가 없는 토큰입니다.");
+        if (roleStr == null || statusStr == null) {
+            throw new MalformedJwtException("필수 권한 정보가 없는 토큰입니다.");
         }
 
-        PrincipalDetails principal = new PrincipalDetails(memberId, email, FamilyRole.valueOf(roleStr));
+        PrincipalDetails principal = new PrincipalDetails(memberId, email, FamilyRole.valueOf(roleStr),
+            Status.valueOf(statusStr));
 
         return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
     }
