@@ -17,7 +17,7 @@ public class FamilySubscriptionRepositoryImpl implements FamilySubscriptionRepos
 
     @Override
     public Optional<FamilySubscription> findBySubId(Long subId) {
-        return jpaRepository.findBySubscriptionSubId(subId)
+        return jpaRepository.findBySubId(subId)
                 .map(FamilySubscriptionEntity::entityToDomain);
     }
 }

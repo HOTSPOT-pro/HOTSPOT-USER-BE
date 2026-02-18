@@ -13,5 +13,5 @@ import hotspot.user.family.infrastructure.entity.FamilySubscriptionEntity;
 public interface FamilySubscriptionJpaRepository extends JpaRepository<FamilySubscriptionEntity, Long> {
 
     @EntityGraph(attributePaths = {"family", "subscription"})
-    Optional<FamilySubscriptionEntity> findBySubscriptionSubId(Long subscriptionId);
+    Optional<FamilySubscriptionEntity> findBySubId(Long subscriptionId);
 }
