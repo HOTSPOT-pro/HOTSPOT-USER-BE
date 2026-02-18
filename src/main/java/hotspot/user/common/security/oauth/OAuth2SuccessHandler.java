@@ -51,36 +51,45 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
 
-        // JWT 토큰 생성
-        String accessToken = jwtProvider.createAccessToken(authentication);
-        String refreshToken = jwtProvider.createRefreshToken(authentication);
+        // 사용자 상태에 따라 처리 로직 분기
+        String targetUrl;
 
-        TokenRequest tokenRequest = new TokenRequest(refreshToken);
+        // 온보딩으로 리다이렉트 (토큰 발급 X)
+        if (principal.getStatus() == Status.PENDING) {
+            log.info("신규 사용자, 온보딩 페이지로 리다이렉트: memberId={}, email={}", principal.getId(), principal.getEmail());
+            targetUrl = determineOnboardingUrl(principal);
+        }
 
-        // redis에 (memberId, refreshToken) 저장
-        saveTokenService.saveToken(principal.getId(), tokenRequest);
+        // 바로 로그인 (토큰 발급 O)
+        else {
+            log.info("기존 사용자, 메인 페이지로 리다이렉트: memberId={}", principal.getId());
 
-        // Refresh Token을 HttpOnly Cookie에 저장 (CookieUtil 사용)
-        ResponseCookie refreshCookie = CookieUtil.createCookie("refreshToken", refreshToken, refreshExpiration);
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+            // JWT 토큰 생성 및 저장
+            String accessToken = jwtProvider.createAccessToken(authentication);
+            String refreshToken = jwtProvider.createRefreshToken(authentication);
+            TokenRequest tokenRequest = new TokenRequest(refreshToken);
+            saveTokenService.saveToken(principal.getId(), tokenRequest);
 
-        // 사용자 상태에 따라 리다이렉트 URI 결정
-        String targetUrl = determineTargetUrl(principal, accessToken);
+            // Refresh Token을 HttpOnly Cookie에 저장
+            ResponseCookie refreshCookie = CookieUtil.createCookie("refreshToken", refreshToken, refreshExpiration);
+            response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+            targetUrl = determineMainUrl(accessToken);
+        }
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private String determineTargetUrl(PrincipalDetails principal, String accessToken) {
-        String baseUri;
-        if (principal.getStatus() == Status.PENDING) {
-            log.info("신규 사용자, 온보딩 페이지로 리다이렉트: memberId={}", principal.getId());
-            baseUri = redirectUri + "/" + onboardingRedirectUri;
-        } else {
-            log.info("기존 사용자, 메인 페이지로 리다이렉트: memberId={}", principal.getId());
-            baseUri = redirectUri;
-        }
-
+    private String determineOnboardingUrl(PrincipalDetails principal) {
+        String baseUri = redirectUri + "/" + onboardingRedirectUri;
         return UriComponentsBuilder.fromUriString(baseUri)
+                .queryParam("memberId", principal.getId())
+                .queryParam("email", principal.getEmail())
+                .build().toUriString();
+    }
+
+    private String determineMainUrl(String accessToken) {
+        return UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("accessToken", accessToken)
                 .build().toUriString();
     }

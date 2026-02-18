@@ -21,4 +21,13 @@ public class Member {
                 .status(Status.PENDING)
                 .build();
     }
+
+    public Member onboard(String birth) {
+        return Member.builder()
+                .id(this.id)
+                .name(this.name)
+                .birth(birth)
+                .status(Status.APPROVED)
+                .build();
+    }
 }

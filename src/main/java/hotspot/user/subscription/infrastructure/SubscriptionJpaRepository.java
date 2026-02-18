@@ -14,4 +14,6 @@ public interface SubscriptionJpaRepository extends JpaRepository<SubscriptionEnt
 
     @EntityGraph(attributePaths = {"plan"})
     Optional<SubscriptionEntity> findByMemberId(Long memberId);
+
+    Optional<SubscriptionEntity> findByPhoneHash(String phoneHash);
 }

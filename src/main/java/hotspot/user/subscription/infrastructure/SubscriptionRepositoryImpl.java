@@ -25,4 +25,16 @@ public class SubscriptionRepositoryImpl implements SubscriptionRepository {
         return subscriptionJpaRepository.findByMemberId(memberId)
                 .map(SubscriptionEntity::entityToDomain);
     }
+
+    @Override
+    public Optional<Subscription> findByPhoneHash(String phoneHash) {
+        return subscriptionJpaRepository.findByPhoneHash(phoneHash)
+                .map(SubscriptionEntity::entityToDomain);
+    }
+
+    @Override
+    public Subscription save(Subscription subscription) {
+        return subscriptionJpaRepository.save(SubscriptionEntity.domainToEntity(subscription))
+                .entityToDomain();
+    }
 }

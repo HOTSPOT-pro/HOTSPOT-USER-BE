@@ -27,4 +27,14 @@ public class MemberRepositoryImpl implements MemberRepository {
         return memberJpaRepository.findById(id)
                 .map(MemberEntity::entityToDomain);
     }
+
+    @Override
+    public void delete(Member member) {
+        memberJpaRepository.delete(MemberEntity.domainToEntity(member));
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        memberJpaRepository.deleteById(id);
+    }
 }

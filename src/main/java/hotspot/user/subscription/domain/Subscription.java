@@ -20,4 +20,15 @@ public class Subscription {
     private String phoneEnc;
     private String phoneHash;
     private Boolean isLocked;
+
+    public Subscription updateMember(Member member) {
+        return Subscription.builder()
+                .id(this.id)
+                .plan(this.plan)
+                .member(member)
+                .phoneEnc(this.phoneEnc)
+                .phoneHash(this.phoneHash)
+                .isLocked(this.isLocked)
+                .build();
+    }
 }
