@@ -3,6 +3,8 @@ package hotspot.user.auth.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -15,15 +17,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
 
-import hotspot.user.auth.controller.port.SaveTokenService;
+import hotspot.user.auth.controller.port.IssueTokenService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
-import hotspot.user.auth.controller.request.TokenRequest;
 import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
-import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.common.util.PhoneUtil;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
@@ -51,44 +50,24 @@ class OnboardingServiceImplTest {
     @Mock
     private FamilySubscriptionRepository familySubscriptionRepository;
     @Mock
-    private SaveTokenService saveTokenService;
-    @Mock
-    private JwtProvider jwtProvider;
+    private IssueTokenService issueTokenService;
 
     @InjectMocks
     private OnboardingServiceImpl onboardingService;
 
     @Test
-    @DisplayName("신규 온보딩 성공: 회선이 있고 가족 결합 정보가 존재할 때")
+    @DisplayName("신규 온보딩 성공: 회선이 있고 가족 결합 정보가 존재할 때 승인 절차를 거쳐 토큰을 발급한다")
     void onboardingSuccessNewMember() {
         // given
         Long memberId = 1L;
         String phoneNumber = "01012345678";
-        String birthDate = "950101";
         String phoneHash = PhoneUtil.hashPhoneNumber(phoneNumber);
-        OnboardingRequest request = new OnboardingRequest(memberId, "test@test.com", phoneNumber, birthDate);
+        OnboardingRequest request = new OnboardingRequest(memberId, "test@test.com", phoneNumber, "950101");
 
-        Member pendingMember = Member.builder()
-                .id(memberId)
-                .name("test")
-                .status(Status.PENDING)
-                .build();
-
-        SocialAccount socialAccount = SocialAccount.builder()
-                .id(10L)
-                .memberId(memberId)
-                .email("test@test.com")
-                .build();
-
-        Subscription subscription = Subscription.builder()
-                .id(100L)
-                .phoneHash(phoneHash)
-                .build();
-
-        FamilySubscription familySubscription = FamilySubscription.builder()
-                .id(500L)
-                .familyRole(FamilyRole.CHILD)
-                .build();
+        Member pendingMember = Member.builder().id(memberId).status(Status.PENDING).build();
+        SocialAccount socialAccount = SocialAccount.builder().memberId(memberId).email("test@test.com").build();
+        Subscription subscription = Subscription.builder().id(100L).phoneHash(phoneHash).build();
+        FamilySubscription familySubscription = FamilySubscription.builder().familyRole(FamilyRole.CHILD).build();
 
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.of(subscription));
         given(memberRepository.findById(memberId)).willReturn(Optional.of(pendingMember));
@@ -98,20 +77,19 @@ class OnboardingServiceImplTest {
         given(memberRepository.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
         given(subscriptionRepository.save(any(Subscription.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-        given(jwtProvider.createAccessToken(any(Authentication.class))).willReturn("access-token");
-        given(jwtProvider.createRefreshToken(any(Authentication.class))).willReturn("refresh-token");
+        // IssueTokenService 호출 시 성공 응답 설정
+        TokenResponse expectedResponse = new TokenResponse("at", "rt");
+        given(issueTokenService.issue(any(Member.class), eq("test@test.com"), eq(FamilyRole.CHILD)))
+                .willReturn(expectedResponse);
 
         // when
         TokenResponse response = onboardingService.onboarding(request);
 
         // then
-        assertThat(response.accessToken()).isEqualTo("access-token");
-        assertThat(response.refreshToken()).isEqualTo("refresh-token");
-
+        assertThat(response.accessToken()).isEqualTo("at");
         verify(memberRepository).save(any(Member.class));
         verify(subscriptionRepository).save(any(Subscription.class));
-        verify(saveTokenService).saveToken(any(Long.class), any(TokenRequest.class));
-        verify(jwtProvider).createAccessToken(any(Authentication.class));
+        verify(issueTokenService).issue(any(Member.class), anyString(), any(FamilyRole.class));
     }
 
     @Test
@@ -124,32 +102,11 @@ class OnboardingServiceImplTest {
         String phoneHash = PhoneUtil.hashPhoneNumber(phoneNumber);
         OnboardingRequest request = new OnboardingRequest(pendingMemberId, "test@test.com", phoneNumber, "950101");
 
-        Member pendingMember = Member.builder()
-                .id(pendingMemberId)
-                .status(Status.PENDING)
-                .build();
-
-        Member existingMember = Member.builder()
-                .id(existingMemberId)
-                .status(Status.APPROVED)
-                .build();
-
-        SocialAccount socialAccount = SocialAccount.builder()
-                .id(10L)
-                .memberId(pendingMemberId)
-                .email("test@test.com")
-                .build();
-
-        Subscription subscription = Subscription.builder()
-                .id(100L)
-                .member(existingMember)
-                .phoneHash(phoneHash)
-                .build();
-
-        FamilySubscription familySubscription = FamilySubscription.builder()
-                .id(500L)
-                .familyRole(FamilyRole.PARENT)
-                .build();
+        Member pendingMember = Member.builder().id(pendingMemberId).status(Status.PENDING).build();
+        Member existingMember = Member.builder().id(existingMemberId).status(Status.APPROVED).build();
+        SocialAccount socialAccount = SocialAccount.builder().memberId(pendingMemberId).email("test@test.com").build();
+        Subscription subscription = Subscription.builder().id(100L).member(existingMember).phoneHash(phoneHash).build();
+        FamilySubscription familySubscription = FamilySubscription.builder().familyRole(FamilyRole.PARENT).build();
 
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.of(subscription));
         given(memberRepository.findById(pendingMemberId)).willReturn(Optional.of(pendingMember));
@@ -159,15 +116,15 @@ class OnboardingServiceImplTest {
         given(socialAccountRepository.save(any(SocialAccount.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
 
-        given(jwtProvider.createAccessToken(any(Authentication.class))).willReturn("access-token");
-        given(jwtProvider.createRefreshToken(any(Authentication.class))).willReturn("refresh-token");
+        TokenResponse expectedResponse = new TokenResponse("at", "rt");
+        given(issueTokenService.issue(any(Member.class), eq("test@test.com"), eq(FamilyRole.PARENT)))
+                .willReturn(expectedResponse);
 
         // when
         TokenResponse response = onboardingService.onboarding(request);
 
         // then
-        assertThat(response.accessToken()).isEqualTo("access-token");
-
+        assertThat(response.accessToken()).isEqualTo("at");
         verify(memberRepository).delete(pendingMember);
         verify(socialAccountRepository).save(any(SocialAccount.class));
         verify(memberRepository, never()).save(any(Member.class));
@@ -190,7 +147,7 @@ class OnboardingServiceImplTest {
     }
 
     @Test
-    @DisplayName("온보딩 실패: 회선은 존재하지만 가족 결합 정보가 없는 경우 (데이터 무결성 오류)")
+    @DisplayName("온보딩 실패: 회선은 존재하지만 가족 결합 정보가 없는 경우")
     void onboardingFailFamilySubscriptionNotFound() {
         // given
         Long memberId = 1L;
