@@ -83,12 +83,10 @@ public class OnboardingServiceImpl implements OnboardingService {
             subscriptionRepository.save(subscription);
         }
 
-        // 4. FamilyRole 조회
-        FamilyRole familyRole = FamilyRole.CHILD;
-        Optional<FamilySubscription> familySub = familySubscriptionRepository.findBySubId(subscription.getId());
-        if (familySub.isPresent()) {
-            familyRole = familySub.get().getFamilyRole();
-        }
+        // 4. FamilyRole 조회 (이미 가족 결합이 되어 있어야 함)
+        FamilyRole familyRole = familySubscriptionRepository.findBySubId(subscription.getId())
+                .map(FamilySubscription::getFamilyRole)
+                .orElseThrow(() -> new ApplicationException(MemberErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
 
         // 5. 토큰 발급을 위한 Authentication 객체 생성
         PrincipalDetails principal = new PrincipalDetails(
