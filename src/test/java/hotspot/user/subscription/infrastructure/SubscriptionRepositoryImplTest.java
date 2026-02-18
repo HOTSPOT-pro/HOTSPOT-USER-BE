@@ -1,0 +1,125 @@
+package hotspot.user.subscription.infrastructure;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+
+import java.util.Optional;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import hotspot.user.member.domain.Member;
+import hotspot.user.member.infrastructure.entity.MemberEntity;
+import hotspot.user.plan.domain.Plan;
+import hotspot.user.plan.infrastructure.entity.PlanEntity;
+import hotspot.user.subscription.domain.Subscription;
+import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
+
+/**
+ * 회선 Repository 단위 테스트
+ */
+@ExtendWith(MockitoExtension.class)
+class SubscriptionRepositoryImplTest {
+
+    @Mock
+    private SubscriptionJpaRepository subscriptionJpaRepository;
+
+    @InjectMocks
+    private SubscriptionRepositoryImpl subscriptionRepository;
+
+        @Test
+        @DisplayName("전화번호 해시로 회선 조회 성공")
+        void findByPhoneHashSuccess() {
+            // given
+            String hash = "hashed-phone";
+            SubscriptionEntity entity = SubscriptionEntity.builder()
+                    .subId(100L)
+                    .phoneHash(hash)
+                    .member(MemberEntity.builder().id(1L).build())
+                    .plan(PlanEntity.builder().planId(1L).build())
+                    .build();
+
+            given(subscriptionJpaRepository.findByPhoneHash(hash)).willReturn(Optional.of(entity));
+
+            // when
+            Optional<Subscription> result = subscriptionRepository.findByPhoneHash(hash);
+
+            // then
+            assertThat(result).isPresent();
+            assertThat(result.get().getId()).isEqualTo(100L);
+            assertThat(result.get().getPhoneHash()).isEqualTo(hash);
+        }
+
+        @Test
+        @DisplayName("회선 ID로 회선 조회 성공")
+        void findByIdSuccess() {
+            // given
+            Long id = 100L;
+            SubscriptionEntity entity = SubscriptionEntity.builder()
+                    .subId(id)
+                    .member(MemberEntity.builder().id(1L).build())
+                    .plan(PlanEntity.builder().planId(1L).build())
+                    .build();
+            given(subscriptionJpaRepository.findById(id)).willReturn(Optional.of(entity));
+
+            // when
+            Optional<Subscription> result = subscriptionRepository.findById(id);
+
+            // then
+            assertThat(result).isPresent();
+            assertThat(result.get().getId()).isEqualTo(id);
+        }
+
+        @Test
+        @DisplayName("멤버 ID로 회선 조회 성공")
+        void findByMemberIdSuccess() {
+            // given
+            Long memberId = 1L;
+            SubscriptionEntity entity = SubscriptionEntity.builder()
+                    .subId(100L)
+                    .member(MemberEntity.builder().id(memberId).build())
+                    .plan(PlanEntity.builder().planId(1L).build())
+                    .build();
+            given(subscriptionJpaRepository.findByMemberId(memberId)).willReturn(Optional.of(entity));
+
+            // when
+            Optional<Subscription> result = subscriptionRepository.findByMemberId(memberId);
+
+            // then
+            assertThat(result).isPresent();
+            assertThat(result.get().getId()).isEqualTo(100L);
+        }
+
+        @Test
+        @DisplayName("회선 저장 성공")
+        void saveSubscriptionSuccess() {
+            // given
+            Subscription subscription = Subscription.builder()
+                    .id(100L)
+                    .member(Member.builder().id(1L).build())
+                    .plan(Plan.builder().id(1L).build())
+                    .phoneEnc("enc")
+                    .phoneHash("hash")
+                    .isLocked(false)
+                    .build();
+
+            SubscriptionEntity entity = SubscriptionEntity.builder()
+                    .subId(100L)
+                    .member(MemberEntity.builder().id(1L).build())
+                    .plan(PlanEntity.builder().planId(1L).build())
+                    .build();
+
+            given(subscriptionJpaRepository.save(any(SubscriptionEntity.class))).willReturn(entity);
+
+            // when
+            Subscription result = subscriptionRepository.save(subscription);
+
+            // then
+            assertThat(result.getId()).isEqualTo(100L);
+        }
+    }
