@@ -38,7 +38,7 @@ class BlockPolicyRepositoryImplTest {
                 .blockPolicyId(1L)
                 .policyName("기본 차단")
                 .policyType(PolicyType.SCHEDULED)
-                .dateSnapshot(snapshot)
+                .policySnapshot(snapshot)
                 .build();
 
         given(blockPolicyJpaRepository.findAll()).willReturn(List.of(entity));

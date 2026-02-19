@@ -50,7 +50,7 @@ public class BlockPolicyEntity extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb") // PostgreSQL
-    private PolicySnapshot dateSnapshot;
+    private PolicySnapshot policySnapshot;
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
@@ -61,7 +61,7 @@ public class BlockPolicyEntity extends BaseEntity {
                 .blockPolicyId(blockPolicy.getId())
                 .policyName(blockPolicy.getName())
                 .policyType(blockPolicy.getPolicyType())
-                .dateSnapshot(blockPolicy.getPolicySnapshot())
+                .policySnapshot(blockPolicy.getPolicySnapshot())
                 .build();
     }
 
@@ -70,7 +70,7 @@ public class BlockPolicyEntity extends BaseEntity {
                 .id(this.blockPolicyId)
                 .name(this.policyName)
                 .policyType(this.policyType)
-                .policySnapshot(this.dateSnapshot)
+                .policySnapshot(this.policySnapshot)
                 .build();
     }
 }
