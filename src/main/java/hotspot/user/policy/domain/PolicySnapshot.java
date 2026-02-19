@@ -4,41 +4,54 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
  * 정책 스냅샷 클래스
+ * LocalTime 역직렬화 이슈 해결을 위해 시간 필드를 String으로 관리한다.
  */
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL) // 값이 null인 필드는 JSON에서 생략
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PolicySnapshot {
 
-    // PolicyType.SCHEDULED만 해당
+    // SCHEDULED 정책은 요일이 필수
     private List<DayOfWeek> days;
 
-    @JsonFormat(pattern = "HH:mm") // "00:00" 형식을 LocalTime으로 자동 변환
-    private LocalTime startTime;
+    private String startTime; // "HH:mm" 형식 문자열
 
-    @JsonFormat(pattern = "HH:mm")
-    private LocalTime endTime;
+    private String endTime;   // "HH:mm" 형식 문자열
 
-    // PolicyType.ONCE만 해당
+    // ONCE 정책에서 주로 사용
     private Integer durationMinutes;
 
-    // SCHEDULED 정책은 요일, 시간이 필수임
+    // 문자열 시작 시간을 LocalTime으로 변환하여 반환
+    @JsonIgnore
+    public LocalTime getStartLocalTime() {
+        return startTime != null ? LocalTime.parse(startTime) : null;
+    }
+
+    // 문자열 종료 시간을 LocalTime으로 변환하여 반환
+    @JsonIgnore
+    public LocalTime getEndLocalTime() {
+        return endTime != null ? LocalTime.parse(endTime) : null;
+    }
+
+    // SCHEDULED 정책 유효성 확인: 요일과 시작/종료 시간이 모두 있어야 함
     public boolean isScheduledPolicy() {
         return days != null && !days.isEmpty() && startTime != null && endTime != null;
     }
 
-    // ONCE 정책은 지속 시간이 필수임
+    // ONCE 정책 유효성 확인: 지속 시간이 있거나, 혹은 시작/종료 시간이 있어야 함
     public boolean isOncePolicy() {
-        return durationMinutes != null && durationMinutes > 0;
+        return (durationMinutes != null && durationMinutes > 0) || (startTime != null && endTime != null);
     }
 }
