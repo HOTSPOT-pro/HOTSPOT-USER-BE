@@ -53,7 +53,7 @@ class FamilySubscriptionRepositoryImplTest {
                 .priority(-1)
                 .build();
 
-        given(familySubscriptionJpaRepository.findBySubId(subId)).willReturn(Optional.of(entity));
+        given(familySubscriptionJpaRepository.findBySubscriptionSubId(subId)).willReturn(Optional.of(entity));
 
         // when
         Optional<FamilySubscription> result = familySubscriptionRepository.findBySubId(subId);
