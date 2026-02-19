@@ -13,5 +13,5 @@ import lombok.Getter;
 public class AppBlockedService {
     private final Long id;
     private final String name;
-    private final PolicyType serviceCode;
+    private final String serviceCode;
 }

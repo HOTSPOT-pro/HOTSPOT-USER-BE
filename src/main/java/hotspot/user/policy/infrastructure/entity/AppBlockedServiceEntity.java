@@ -11,6 +11,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import hotspot.user.common.BaseEntity;
+import hotspot.user.policy.domain.AppBlockedService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,4 +44,20 @@ public class AppBlockedServiceEntity extends BaseEntity {
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
     private Boolean isDeleted = false;
+
+    public AppBlockedServiceEntity domainToEntity(AppBlockedService appBlockedService) {
+        return AppBlockedServiceEntity.builder()
+                .appBlockedServiceId(appBlockedService.getId())
+                .blockedServiceName(appBlockedService.getName())
+                .blockedServiceCode(appBlockedService.getServiceCode())
+                .build();
+    }
+
+    public AppBlockedService entityToDomain() {
+        return AppBlockedService.builder()
+                .id(this.appBlockedServiceId)
+                .name(this.blockedServiceName)
+                .serviceCode(this.blockedServiceCode)
+                .build();
+    }
 }

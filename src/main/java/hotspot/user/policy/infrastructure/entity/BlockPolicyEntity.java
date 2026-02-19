@@ -15,6 +15,7 @@ import org.hibernate.annotations.Where;
 import org.hibernate.type.SqlTypes;
 
 import hotspot.user.common.BaseEntity;
+import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.PolicySnapshot;
 import hotspot.user.policy.domain.PolicyType;
 import lombok.AccessLevel;
@@ -54,4 +55,22 @@ public class BlockPolicyEntity extends BaseEntity {
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
     private Boolean isDeleted = false;
+
+    public BlockPolicyEntity domainToEntity(BlockPolicy blockPolicy) {
+        return BlockPolicyEntity.builder()
+                .blockPolicyId(blockPolicy.getId())
+                .policyName(blockPolicy.getName())
+                .policyType(blockPolicy.getPolicyType())
+                .dateSnapshot(blockPolicy.getPolicySnapshot())
+                .build();
+    }
+
+    public BlockPolicy entityToDomain() {
+        return BlockPolicy.builder()
+                .id(this.blockPolicyId)
+                .name(this.policyName)
+                .policyType(this.policyType)
+                .policySnapshot(this.dateSnapshot)
+                .build();
+    }
 }
