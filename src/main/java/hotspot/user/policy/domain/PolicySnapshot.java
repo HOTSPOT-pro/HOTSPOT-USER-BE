@@ -46,11 +46,13 @@ public class PolicySnapshot {
     }
 
     // SCHEDULED 정책 유효성 확인: 요일과 시작/종료 시간이 모두 있어야 함
+    @JsonIgnore
     public boolean isScheduledPolicy() {
         return days != null && !days.isEmpty() && startTime != null && endTime != null;
     }
 
     // ONCE 정책 유효성 확인: 지속 시간이 있거나, 혹은 시작/종료 시간이 있어야 함
+    @JsonIgnore
     public boolean isOncePolicy() {
         return (durationMinutes != null && durationMinutes > 0) || (startTime != null && endTime != null);
     }
