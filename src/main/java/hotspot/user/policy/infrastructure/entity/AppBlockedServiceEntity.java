@@ -45,7 +45,7 @@ public class AppBlockedServiceEntity extends BaseEntity {
     @Builder.Default
     private Boolean isDeleted = false;
 
-    public AppBlockedServiceEntity domainToEntity(AppBlockedService appBlockedService) {
+    public static AppBlockedServiceEntity domainToEntity(AppBlockedService appBlockedService) {
         return AppBlockedServiceEntity.builder()
                 .appBlockedServiceId(appBlockedService.getId())
                 .blockedServiceName(appBlockedService.getName())

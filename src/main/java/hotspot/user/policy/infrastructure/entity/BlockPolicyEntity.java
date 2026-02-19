@@ -56,7 +56,7 @@ public class BlockPolicyEntity extends BaseEntity {
     @Builder.Default
     private Boolean isDeleted = false;
 
-    public BlockPolicyEntity domainToEntity(BlockPolicy blockPolicy) {
+    public static BlockPolicyEntity domainToEntity(BlockPolicy blockPolicy) {
         return BlockPolicyEntity.builder()
                 .blockPolicyId(blockPolicy.getId())
                 .policyName(blockPolicy.getName())
