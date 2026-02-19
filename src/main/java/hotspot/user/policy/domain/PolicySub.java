@@ -1,5 +1,6 @@
 package hotspot.user.policy.domain;
 
+import hotspot.user.subscription.domain.Subscription;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PolicySub {
     private final Long id;
-    private final Long subId;
+    private final Subscription subscription;
     private final PolicySnapshot policySnapshot;
 
 }
