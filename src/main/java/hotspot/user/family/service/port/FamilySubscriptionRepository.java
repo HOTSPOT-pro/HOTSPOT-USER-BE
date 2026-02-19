@@ -1,5 +1,6 @@
 package hotspot.user.family.service.port;
 
+import java.util.List;
 import java.util.Optional;
 
 import hotspot.user.family.domain.FamilySubscription;
@@ -9,4 +10,6 @@ import hotspot.user.family.domain.FamilySubscription;
  */
 public interface FamilySubscriptionRepository {
     Optional<FamilySubscription> findBySubId(Long subId);
+    List<FamilySubscription> findByFamilyId(Long familyId);
+    Optional<FamilySubscription> findByMemberId(Long memberId);
 }
