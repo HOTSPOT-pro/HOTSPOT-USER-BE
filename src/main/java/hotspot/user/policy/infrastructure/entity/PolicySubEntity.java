@@ -46,7 +46,7 @@ public class PolicySubEntity extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb") // PostgreSQL
-    private PolicySnapshot dateSnapshot;
+    private PolicySnapshot dateSnapshot; // [To-Do] dateSnapshot 도메인 클래스 생성 필요
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
