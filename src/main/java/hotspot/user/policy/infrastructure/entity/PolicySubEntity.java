@@ -17,6 +17,7 @@ import org.hibernate.type.SqlTypes;
 
 import hotspot.user.common.BaseEntity;
 import hotspot.user.policy.domain.PolicySnapshot;
+import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -42,13 +43,21 @@ public class PolicySubEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sub_id")
-    private SubscriptionEntity subscriptionEntity;
+    private SubscriptionEntity subscription;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb") // PostgreSQL
-    private PolicySnapshot dateSnapshot; // [To-Do] dateSnapshot 도메인 클래스 생성 필요
+    private PolicySnapshot dateSnapshot;
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
     private Boolean isDeleted = false;
+
+    public PolicySub entityToDomain() {
+        return PolicySub.builder()
+                .id(this.policySubId)
+                .subscription(this.subscription.entityToDomain())
+                .policySnapshot(this.dateSnapshot)
+                .build();
+    }
 }
