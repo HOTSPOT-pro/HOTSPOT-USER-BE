@@ -155,7 +155,8 @@ class FamilySubscriptionRepositoryImplTest {
                 .dataLimit(500)
                 .build();
 
-        org.mockito.BDDMockito.given(familySubscriptionJpaRepository.save(org.mockito.ArgumentMatchers.any(FamilySubscriptionEntity.class))).willReturn(entity);
+        org.mockito.BDDMockito.given(familySubscriptionJpaRepository.save(
+                org.mockito.ArgumentMatchers.any(FamilySubscriptionEntity.class))).willReturn(entity);
 
         // when
         FamilySubscription result = familySubscriptionRepository.save(domain);
@@ -163,6 +164,7 @@ class FamilySubscriptionRepositoryImplTest {
         // then
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getDataLimit()).isEqualTo(500);
-        org.mockito.Mockito.verify(familySubscriptionJpaRepository).save(org.mockito.ArgumentMatchers.any(FamilySubscriptionEntity.class));
+        org.mockito.Mockito.verify(familySubscriptionJpaRepository).save(
+                org.mockito.ArgumentMatchers.any(FamilySubscriptionEntity.class));
     }
 }
