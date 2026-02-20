@@ -41,8 +41,8 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
         // 3. 데이터 한도 업데이트
         familySub.updateDataLimit(request.dataLimit());
 
-        familySubscriptionRepository.save(familySub);
+        FamilySubscription savedFamilySub = familySubscriptionRepository.save(familySub);
 
-        return FamilySubscriptionMapper.toUpdateDataLimitResponse(familySub);
+        return FamilySubscriptionMapper.toUpdateDataLimitResponse(savedFamilySub);
     }
 }
