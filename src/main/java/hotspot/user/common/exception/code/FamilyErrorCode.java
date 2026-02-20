@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 public enum FamilyErrorCode implements BaseErrorCode {
     FAMILY_NOT_FOUND(HttpStatus.NOT_FOUND, "FAMILY_001", "가족 정보를 찾을 수 없습니다."),
     FAMILY_SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "FAMILY_002", "가족에 가입된 회선 정보를 찾을 수 없습니다."),
+    NOT_FAMILY_MEMBER(HttpStatus.FORBIDDEN, "FAMILY_003", "해당 구성원은 동일한 가족 그룹에 속해 있지 않습니다."),
     ;
 
     private final HttpStatus httpStatus;

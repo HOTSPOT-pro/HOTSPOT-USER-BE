@@ -36,12 +36,11 @@ public class FamilySubscriptionController {
             @Valid @RequestBody UpdateDataLimitRequest request,
             @AuthenticationPrincipal PrincipalDetails principal) {
 
-        // OWNER만 호출 가능
-        if (principal.getRole() != FamilyRole.OWNER) {
-            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
-        }
-
-        UpdateDataLimitResponse response = updateDataLimitService.updateDataLimit(request);
+        UpdateDataLimitResponse response = updateDataLimitService.updateDataLimit(
+                request, 
+                principal.getFamilyId(), 
+                principal.getRole()
+        );
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
