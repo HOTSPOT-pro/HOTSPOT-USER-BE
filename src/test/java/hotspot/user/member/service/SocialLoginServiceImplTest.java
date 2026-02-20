@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import hotspot.user.auth.controller.response.LoginResponse;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
+import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.controller.port.RegisterSocialMemberService;
@@ -76,6 +77,10 @@ class SocialLoginServiceImplTest {
                 .status(Status.APPROVED)
                 .build();
 
+        Family family = Family.builder()
+                .id(100L)
+                .build();
+
         Subscription subscription = Subscription.builder()
                 .id(10L)
                 .member(Member.builder().id(memberId).build()) // Corrected: use member() builder method
@@ -84,6 +89,7 @@ class SocialLoginServiceImplTest {
         FamilySubscription familySubscription = FamilySubscription.builder()
                 .id(100L)
                 .subscription(subscription) // Corrected: use subscription() builder method
+                .family(family)
                 .familyRole(FamilyRole.PARENT)
                 .build();
 
@@ -101,6 +107,7 @@ class SocialLoginServiceImplTest {
         assertThat(result.email()).isEqualTo(email);
         assertThat(result.status()).isEqualTo(Status.APPROVED);
         assertThat(result.familyRole()).isEqualTo(FamilyRole.PARENT);
+        assertThat(result.familyId()).isEqualTo(100L);
     }
 
     @Test
@@ -114,7 +121,8 @@ class SocialLoginServiceImplTest {
             2L,
             email,
             Status.PENDING,
-            FamilyRole.CHILD
+            FamilyRole.CHILD,
+            null
         );
 
         given(socialAccountRepository.findByEmail(email)).willReturn(Optional.empty());

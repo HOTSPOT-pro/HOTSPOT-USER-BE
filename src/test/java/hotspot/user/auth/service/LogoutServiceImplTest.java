@@ -41,10 +41,8 @@ class LogoutServiceImplTest {
                 TokenRequest request = new TokenRequest(refreshToken);
                 Long memberId = 1L;
 
-                PrincipalDetails principal = new PrincipalDetails(memberId,
-                        "test@test.com",
-                        FamilyRole.CHILD,
-                        Status.APPROVED);
+                        PrincipalDetails principal = new PrincipalDetails(memberId, "test@test.com", 100L,
+                FamilyRole.CHILD, Status.APPROVED);
 
                 Authentication authentication = Mockito.mock(Authentication.class);
                 given(authentication.getPrincipal()).willReturn(principal);

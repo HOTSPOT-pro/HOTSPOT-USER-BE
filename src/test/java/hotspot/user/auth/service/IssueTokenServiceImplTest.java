@@ -48,7 +48,7 @@ class IssueTokenServiceImplTest {
         given(jwtProvider.createRefreshToken(any(Authentication.class))).willReturn("refresh-token");
 
         // when
-        TokenResponse response = issueTokenService.issue(member, email, role);
+        TokenResponse response = issueTokenService.issue(member, email, role, 100L);
 
         // then
         assertThat(response.accessToken()).isEqualTo("access-token");

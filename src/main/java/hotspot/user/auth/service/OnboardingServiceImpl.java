@@ -12,7 +12,6 @@ import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.common.util.PhoneUtil;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.SocialAccount;
 import hotspot.user.member.domain.Status;
@@ -47,9 +46,9 @@ public class OnboardingServiceImpl implements OnboardingService {
 
         // 3. 가족 정보 조회 (Role 및 familyId)
         FamilySubscription familySub = getFamilySubscription(subscription.getId());
-        
+
         // 4. 토큰 발급 (가족 ID 포함)
-        return issueTokenService.issue(finalMember, socialAccount.getEmail(), 
+        return issueTokenService.issue(finalMember, socialAccount.getEmail(),
                 familySub.getFamilyRole(), familySub.getFamily().getId());
     }
 
