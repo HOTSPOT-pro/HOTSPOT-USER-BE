@@ -1,4 +1,4 @@
-package hotspot.user.family.controller;
+package hotspot.user.family.controller.port;
 
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
