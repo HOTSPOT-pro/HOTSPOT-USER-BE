@@ -1,0 +1,47 @@
+package hotspot.user.family.controller;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import hotspot.user.common.ApiResponse;
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.AuthErrorCode;
+import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.family.controller.request.UpdateDataLimitRequest;
+import hotspot.user.family.controller.response.UpdateDataLimitResponse;
+import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.member.domain.FamilyRole;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * FamilySubscription 관련 컨트롤러
+ */
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/families")
+public class FamilySubscriptionController {
+
+    private final UpdateDataLimitService updateDataLimitService;
+    private final FamilySubscriptionRepository familySubscriptionRepository;
+
+    // 구성원의 가족 공유 데이터 한도 조정
+    @PatchMapping("/data-limit")
+    public ResponseEntity<ApiResponse<UpdateDataLimitResponse>> updateDataLimit(
+            @Valid @RequestBody UpdateDataLimitRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        // OWNER만 호출 가능
+        if (principal.getRole() != FamilyRole.OWNER) {
+            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
+        }
+
+        UpdateDataLimitResponse response = updateDataLimitService.updateDataLimit(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+}
