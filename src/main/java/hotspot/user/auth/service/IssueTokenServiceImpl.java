@@ -33,7 +33,7 @@ public class IssueTokenServiceImpl implements IssueTokenService {
         PrincipalDetails principal = PrincipalDetails.builder()
                 .id(member.getId())
                 .email(email)
-                .familyId(familyId) // family id 추가
+                .familyId(familyId)
                 .role(familyRole)
                 .status(member.getStatus())
                 .build();

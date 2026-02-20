@@ -88,7 +88,7 @@ public class CustomOidcUserService extends OidcUserService {
         return PrincipalDetails.builder()
             .id(loginResult.memberId())
             .email(loginResult.email())
-            .familyId(loginResult.familyId()) // 추가된 familyId 반영
+            .familyId(loginResult.familyId())
             .role(loginResult.familyRole())
             .status(loginResult.status())
             .attributes(claims)

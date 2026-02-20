@@ -16,5 +16,5 @@ public record LoginResponse(
         String email,
         Status status,
         FamilyRole familyRole,
-        Long familyId // 가족 ID 추가
+        Long familyId
 ) {}

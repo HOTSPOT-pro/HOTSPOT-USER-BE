@@ -74,7 +74,7 @@ public class JwtProvider {
                 .claim(TYPE_CLAIM, type) // 토큰 타입 명시
                 .claim(ROLE_CLAIM, principal.getRole().name()) // 모든 토큰에 권한 정보 포함 (재발급 시 필요)
                 .claim(STATUS_CLAIM, principal.getStatus().name())
-                .claim(FAMILY_ID_CLAIM, principal.getFamilyId()) // 가족 ID 추가
+                .claim(FAMILY_ID_CLAIM, principal.getFamilyId())
                 .subject(authentication.getName())
                 .issuedAt(now)
                 .expiration(expiredDate)

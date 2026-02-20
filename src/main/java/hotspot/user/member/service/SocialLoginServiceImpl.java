@@ -49,7 +49,7 @@ public class SocialLoginServiceImpl implements SocialLoginService {
             Member member = memberRepository.findById(socialAccount.getMemberId())
                     .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-            // FamilyRole 및 FamilyId 조회 (기존 회원)
+            // 3. FamilyRole 및 FamilyId 조회 (기존 회원)
             FamilyRole familyRole = FamilyRole.CHILD; // 기본값
             Long familyId = null;
             Optional<Subscription> subscriptionOptional =

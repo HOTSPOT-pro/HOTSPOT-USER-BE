@@ -22,7 +22,7 @@ public class PrincipalDetails implements UserDetails, OidcUser {
 
     private final Long id;
     private final String email;
-    private final Long familyId; // 가족 ID 추가
+    private final Long familyId;
     private final FamilyRole role;
     private final Status status;
     private final Map<String, Object> attributes;
