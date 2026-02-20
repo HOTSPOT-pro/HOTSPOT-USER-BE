@@ -14,7 +14,7 @@ import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
-import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.family.controller.swagger.FamilySubscriptionApi;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -23,12 +23,12 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/families")
-public class FamilySubscriptionController {
+public class FamilySubscriptionController implements FamilySubscriptionApi {
 
     private final UpdateDataLimitService updateDataLimitService;
-    private final FamilySubscriptionRepository familySubscriptionRepository;
 
     // 구성원의 가족 공유 데이터 한도 조정
+    @Override
     @PatchMapping("/data-limit")
     public ResponseEntity<ApiResponse<UpdateDataLimitResponse>> updateDataLimit(
             @Valid @RequestBody UpdateDataLimitRequest request,
