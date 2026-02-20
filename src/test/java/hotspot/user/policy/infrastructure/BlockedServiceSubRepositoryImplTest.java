@@ -12,17 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.member.infrastructure.entity.MemberEntity;
+import hotspot.user.plan.infrastructure.entity.PlanEntity;
 import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.policy.infrastructure.entity.AppBlockedServiceEntity;
 import hotspot.user.policy.infrastructure.entity.BlockedServiceSubEntity;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
-
-/**
- * 차단 서비스-회선 조회 매핑 Repository 단위 테스트
- */
-
-import hotspot.user.member.infrastructure.entity.MemberEntity;
-import hotspot.user.plan.infrastructure.entity.PlanEntity;
 
 @ExtendWith(MockitoExtension.class)
 class BlockedServiceSubRepositoryImplTest {

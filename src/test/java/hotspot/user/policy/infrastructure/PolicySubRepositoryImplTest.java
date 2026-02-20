@@ -12,16 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.member.infrastructure.entity.MemberEntity;
+import hotspot.user.plan.infrastructure.entity.PlanEntity;
 import hotspot.user.policy.domain.DateSnapshot;
 import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.policy.infrastructure.entity.PolicySubEntity;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
-
-/**
- * 정책-회선 조회 매핑 Repository 단위 테스트
- */
-import hotspot.user.member.infrastructure.entity.MemberEntity;
-import hotspot.user.plan.infrastructure.entity.PlanEntity;
 
 /**
  * 정책-회선 조회 매핑 Repository 단위 테스트
