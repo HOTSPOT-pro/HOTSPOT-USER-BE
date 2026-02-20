@@ -23,6 +23,7 @@ public class AppliedPolicyMapper {
         return AppliedPolicyResponse.builder()
                 .memberId(familySub.getSubscription().getMember().getId())
                 .memberName(familySub.getSubscription().getMember().getName())
+                .subId(familySub.getSubscription().getId())
                 .dataLimit(familySub.getDataLimit())
                 .priority(familySub.getPriority())
                 .blockPolicyResponseList(policySubs.stream()
