@@ -10,13 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
-import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.member.domain.FamilyRole;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -37,8 +35,8 @@ public class FamilySubscriptionController {
             @AuthenticationPrincipal PrincipalDetails principal) {
 
         UpdateDataLimitResponse response = updateDataLimitService.updateDataLimit(
-                request, 
-                principal.getFamilyId(), 
+                request,
+                principal.getFamilyId(),
                 principal.getRole()
         );
         return ResponseEntity.ok(ApiResponse.success(response));

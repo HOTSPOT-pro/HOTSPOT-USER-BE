@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
-import hotspot.user.family.controller.UpdateDataLimitService;
+import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
 import hotspot.user.family.domain.FamilySubscription;
@@ -22,7 +22,9 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
     private final FamilySubscriptionRepository familySubscriptionRepository;
 
     @Override
-    public UpdateDataLimitResponse updateDataLimit(UpdateDataLimitRequest request, Long requesterFamilyId, FamilyRole requesterRole) {
+    public UpdateDataLimitResponse updateDataLimit(UpdateDataLimitRequest request,
+                                                   Long requesterFamilyId,
+                                                   FamilyRole requesterRole) {
         // 1. OWNER 권한 체크
         if (requesterRole != FamilyRole.OWNER) {
             throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);

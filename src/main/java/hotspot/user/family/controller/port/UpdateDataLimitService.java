@@ -8,5 +8,7 @@ import hotspot.user.member.domain.FamilyRole;
  * 특정 구성원의 데이터 한도 업데이트
  */
 public interface UpdateDataLimitService {
-    UpdateDataLimitResponse updateDataLimit(UpdateDataLimitRequest request, Long requesterFamilyId, FamilyRole requesterRole);
+    UpdateDataLimitResponse updateDataLimit(UpdateDataLimitRequest request,
+                                            Long requesterFamilyId,
+                                            FamilyRole requesterRole);
 }
