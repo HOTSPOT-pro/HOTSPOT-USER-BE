@@ -1,6 +1,5 @@
 package hotspot.user.policy.controller.response;
 
-import hotspot.user.policy.domain.AppBlockedService;
 import lombok.Builder;
 
 /**
@@ -12,12 +11,4 @@ public record AppBlockedServiceResponse(
         String name,
         String serviceCode // 카테고리 표시 때문에 필요할 듯
 ) {
-
-    public static AppBlockedServiceResponse from(AppBlockedService appBlockedService) {
-        return AppBlockedServiceResponse.builder()
-                .id(appBlockedService.getId())
-                .name(appBlockedService.getName())
-                .serviceCode(appBlockedService.getServiceCode())
-                .build();
-    }
 }

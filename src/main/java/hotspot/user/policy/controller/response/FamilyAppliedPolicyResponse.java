@@ -2,7 +2,6 @@ package hotspot.user.policy.controller.response;
 
 import java.util.List;
 
-import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.PriorityType;
 import lombok.Builder;
 
@@ -17,16 +16,4 @@ public record FamilyAppliedPolicyResponse(
         PriorityType priorityType,
         List<AppliedPolicyResponse> memberPolicies
 ) {
-    /**
-     * Family 도메인과 조립된 memberPolicies 리스트를 사용하여 DTO를 생성한다.
-     */
-    public static FamilyAppliedPolicyResponse from(Family family, List<AppliedPolicyResponse> memberPolicies) {
-        return FamilyAppliedPolicyResponse.builder()
-                .familyId(family.getId())
-                .familyNum(family.getFamilyNum())
-                .familyDataAmount(family.getFamilyDataAmount())
-                .priorityType(family.getPriorityType())
-                .memberPolicies(memberPolicies)
-                .build();
-    }
 }
