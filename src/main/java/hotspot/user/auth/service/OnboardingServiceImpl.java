@@ -45,9 +45,12 @@ public class OnboardingServiceImpl implements OnboardingService {
         // 2. 신규 승인 또는 기존 회원 통합 처리
         Member finalMember = handleMemberIntegration(subscription, pendingMember, socialAccount, request.birthDate());
 
-        // 3. 역할 조회 및 토큰 발급
-        FamilyRole familyRole = getFamilyRole(subscription.getId());
-        return issueTokenService.issue(finalMember, socialAccount.getEmail(), familyRole);
+        // 3. 가족 정보 조회 (Role 및 familyId)
+        FamilySubscription familySub = getFamilySubscription(subscription.getId());
+        
+        // 4. 토큰 발급 (가족 ID 포함)
+        return issueTokenService.issue(finalMember, socialAccount.getEmail(), 
+                familySub.getFamilyRole(), familySub.getFamily().getId());
     }
 
     // 전화번호로 회선을 조회 및 검증
@@ -111,10 +114,9 @@ public class OnboardingServiceImpl implements OnboardingService {
         return approvedMember;
     }
 
-    // 가족-회선 매핑에 할당된 familyRole 조회
-    private FamilyRole getFamilyRole(Long subId) {
+    // 가족-회선 매핑 정보 조회
+    private FamilySubscription getFamilySubscription(Long subId) {
         return familySubscriptionRepository.findBySubId(subId)
-                .map(FamilySubscription::getFamilyRole)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
     }
 }

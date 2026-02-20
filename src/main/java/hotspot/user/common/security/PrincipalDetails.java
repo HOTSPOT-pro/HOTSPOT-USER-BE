@@ -22,21 +22,24 @@ public class PrincipalDetails implements UserDetails, OidcUser {
 
     private final Long id;
     private final String email;
+    private final Long familyId; // 가족 ID 추가
     private final FamilyRole role;
     private final Status status;
     private final Map<String, Object> attributes;
 
-    public PrincipalDetails(Long id, String email, FamilyRole role, Status status) {
+    public PrincipalDetails(Long id, String email, Long familyId, FamilyRole role, Status status) {
         this.id = id;
         this.email = email;
+        this.familyId = familyId;
         this.role = role;
         this.status = status;
         this.attributes = null;
     }
 
-    public PrincipalDetails(Long id, String email, FamilyRole role, Status status, Map<String, Object> attributes) {
+    public PrincipalDetails(Long id, String email, Long familyId, FamilyRole role, Status status, Map<String, Object> attributes) {
         this.id = id;
         this.email = email;
+        this.familyId = familyId;
         this.role = role;
         this.status = status;
         this.attributes = attributes;

@@ -49,8 +49,9 @@ public class SocialLoginServiceImpl implements SocialLoginService {
             Member member = memberRepository.findById(socialAccount.getMemberId())
                     .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-            // FamilyRole 조회 (기존 회원)
+            // FamilyRole 및 FamilyId 조회 (기존 회원)
             FamilyRole familyRole = FamilyRole.CHILD; // 기본값
+            Long familyId = null;
             Optional<Subscription> subscriptionOptional =
                     subscriptionRepository.findByMemberId(member.getId());
 
@@ -59,10 +60,11 @@ public class SocialLoginServiceImpl implements SocialLoginService {
                         familySubscriptionRepository.findBySubId(subscriptionOptional.get().getId());
                 if (familySubscriptionOptional.isPresent()) {
                     familyRole = familySubscriptionOptional.get().getFamilyRole();
+                    familyId = familySubscriptionOptional.get().getFamily().getId();
                 }
             }
 
-            return LoginResponseMapper.from(member, socialAccount, familyRole);
+            return LoginResponseMapper.from(member, socialAccount, familyRole, familyId);
         }
 
         // 3. 소셜 계정이 없으면 신규 회원 가입 진행

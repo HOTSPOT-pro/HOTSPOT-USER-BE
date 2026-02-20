@@ -8,5 +8,5 @@ import hotspot.user.member.domain.Member;
  * 토큰 발급 및 로그인을 처리하는 서비스
  */
 public interface IssueTokenService {
-    TokenResponse issue(Member member, String email, FamilyRole familyRole);
+    TokenResponse issue(Member member, String email, FamilyRole familyRole, Long familyId);
 }
