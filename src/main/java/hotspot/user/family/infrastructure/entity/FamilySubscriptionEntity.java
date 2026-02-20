@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
+import hotspot.user.common.constant.FamilyConstant;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
@@ -56,7 +57,7 @@ public class FamilySubscriptionEntity {
 
     @Column(nullable = false)
     @Builder.Default
-    private int dataLimit = -1;
+    private int dataLimit = FamilyConstant.UNLIMITED_DATA_LIMIT;
 
     public static FamilySubscriptionEntity domainToEntity(FamilySubscription familySubscription) {
         return FamilySubscriptionEntity.builder()

@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.common.constant.FamilyConstant;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
@@ -50,6 +51,7 @@ class UpdateDataLimitServiceImplTest {
 
         FamilySubscription familySub = createFamilySubscription(familyId, subId, 1000);
         given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
+        given(familySubscriptionRepository.save(any(FamilySubscription.class))).willReturn(familySub);
 
         // when
         UpdateDataLimitResponse response = updateDataLimitService.updateDataLimit(request, familyId, FamilyRole.OWNER);
@@ -57,7 +59,6 @@ class UpdateDataLimitServiceImplTest {
         // then
         assertThat(response.subId()).isEqualTo(subId);
         assertThat(response.dataLimit()).isEqualTo(newDataLimit);
-        assertThat(familySub.getDataLimit()).isEqualTo(newDataLimit);
         verify(familySubscriptionRepository, times(1)).save(any(FamilySubscription.class));
     }
 
@@ -105,10 +106,26 @@ class UpdateDataLimitServiceImplTest {
     }
 
     @Test
-    @DisplayName("실패: 데이터 한도를 -1보다 작은 값으로 수정하려 하면 예외가 발생한다")
+    @DisplayName("성공: 데이터 한도를 무제한(UNLIMITED_DATA_LIMIT)으로 업데이트할 수 있다")
+    void updateDataLimitToUnlimited() {
+        // given
+        UpdateDataLimitRequest request = new UpdateDataLimitRequest(1L, 100L, FamilyConstant.UNLIMITED_DATA_LIMIT);
+        FamilySubscription familySub = createFamilySubscription(1L, 100L, 1000);
+        given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySub));
+        given(familySubscriptionRepository.save(any(FamilySubscription.class))).willReturn(familySub);
+
+        // when
+        UpdateDataLimitResponse response = updateDataLimitService.updateDataLimit(request, 1L, FamilyRole.OWNER);
+
+        // then
+        assertThat(response.dataLimit()).isEqualTo(FamilyConstant.UNLIMITED_DATA_LIMIT);
+    }
+
+    @Test
+    @DisplayName("실패: 데이터 한도를 무제한보다 작은 값으로 수정하려 하면 예외가 발생한다")
     void updateDataLimitFailInvalidValue() {
         // given
-        UpdateDataLimitRequest request = new UpdateDataLimitRequest(1L, 100L, -5);
+        UpdateDataLimitRequest request = new UpdateDataLimitRequest(1L, 100L, FamilyConstant.UNLIMITED_DATA_LIMIT - 1);
         FamilySubscription familySub = createFamilySubscription(1L, 100L, 1000);
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySub));
 

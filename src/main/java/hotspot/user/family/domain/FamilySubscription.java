@@ -1,5 +1,6 @@
 package hotspot.user.family.domain;
 
+import hotspot.user.common.constant.FamilyConstant;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.member.domain.FamilyRole;
@@ -24,7 +25,7 @@ public class FamilySubscription {
 
     // 데이터 한도 업데이트
     public void updateDataLimit(int dataLimit) {
-        if (dataLimit < -1) {
+        if (dataLimit < FamilyConstant.UNLIMITED_DATA_LIMIT) {
             throw new ApplicationException(
                 FamilyErrorCode.INVALID_DATA_LIMIT
             );
