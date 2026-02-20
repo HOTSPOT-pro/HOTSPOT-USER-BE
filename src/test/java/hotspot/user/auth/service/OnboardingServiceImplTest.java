@@ -90,6 +90,8 @@ class OnboardingServiceImplTest {
 
         // then
         assertThat(response.accessToken()).isEqualTo("at");
+        verify(memberRepository).save(any(Member.class));
+        verify(subscriptionRepository).save(any(Subscription.class));
         verify(issueTokenService).issue(any(Member.class), anyString(), any(FamilyRole.class), anyLong());
     }
 
@@ -129,6 +131,7 @@ class OnboardingServiceImplTest {
 
         // then
         assertThat(response.accessToken()).isEqualTo("at");
+        verify(socialAccountRepository).save(any(SocialAccount.class));
         verify(memberRepository).delete(pendingMember);
         verify(issueTokenService).issue(any(Member.class), anyString(), any(FamilyRole.class), anyLong());
     }
