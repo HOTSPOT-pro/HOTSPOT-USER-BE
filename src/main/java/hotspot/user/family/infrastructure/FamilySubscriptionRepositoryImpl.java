@@ -1,5 +1,6 @@
 package hotspot.user.family.infrastructure;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,19 @@ public class FamilySubscriptionRepositoryImpl implements FamilySubscriptionRepos
     @Override
     public Optional<FamilySubscription> findBySubId(Long subId) {
         return jpaRepository.findBySubscriptionSubId(subId)
+                .map(FamilySubscriptionEntity::entityToDomain);
+    }
+
+    @Override
+    public List<FamilySubscription> findByFamilyId(Long familyId) {
+        return jpaRepository.findByFamilyFamilyId(familyId).stream()
+                .map(FamilySubscriptionEntity::entityToDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<FamilySubscription> findByMemberId(Long memberId) {
+        return jpaRepository.findBySubscriptionMemberId(memberId)
                 .map(FamilySubscriptionEntity::entityToDomain);
     }
 }

@@ -14,24 +14,26 @@ public class LoginResponseMapper {
     /**
      * 신규 회원 가입 시 LoginResponse 생성
      */
-    public static LoginResponse from(Member member, CreateSocialAccountRequest request) {
+    public static LoginResponse from(Member member, CreateSocialAccountRequest request, Long familyId) {
         return new LoginResponse(
                 member.getId(),
                 request.email(),
                 member.getStatus(),
-                FamilyRole.CHILD // 신규 회원의 기본 역할
+                FamilyRole.CHILD, // 신규 회원의 기본 역할
+                familyId
         );
     }
 
     /**
      * 기존 회원 로그인 시 LoginResponse 생성
      */
-    public static LoginResponse from(Member member, SocialAccount socialAccount, FamilyRole familyRole) {
+    public static LoginResponse from(Member member, SocialAccount socialAccount, FamilyRole familyRole, Long familyId) {
         return new LoginResponse(
                 member.getId(),
                 socialAccount.getEmail(),
                 member.getStatus(),
-                familyRole
+                familyRole,
+                familyId
         );
     }
 }

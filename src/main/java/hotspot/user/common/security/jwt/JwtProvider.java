@@ -41,6 +41,7 @@ public class JwtProvider {
     private static final String TYPE_CLAIM = "type";
     private static final String ROLE_CLAIM = "role";
     private static final String STATUS_CLAIM = "status";
+    private static final String FAMILY_ID_CLAIM = "familyId";
     private static final String ACCESS_TOKEN_TYPE = "ACCESS";
     private static final String REFRESH_TOKEN_TYPE = "REFRESH";
 
@@ -73,6 +74,7 @@ public class JwtProvider {
                 .claim(TYPE_CLAIM, type) // 토큰 타입 명시
                 .claim(ROLE_CLAIM, principal.getRole().name()) // 모든 토큰에 권한 정보 포함 (재발급 시 필요)
                 .claim(STATUS_CLAIM, principal.getStatus().name())
+                .claim(FAMILY_ID_CLAIM, principal.getFamilyId())
                 .subject(authentication.getName())
                 .issuedAt(now)
                 .expiration(expiredDate)
@@ -113,14 +115,15 @@ public class JwtProvider {
         Long memberId = claims.get("memberId", Long.class);
         String roleStr = claims.get(ROLE_CLAIM, String.class);
         String statusStr = claims.get(STATUS_CLAIM, String.class);
+        Long familyId = claims.get(FAMILY_ID_CLAIM, Long.class);
 
         // 2. 권한 정보 검증 (기본값 제거)
         if (roleStr == null || statusStr == null) {
             throw new MalformedJwtException("필수 권한 정보가 없는 토큰입니다.");
         }
 
-        PrincipalDetails principal = new PrincipalDetails(memberId, email, FamilyRole.valueOf(roleStr),
-            Status.valueOf(statusStr));
+        PrincipalDetails principal = new PrincipalDetails(memberId, email, familyId,
+            FamilyRole.valueOf(roleStr), Status.valueOf(statusStr));
 
         return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
     }

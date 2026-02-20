@@ -65,7 +65,8 @@ class CustomOidcUserServiceTest {
             1L,
             "test@google.com",
             Status.PENDING,
-            FamilyRole.CHILD
+            FamilyRole.CHILD,
+            100L
         );
         when(socialLoginService.login(any(CreateSocialAccountRequest.class))).thenReturn(loginResult);
 
@@ -79,5 +80,6 @@ class CustomOidcUserServiceTest {
         assertThat(principalDetails.getEmail()).isEqualTo(loginResult.email());
         assertThat(principalDetails.getStatus()).isEqualTo(loginResult.status());
         assertThat(principalDetails.getRole()).isEqualTo(loginResult.familyRole());
+        assertThat(principalDetails.getFamilyId()).isEqualTo(100L);
     }
 }

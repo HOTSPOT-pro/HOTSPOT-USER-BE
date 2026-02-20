@@ -49,7 +49,8 @@ class ReissueTokenServiceImplTest {
         TokenRequest request = new TokenRequest(oldRefreshToken);
         Long memberId = 1L;
 
-        PrincipalDetails principal = new PrincipalDetails(memberId, "test@test.com", FamilyRole.CHILD, Status.APPROVED);
+        PrincipalDetails principal = new PrincipalDetails(memberId, "test@test.com", 100L,
+                FamilyRole.CHILD, Status.APPROVED);
         Token savedToken = Token.builder()
                 .memberId(memberId)
                 .refreshToken(oldRefreshToken)
@@ -95,7 +96,8 @@ class ReissueTokenServiceImplTest {
         TokenRequest request = new TokenRequest(refreshToken);
         Long memberId = 1L;
 
-        PrincipalDetails principal = new PrincipalDetails(memberId, "test@test.com", FamilyRole.CHILD, Status.APPROVED);
+        PrincipalDetails principal = new PrincipalDetails(memberId, "test@test.com", 100L,
+                FamilyRole.CHILD, Status.APPROVED);
         Token savedToken = Token.builder()
                 .memberId(memberId)
                 .refreshToken("different-token")

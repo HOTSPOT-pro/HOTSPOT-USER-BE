@@ -39,6 +39,6 @@ public class RegisterSocialMemberServiceImpl implements RegisterSocialMemberServ
         socialAccountRepository.save(socialAccount);
 
         // 4. LoginResponseMapper를 사용하여 DTO 반환
-        return LoginResponseMapper.from(member, request);
+        return LoginResponseMapper.from(member, request, null);
     }
 }

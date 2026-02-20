@@ -3,6 +3,7 @@ package hotspot.user.family.infrastructure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -61,5 +62,53 @@ class FamilySubscriptionRepositoryImplTest {
         // then
         assertThat(result).isPresent();
         assertThat(result.get().getFamilyRole()).isEqualTo(FamilyRole.CHILD);
+    }
+
+    @Test
+    @DisplayName("가족 ID로 소속된 모든 구성원 정보 조회 성공")
+    void findByFamilyIdSuccess() {
+        // given
+        Long familyId = 1L;
+        FamilySubscriptionEntity entity = FamilySubscriptionEntity.builder()
+                .familySubId(1L)
+                .subscription(SubscriptionEntity.builder().subId(100L)
+                        .member(MemberEntity.builder().id(1L).build())
+                        .plan(PlanEntity.builder().planId(1L).build())
+                        .build())
+                .family(FamilyEntity.builder().familyId(familyId).build())
+                .familyRole(FamilyRole.CHILD)
+                .build();
+
+        given(familySubscriptionJpaRepository.findByFamilyFamilyId(familyId)).willReturn(List.of(entity));
+
+        // when
+        List<FamilySubscription> result = familySubscriptionRepository.findByFamilyId(familyId);
+
+        // then
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("멤버 ID로 소속된 가족 매핑 정보 조회 성공")
+    void findByMemberIdSuccess() {
+        // given
+        Long memberId = 1L;
+        FamilySubscriptionEntity entity = FamilySubscriptionEntity.builder()
+                .familySubId(1L)
+                .subscription(SubscriptionEntity.builder().subId(100L)
+                        .member(MemberEntity.builder().id(memberId).build())
+                        .plan(PlanEntity.builder().planId(1L).build())
+                        .build())
+                .family(FamilyEntity.builder().familyId(1L).build())
+                .familyRole(FamilyRole.CHILD)
+                .build();
+
+        given(familySubscriptionJpaRepository.findBySubscriptionMemberId(memberId)).willReturn(Optional.of(entity));
+
+        // when
+        Optional<FamilySubscription> result = familySubscriptionRepository.findByMemberId(memberId);
+
+        // then
+        assertThat(result).isPresent();
     }
 }

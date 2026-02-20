@@ -85,12 +85,13 @@ public class CustomOidcUserService extends OidcUserService {
 
         log.info("[OIDC] 로그인 성공: provider={}, email={}", request.provider(), request.email());
 
-        return new PrincipalDetails(
-            loginResult.memberId(),
-            loginResult.email(),
-            loginResult.familyRole(),
-            loginResult.status(),
-            claims
-        );
+        return PrincipalDetails.builder()
+            .id(loginResult.memberId())
+            .email(loginResult.email())
+            .familyId(loginResult.familyId())
+            .role(loginResult.familyRole())
+            .status(loginResult.status())
+            .attributes(claims)
+            .build();
     }
 }

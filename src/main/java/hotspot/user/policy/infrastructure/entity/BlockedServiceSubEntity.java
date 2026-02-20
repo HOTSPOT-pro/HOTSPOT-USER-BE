@@ -14,6 +14,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import hotspot.user.common.BaseEntity;
+import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -40,13 +41,21 @@ public class BlockedServiceSubEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sub_id")
-    private SubscriptionEntity subscriptionEntity;
+    private SubscriptionEntity subscription;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blocked_service_id")
-    private AppBlockedServiceEntity appBlockedServiceEntity;
+    private AppBlockedServiceEntity appBlockedService;
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
     private Boolean isDeleted = false;
+
+    public BlockedServiceSub entityToDomain() {
+        return BlockedServiceSub.builder()
+                .id(this.blockedServiceSubId)
+                .subscription(this.subscription.entityToDomain())
+                .appBlockedService(this.appBlockedService.entityToDomain())
+                .build();
+    }
 }

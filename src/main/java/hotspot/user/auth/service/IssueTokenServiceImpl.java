@@ -28,11 +28,12 @@ public class IssueTokenServiceImpl implements IssueTokenService {
     private final SaveTokenService saveTokenService;
 
     @Override
-    public TokenResponse issue(Member member, String email, FamilyRole familyRole) {
-        // 인증 객체 생성
+    public TokenResponse issue(Member member, String email, FamilyRole familyRole, Long familyId) {
+        // 인증 객체 생성 (빌더 패턴 사용)
         PrincipalDetails principal = PrincipalDetails.builder()
                 .id(member.getId())
                 .email(email)
+                .familyId(familyId)
                 .role(familyRole)
                 .status(member.getStatus())
                 .build();
