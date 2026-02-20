@@ -19,4 +19,9 @@ public class FamilySubscription {
     private FamilyRole familyRole;
     private int priority;
     private int dataLimit;
+
+    // 데이터 한도 업데이트
+    public void updateDataLimit(int dataLimit) {
+        this.dataLimit = dataLimit;
+    }
 }
