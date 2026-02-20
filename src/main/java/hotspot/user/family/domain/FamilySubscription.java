@@ -1,5 +1,7 @@
 package hotspot.user.family.domain;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.subscription.domain.Subscription;
 import lombok.AllArgsConstructor;
@@ -22,6 +24,11 @@ public class FamilySubscription {
 
     // 데이터 한도 업데이트
     public void updateDataLimit(int dataLimit) {
+        if (dataLimit < -1) {
+            throw new ApplicationException(
+                FamilyErrorCode.INVALID_DATA_LIMIT
+            );
+        }
         this.dataLimit = dataLimit;
     }
 }
