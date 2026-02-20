@@ -36,7 +36,8 @@ public class PrincipalDetails implements UserDetails, OidcUser {
         this.attributes = null;
     }
 
-    public PrincipalDetails(Long id, String email, Long familyId, FamilyRole role, Status status, Map<String, Object> attributes) {
+    public PrincipalDetails(Long id, String email, Long familyId, FamilyRole role, Status status,
+                            Map<String, Object> attributes) {
         this.id = id;
         this.email = email;
         this.familyId = familyId;

@@ -122,7 +122,7 @@ public class JwtProvider {
             throw new MalformedJwtException("필수 권한 정보가 없는 토큰입니다.");
         }
 
-        PrincipalDetails principal = new PrincipalDetails(memberId, email, familyId, 
+        PrincipalDetails principal = new PrincipalDetails(memberId, email, familyId,
             FamilyRole.valueOf(roleStr), Status.valueOf(statusStr));
 
         return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
