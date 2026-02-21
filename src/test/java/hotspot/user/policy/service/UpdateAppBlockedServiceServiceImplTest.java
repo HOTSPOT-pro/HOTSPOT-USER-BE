@@ -27,11 +27,9 @@ import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
+import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
 
-/**
- * 구성원별 앱 차단 서비스 업데이트 서비스 단위 테스트
- */
 @ExtendWith(MockitoExtension.class)
 class UpdateAppBlockedServiceServiceImplTest {
 
@@ -40,6 +38,9 @@ class UpdateAppBlockedServiceServiceImplTest {
 
     @Mock
     private FamilySubscriptionRepository familySubscriptionRepository;
+
+    @Mock
+    private AppBlockedServiceRepository appBlockedServiceRepository;
 
     @InjectMocks
     private UpdateAppBlockedServiceServiceImpl service;
@@ -58,6 +59,7 @@ class UpdateAppBlockedServiceServiceImplTest {
                 .build();
 
         given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
+        given(appBlockedServiceRepository.countByIdIn(anySet())).willReturn(2L); // 2개 요청 -> 2개 유효
         given(blockedServiceSubRepository.findActiveServiceIdsBySubId(subId)).willReturn(List.of(1L, 2L));
 
         // when
@@ -68,6 +70,27 @@ class UpdateAppBlockedServiceServiceImplTest {
         assertThat(response.subId()).isEqualTo(subId);
         verify(blockedServiceSubRepository, times(1)).saveAll(anyLong(), anySet());
         verify(blockedServiceSubRepository, times(1)).deleteAll(anyLong(), anySet());
+    }
+
+    @Test
+    @DisplayName("실패: 요청된 앱 ID 중 일부가 존재하지 않으면 예외가 발생한다")
+    void updateAppBlockedServiceFailInvalidAppId() {
+        // given
+        Long familyId = 1L;
+        Long subId = 100L;
+        UpdateAppBlockedServiceRequest request = new UpdateAppBlockedServiceRequest(familyId, subId, List.of(999L));
+
+        FamilySubscription familySub = FamilySubscription.builder()
+                .family(Family.builder().id(familyId).build())
+                .build();
+
+        given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
+        given(appBlockedServiceRepository.countByIdIn(anySet())).willReturn(0L); // 1개 요청 -> 0개 유효
+
+        // when & then
+        assertThatThrownBy(() -> service.updateAppBlockedService(request, 1L, FamilyRole.OWNER))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(FamilyErrorCode.BLOCKED_SERVICE_NOT_FOUND.getMessage());
     }
 
     @Test
