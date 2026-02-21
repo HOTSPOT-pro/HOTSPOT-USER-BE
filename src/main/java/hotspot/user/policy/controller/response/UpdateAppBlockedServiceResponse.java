@@ -1,5 +1,7 @@
 package hotspot.user.policy.controller.response;
 
+import lombok.Builder;
+
 import java.util.List;
 
 /**
@@ -8,6 +10,8 @@ import java.util.List;
  * @param subId
  * @param blockedServiceIdList
  */
+
+@Builder
 public record UpdateAppBlockedServiceResponse(
         Long familyId,
         Long subId,
