@@ -17,6 +17,7 @@ import hotspot.user.policy.controller.port.UpdateAppBlockedServiceService;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
 import hotspot.user.policy.domain.mapper.AppBlockedServiceMapper;
+import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,7 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
 
     private final BlockedServiceSubRepository blockedServiceSubRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
+    private final AppBlockedServiceRepository appBlockedServiceRepository;
 
     @Override
     public UpdateAppBlockedServiceResponse updateAppBlockedService(
@@ -52,11 +54,17 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
             throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
         }
 
-        // 3. 기존 DB 상태 조회 (현재 차단된 ID들만 직접 조회하여 NPE 방지)
-        Set<Long> existingIds = new HashSet<>(blockedServiceSubRepository.findActiveServiceIdsBySubId(subId));
-
-        // 4. 차단되어야할 앱 서비스 ID (목표 상태)
+        // 3. 요청된 앱 ID들이 모두 유효한지 확인 (마스터 데이터 존재 여부)
         Set<Long> targetIds = new HashSet<>(request.blockedServiceIdList());
+        if (!targetIds.isEmpty()) {
+            long validCount = appBlockedServiceRepository.countByIdIn(targetIds);
+            if (validCount != targetIds.size()) {
+                throw new ApplicationException(FamilyErrorCode.BLOCKED_SERVICE_NOT_FOUND);
+            }
+        }
+
+        // 4. 기존 DB 상태 조회 (현재 차단된 ID들만 직접 조회하여 NPE 방지)
+        Set<Long> existingIds = new HashSet<>(blockedServiceSubRepository.findActiveServiceIdsBySubId(subId));
 
         // 5. 차집합 계산
         // (1) 새로 추가해야 할 ID들 (목표 리스트 - 기존 리스트)

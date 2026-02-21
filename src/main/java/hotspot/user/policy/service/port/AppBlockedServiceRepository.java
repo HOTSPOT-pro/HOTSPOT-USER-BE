@@ -1,6 +1,7 @@
 package hotspot.user.policy.service.port;
 
 import java.util.List;
+import java.util.Set;
 
 import hotspot.user.policy.domain.AppBlockedService;
 
@@ -9,4 +10,5 @@ import hotspot.user.policy.domain.AppBlockedService;
  */
 public interface AppBlockedServiceRepository {
     List<AppBlockedService> findAll();
+    long countByIdIn(Set<Long> ids);
 }

@@ -1,6 +1,7 @@
 package hotspot.user.policy.infrastructure;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 
@@ -19,5 +20,10 @@ public class AppBlockedServiceRepositoryImpl implements AppBlockedServiceReposit
         return appBlockedServiceJpaRepository.findAll().stream()
                 .map(AppBlockedServiceEntity::entityToDomain)
                 .toList();
+    }
+
+    @Override
+    public long countByIdIn(Set<Long> ids) {
+        return appBlockedServiceJpaRepository.countByAppBlockedServiceIdIn(ids);
     }
 }
