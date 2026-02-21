@@ -3,7 +3,7 @@ package hotspot.user.family.controller.response;
 import lombok.Builder;
 
 /**
- * 구성원 데이터 한도 업데이트 request dto
+ * 구성원 데이터 한도 업데이트 response dto
  * @param familyId
  * @param subId
  * @param dataLimit
