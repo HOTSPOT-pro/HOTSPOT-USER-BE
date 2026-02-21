@@ -1,8 +1,13 @@
 package hotspot.user.policy.domain.mapper;
 
 import hotspot.user.policy.controller.response.AppBlockedServiceResponse;
+import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
 import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.domain.BlockedServiceSub;
+
+import java.util.List;
+
+import static io.lettuce.core.KillArgs.Builder.id;
 
 /**
  * request -> 도메인
@@ -27,6 +32,15 @@ public class AppBlockedServiceMapper {
                 .id(blockedSub.getAppBlockedService().getId())
                 .name(blockedSub.getAppBlockedService().getName())
                 .serviceCode(blockedSub.getAppBlockedService().getServiceCode())
+                .build();
+    }
+
+    // 앱 차단 서비스 업데이트 response dto로 변환
+    public static UpdateAppBlockedServiceResponse toUpdateAppBlockedServiceResponse(Long familyId, Long subId, List<Long> blockedServiceIdList) {
+        return UpdateAppBlockedServiceResponse.builder()
+                .familyId(familyId)
+                .subId(subId)
+                .blockedServiceIdList(blockedServiceIdList)
                 .build();
     }
 }
