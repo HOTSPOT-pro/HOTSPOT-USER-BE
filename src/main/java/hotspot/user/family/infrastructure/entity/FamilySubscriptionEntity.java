@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
+import hotspot.user.common.constant.FamilyConstant;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
@@ -56,13 +57,19 @@ public class FamilySubscriptionEntity {
 
     @Column(nullable = false)
     @Builder.Default
-    private int dataLimit = -1;
+    private int dataLimit = FamilyConstant.UNLIMITED_DATA_LIMIT;
 
     public static FamilySubscriptionEntity domainToEntity(FamilySubscription familySubscription) {
         return FamilySubscriptionEntity.builder()
                 .familySubId(familySubscription.getId())
-                .family(FamilyEntity.domainToEntity(familySubscription.getFamily()))
-                .subscription(SubscriptionEntity.domainToEntity(familySubscription.getSubscription()))
+                // 데이터 중복 INSERT 및 불필요한 UPDATE 방지 위해 새로운 객체를 생성 (family 테이블은 건드리지 않음)
+                .family(FamilyEntity.builder()
+                        .familyId(familySubscription.getFamily().getId())
+                        .build())
+                // 데이터 중복 INSERT 및 불필요한 UPDATE 방지 위해 새로운 객체를 생성 (subscription 테이블은 건드리지 않음)
+                .subscription(SubscriptionEntity.builder()
+                        .subId(familySubscription.getSubscription().getId())
+                        .build())
                 .familyRole(familySubscription.getFamilyRole())
                 .priority(familySubscription.getPriority())
                 .dataLimit(familySubscription.getDataLimit())

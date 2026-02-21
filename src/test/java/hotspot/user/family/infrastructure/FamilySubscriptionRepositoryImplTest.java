@@ -13,12 +13,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.infrastructure.entity.FamilyEntity;
 import hotspot.user.family.infrastructure.entity.FamilySubscriptionEntity;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.infrastructure.entity.MemberEntity;
 import hotspot.user.plan.infrastructure.entity.PlanEntity;
+import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 
 /**
@@ -110,5 +112,59 @@ class FamilySubscriptionRepositoryImplTest {
 
         // then
         assertThat(result).isPresent();
+    }
+
+    @Test
+    @DisplayName("가족 결합 정보를 저장할 수 있다")
+    void saveSuccess() {
+        // given
+        Subscription subscription = Subscription.builder()
+                .id(100L)
+                .build();
+
+        Family family = Family.builder()
+                .id(1L)
+                .build();
+
+        FamilySubscription domain = FamilySubscription.builder()
+                .subscription(subscription)
+                .family(family)
+                .familyRole(FamilyRole.CHILD)
+                .priority(-1)
+                .dataLimit(500)
+                .build();
+
+        // entityToDomain 변환 시 필요한 연관 엔티티들 모킹
+        SubscriptionEntity subEntity = SubscriptionEntity.builder()
+                .subId(100L)
+                .member(MemberEntity.builder().id(1L).build())
+                .plan(PlanEntity.builder().planId(1L).build())
+                .phoneEnc("enc")
+                .phoneHash("hash")
+                .build();
+
+        FamilyEntity familyEntity = FamilyEntity.builder()
+                .familyId(1L)
+                .build();
+
+        FamilySubscriptionEntity entity = FamilySubscriptionEntity.builder()
+                .familySubId(1L)
+                .subscription(subEntity)
+                .family(familyEntity)
+                .familyRole(FamilyRole.CHILD)
+                .dataLimit(500)
+                .build();
+
+        org.mockito.BDDMockito.given(familySubscriptionJpaRepository.save(
+                org.mockito.ArgumentMatchers.any(FamilySubscriptionEntity.class))).willReturn(entity);
+
+        // when
+        FamilySubscription result = familySubscriptionRepository.save(domain);
+
+        // then
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getDataLimit()).isEqualTo(500);
+        org.mockito.Mockito.verify(familySubscriptionJpaRepository).save(
+                org.mockito.ArgumentMatchers.any(FamilySubscriptionEntity.class));
     }
 }

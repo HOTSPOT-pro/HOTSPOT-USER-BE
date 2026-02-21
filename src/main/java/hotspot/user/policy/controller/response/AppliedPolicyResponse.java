@@ -11,6 +11,7 @@ import lombok.Builder;
 public record AppliedPolicyResponse(
         Long memberId,
         String memberName,
+        Long subId,
         int dataLimit, // 개인별 한도
         int priority, // 구성원 내 우선 순위
         List<BlockPolicyResponse> blockPolicyResponseList,

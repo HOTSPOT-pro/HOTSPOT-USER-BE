@@ -34,4 +34,11 @@ public class FamilySubscriptionRepositoryImpl implements FamilySubscriptionRepos
         return jpaRepository.findBySubscriptionMemberId(memberId)
                 .map(FamilySubscriptionEntity::entityToDomain);
     }
+
+    @Override
+    public FamilySubscription save(FamilySubscription familySubscription) {
+        FamilySubscriptionEntity entity = FamilySubscriptionEntity.domainToEntity(familySubscription);
+        FamilySubscriptionEntity savedEntity = jpaRepository.save(entity);
+        return savedEntity.entityToDomain();
+    }
 }
