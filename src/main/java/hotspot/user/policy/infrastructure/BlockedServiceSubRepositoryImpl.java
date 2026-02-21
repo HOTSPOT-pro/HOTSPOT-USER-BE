@@ -41,9 +41,9 @@ public class BlockedServiceSubRepositoryImpl implements BlockedServiceSubReposit
         }
 
         // 1. 복구할 수 있는 기존 데이터(삭제상태 포함)를 한 번에 조회
-        List<BlockedServiceSubEntity> existingEntities = 
+        List<BlockedServiceSubEntity> existingEntities =
                 jpaRepository.findBySubIdAndServiceIdsIncludeDeleted(subId, serviceIds);
-        
+
         Map<Long, BlockedServiceSubEntity> existingMap = existingEntities.stream()
                 .collect(Collectors.toMap(
                         e -> e.getAppBlockedService().getAppBlockedServiceId(),

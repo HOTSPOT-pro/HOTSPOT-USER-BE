@@ -9,7 +9,7 @@ import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
  */
 public interface UpdateAppBlockedServiceService {
     UpdateAppBlockedServiceResponse updateAppBlockedService(
-            UpdateAppBlockedServiceRequest request, 
-            Long requesterFamilyId, 
+            UpdateAppBlockedServiceRequest request,
+            Long requesterFamilyId,
             FamilyRole requesterRole);
 }
