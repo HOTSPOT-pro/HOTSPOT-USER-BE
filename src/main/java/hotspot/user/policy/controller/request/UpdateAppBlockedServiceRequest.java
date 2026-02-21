@@ -1,5 +1,7 @@
 package hotspot.user.policy.controller.request;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 
 /**
@@ -9,8 +11,8 @@ import java.util.List;
  * @param blockedServiceIdList
  */
 public record UpdateAppBlockedServiceRequest(
-        Long familyId,
-        Long subId,
-        List<Long> blockedServiceIdList
+        @NotNull Long familyId,
+        @NotNull Long subId,
+        @NotNull List<Long> blockedServiceIdList
 ) {
 }
