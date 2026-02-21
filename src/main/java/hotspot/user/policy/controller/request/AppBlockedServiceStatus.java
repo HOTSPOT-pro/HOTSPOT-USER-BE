@@ -1,14 +1,12 @@
 package hotspot.user.policy.controller.request;
 
-import java.util.Set;
-
 /**
  * 앱 서비스 차단 상태 dto
  * @param blockedServiceId
  * @param isBlocked
  */
 
-public record BlockedServiceStatus(
+public record AppBlockedServiceStatus(
         Long blockedServiceId,
         boolean isBlocked
 ) {

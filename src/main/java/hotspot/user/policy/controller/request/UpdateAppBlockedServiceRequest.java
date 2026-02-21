@@ -8,9 +8,9 @@ import java.util.List;
  * @param subId
  * @param blockedServiceStatusList
  */
-public record UpdateBlockServiceRequest(
+public record UpdateAppBlockedServiceRequest(
         Long familyId,
         Long subId,
-        List<BlockedServiceStatus> blockedServiceStatusList
+        List<AppBlockedServiceStatus> blockedServiceStatusList
 ) {
 }
