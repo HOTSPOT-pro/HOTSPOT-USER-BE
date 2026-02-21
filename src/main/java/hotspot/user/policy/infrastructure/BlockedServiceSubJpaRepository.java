@@ -24,8 +24,6 @@ public interface BlockedServiceSubJpaRepository extends JpaRepository<BlockedSer
             @Param("subId") Long subId, @Param("serviceIds") Set<Long> serviceIds);
 
 
-    // 여러 개의 서비스 차단을 한 번에 해제
-    // clearAutomatically = true => DB 직접 수정했으니 영속성 컨텍스트 비우라는 의미
     @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE BlockedServiceSubEntity b
@@ -34,4 +32,12 @@ public interface BlockedServiceSubJpaRepository extends JpaRepository<BlockedSer
             AND b.appBlockedService.appBlockedServiceId IN :serviceIds
             """)
     void bulkSoftDelete(@Param("subId") Long subId, @Param("serviceIds") Set<Long> serviceIds);
+
+    // 활성화된 차단 서비스 ID 리스트만 조회 (Entity mapping에 의한 NPE 방지)
+    @Query("""
+            SELECT b.appBlockedService.appBlockedServiceId
+            FROM BlockedServiceSubEntity b
+            WHERE b.subscription.subId = :subId
+            """)
+    List<Long> findActiveServiceIdsBySubId(@Param("subId") Long subId);
 }

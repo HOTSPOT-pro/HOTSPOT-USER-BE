@@ -29,10 +29,8 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
     public UpdateAppBlockedServiceResponse updateAppBlockedService(UpdateAppBlockedServiceRequest request) {
         Long subId = request.subId();
 
-        // 기존 DB 상태 조회 (현재 차단된 ID들)
-        Set<Long> existingIds = blockedServiceSubRepository.findBySubId(subId).stream()
-                .map(blocked -> blocked.getAppBlockedService().getId())
-                .collect(Collectors.toSet());
+        // 기존 DB 상태 조회 (현재 차단된 ID들만 직접 조회하여 NPE 방지)
+        Set<Long> existingIds = new HashSet<>(blockedServiceSubRepository.findActiveServiceIdsBySubId(subId));
 
         // 차단되어야할 앱 서비스 ID
         Set<Long> targetIds = new HashSet<>(request.blockedServiceIdList());
@@ -54,10 +52,8 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
             blockedServiceSubRepository.deleteAll(subId, toRemoveIds);
         }
 
-        // 5단계: 최종 동기화 결과 재조회 및 반환
-        List<Long> finalBlockedIdList = blockedServiceSubRepository.findBySubId(subId).stream()
-                .map(blocked -> blocked.getAppBlockedService().getId())
-                .toList();
+        // 최종 동기화 결과 재조회 및 반환 (ID 리스트만 직접 조회)
+        List<Long> finalBlockedIdList = blockedServiceSubRepository.findActiveServiceIdsBySubId(subId);
 
         return AppBlockedServiceMapper.toUpdateAppBlockedServiceResponse(
                 request.familyId(),

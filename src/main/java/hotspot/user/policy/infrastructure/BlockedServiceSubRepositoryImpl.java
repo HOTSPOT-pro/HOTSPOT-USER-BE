@@ -29,6 +29,11 @@ public class BlockedServiceSubRepositoryImpl implements BlockedServiceSubReposit
     }
 
     @Override
+    public List<Long> findActiveServiceIdsBySubId(Long subId) {
+        return jpaRepository.findActiveServiceIdsBySubId(subId);
+    }
+
+    @Override
     @Transactional
     public void saveAll(Long subId, Set<Long> serviceIds) {
         if (serviceIds.isEmpty()) {
