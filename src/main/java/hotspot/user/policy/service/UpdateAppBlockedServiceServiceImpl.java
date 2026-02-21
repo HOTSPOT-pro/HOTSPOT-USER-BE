@@ -79,7 +79,7 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
         List<Long> finalBlockedIdList = blockedServiceSubRepository.findActiveServiceIdsBySubId(subId);
 
         return AppBlockedServiceMapper.toUpdateAppBlockedServiceResponse(
-                request.familyId(),
+                familySub.getFamily().getId(),
                 subId,
                 finalBlockedIdList);
     }
