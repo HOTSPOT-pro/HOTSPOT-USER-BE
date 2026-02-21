@@ -1,6 +1,7 @@
 package hotspot.user.policy.service.port;
 
 import java.util.List;
+import java.util.Set;
 
 import hotspot.user.policy.domain.BlockedServiceSub;
 
@@ -9,4 +10,7 @@ import hotspot.user.policy.domain.BlockedServiceSub;
  */
 public interface BlockedServiceSubRepository {
     List<BlockedServiceSub> findBySubId(Long subId);
+    List<Long> findActiveServiceIdsBySubId(Long subId); // 활성화된 앱 차단 서비스 id만 리턴
+    void saveAll(Long subId, Set<Long> serviceIds);
+    void deleteAll(Long subId, Set<Long> serviceIds);
 }

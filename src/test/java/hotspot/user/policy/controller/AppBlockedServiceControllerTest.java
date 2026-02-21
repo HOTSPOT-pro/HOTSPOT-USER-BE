@@ -1,7 +1,10 @@
 package hotspot.user.policy.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,12 +18,22 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
+import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.member.domain.Status;
 import hotspot.user.policy.controller.port.FindAppBlockedService;
+import hotspot.user.policy.controller.port.UpdateAppBlockedServiceService;
+import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.AppBlockedServiceResponse;
+import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
 
 /**
  * 앱 차단 서비스 Controller 테스트 코드
@@ -32,8 +45,14 @@ class AppBlockedServiceControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     private FindAppBlockedService findAppBlockedService;
+
+    @MockBean
+    private UpdateAppBlockedServiceService updateAppBlockedServiceService;
 
     @MockBean
     private JwtFilter jwtFilter;
@@ -43,6 +62,20 @@ class AppBlockedServiceControllerTest {
 
     @MockBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+
+    private void setAuthentication(FamilyRole role) {
+        PrincipalDetails principal = PrincipalDetails.builder()
+                .id(1L)
+                .email("test@test.com")
+                .familyId(100L)
+                .role(role)
+                .status(Status.APPROVED)
+                .build();
+
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                principal, null, principal.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
 
     @Test
     @DisplayName("앱 차단 서비스 전체 목록 조회 API 성공")
@@ -63,5 +96,25 @@ class AppBlockedServiceControllerTest {
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.data[0].name").value("YouTube"))
                 .andExpect(jsonPath("$.data[0].serviceCode").value("YOUTUBE"));
+    }
+
+    @Test
+    @DisplayName("성공: OWNER 권한으로 앱 차단 설정을 업데이트한다")
+    void updateAppBlockedServiceSuccess() throws Exception {
+        // given
+        setAuthentication(FamilyRole.OWNER);
+        UpdateAppBlockedServiceRequest request = new UpdateAppBlockedServiceRequest(1L, 100L, List.of(1L, 2L));
+        UpdateAppBlockedServiceResponse response = new UpdateAppBlockedServiceResponse(1L, 100L, List.of(1L, 2L));
+
+        given(updateAppBlockedServiceService.updateAppBlockedService(any(), eq(100L), eq(FamilyRole.OWNER)))
+                .willReturn(response);
+
+        // when & then
+        mockMvc.perform(patch("/api/v1/blocking")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.subId").value(100L))
+                .andExpect(jsonPath("$.data.blockedServiceIdList").isArray());
     }
 }
