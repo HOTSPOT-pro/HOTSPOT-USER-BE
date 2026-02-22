@@ -1,5 +1,6 @@
 package hotspot.user.family.controller;
 
+import static hotspot.user.util.TestSecurityUtil.setAuthentication;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -18,8 +19,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
-import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
@@ -41,7 +39,6 @@ import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
 import hotspot.user.family.domain.PriorityType;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.member.domain.Status;
 
 /**
  * FamilySubscription Controller 단위 테스트
@@ -74,25 +71,11 @@ class FamilySubscriptionControllerTest {
     @MockBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
-    private void setAuthentication(FamilyRole role) {
-        PrincipalDetails principal = PrincipalDetails.builder()
-                .id(1L)
-                .email("test@test.com")
-                .familyId(100L)
-                .role(role)
-                .status(Status.APPROVED)
-                .build();
-
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                principal, null, principal.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(auth);
-    }
-
     @Test
     @DisplayName("성공: OWNER 권한을 가진 사용자가 데이터 한도를 수정하면 200 OK를 반환한다")
     void updateDataLimitSuccess() throws Exception {
         // given
-        setAuthentication(FamilyRole.OWNER);
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
         UpdateDataLimitRequest request = new UpdateDataLimitRequest(100L, 1L, 5000);
         UpdateDataLimitResponse response = UpdateDataLimitResponse.builder()
                 .familyId(100L)
@@ -116,7 +99,7 @@ class FamilySubscriptionControllerTest {
     @DisplayName("실패: CHILD 권한을 가진 사용자가 데이터 한도를 수정하려 하면 403 에러가 발생한다")
     void updateDataLimitFailByChild() throws Exception {
         // given
-        setAuthentication(FamilyRole.CHILD);
+        setAuthentication(1L, 100L, FamilyRole.CHILD);
         UpdateDataLimitRequest request = new UpdateDataLimitRequest(100L, 1L, 5000);
 
         // 서비스가 호출되기 전 컨트롤러의 권한 체크 로직에서 예외가 발생함
@@ -139,7 +122,7 @@ class FamilySubscriptionControllerTest {
     @DisplayName("성공: OWNER 권한을 가진 사용자가 가족 우선순위를 수정하면 200 OK를 반환한다")
     void updateFamilyPrioritySuccess() throws Exception {
         // given
-        setAuthentication(FamilyRole.OWNER);
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
         List<MemberPriorityRequest> memberPriorities = List.of(
                 new MemberPriorityRequest(1L, 1),
                 new MemberPriorityRequest(2L, 2)
@@ -178,7 +161,7 @@ class FamilySubscriptionControllerTest {
     @DisplayName("실패: CHILD 권한을 가진 사용자가 가족 우선순위를 수정하려 하면 403 에러가 발생한다")
     void updateFamilyPriorityFailByChild() throws Exception {
         // given
-        setAuthentication(FamilyRole.CHILD);
+        setAuthentication(1L, 100L, FamilyRole.CHILD);
         UpdateFamilyPriorityRequest request = new UpdateFamilyPriorityRequest(
                 100L,
                 PriorityType.FIFO,
@@ -205,7 +188,7 @@ class FamilySubscriptionControllerTest {
     @DisplayName("실패: 우선순위 모드일 때 memberPriorities가 비어있으면 400 에러를 반환한다")
     void updateFamilyPriorityFailByEmptyMemberPriorities() throws Exception {
         // given
-        setAuthentication(FamilyRole.OWNER);
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
         UpdateFamilyPriorityRequest request = new UpdateFamilyPriorityRequest(
                 100L,
                 PriorityType.PRIORITY,
