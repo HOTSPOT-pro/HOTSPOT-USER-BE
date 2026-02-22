@@ -60,17 +60,24 @@ public class PolicySubEntity extends BaseEntity {
         return PolicySub.builder()
                 .id(this.policySubId)
                 .policyId(this.policyId)
-                .subscription(this.subscription.entityToDomain())
+                .subId(this.subscription.entityToDomain().getId())
                 .dateSnapshot(this.dateSnapshot)
                 .isDeleted(this.isDeleted)
                 .build();
     }
 
     public static PolicySubEntity domainToEntity(PolicySub policySub) {
+
+        // 연관관계(FK) 매핑을 위한 프록시(가짜) 엔티티 생성
+        // DB에서 전체 데이터를 읽어올 필요 없이, 외래키로 쓸 ID값만 세팅
+        SubscriptionEntity subscriptionProxy = SubscriptionEntity.builder()
+                .subId(policySub.getSubId()) // 도메인이 들고 있는 ID만 주입
+                .build();
+
         return PolicySubEntity.builder()
                 .policySubId(policySub.getId())
                 .policyId(policySub.getPolicyId())
-                .subscription(SubscriptionEntity.domainToEntity(policySub.getSubscription()))
+                .subscription(subscriptionProxy)
                 .dateSnapshot(policySub.getDateSnapshot())
                 .isDeleted(policySub.getIsDeleted())
                 .build();
