@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import hotspot.user.family.infrastructure.entity.FamilySubscriptionEntity;
 
@@ -21,4 +24,9 @@ public interface FamilySubscriptionJpaRepository extends JpaRepository<FamilySub
 
     @EntityGraph(attributePaths = {"family", "subscription", "subscription.member"})
     Optional<FamilySubscriptionEntity> findBySubscriptionMemberId(Long memberId);
+
+    // Bulk Update 쿼리
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE FamilySubscriptionEntity fs SET fs.priority = :priority WHERE fs.subscription.subId = :subId")
+    void updatePriority(@Param("subId") Long subId, @Param("priority") int priority);
 }

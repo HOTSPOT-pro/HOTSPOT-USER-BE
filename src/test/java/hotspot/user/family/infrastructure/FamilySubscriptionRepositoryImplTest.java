@@ -167,4 +167,27 @@ class FamilySubscriptionRepositoryImplTest {
         org.mockito.Mockito.verify(familySubscriptionJpaRepository).save(
                 org.mockito.ArgumentMatchers.any(FamilySubscriptionEntity.class));
     }
+
+    @Test
+    @DisplayName("여러 구성원의 우선순위를 일괄 업데이트할 수 있다")
+    void updatePrioritiesSuccess() {
+        // given
+        FamilySubscription sub1 = FamilySubscription.builder()
+                .subscription(Subscription.builder().id(100L).build())
+                .priority(1)
+                .build();
+        FamilySubscription sub2 = FamilySubscription.builder()
+                .subscription(Subscription.builder().id(101L).build())
+                .priority(2)
+                .build();
+
+        // when
+        familySubscriptionRepository.updatePriorities(List.of(sub1, sub2));
+
+        // then
+        org.mockito.Mockito.verify(familySubscriptionJpaRepository, org.mockito.Mockito.times(1))
+                .updatePriority(100L, 1);
+        org.mockito.Mockito.verify(familySubscriptionJpaRepository, org.mockito.Mockito.times(1))
+                .updatePriority(101L, 2);
+    }
 }

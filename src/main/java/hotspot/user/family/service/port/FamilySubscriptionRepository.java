@@ -13,4 +13,5 @@ public interface FamilySubscriptionRepository {
     List<FamilySubscription> findByFamilyId(Long familyId);
     Optional<FamilySubscription> findByMemberId(Long memberId);
     FamilySubscription save(FamilySubscription familySubscription);
+    void updatePriorities(List<FamilySubscription> subscriptions);
 }

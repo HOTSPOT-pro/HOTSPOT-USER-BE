@@ -41,4 +41,11 @@ public class FamilySubscriptionRepositoryImpl implements FamilySubscriptionRepos
         FamilySubscriptionEntity savedEntity = jpaRepository.save(entity);
         return savedEntity.entityToDomain();
     }
+
+    @Override
+    public void updatePriorities(List<FamilySubscription> subscriptions) {
+        for (FamilySubscription sub : subscriptions) {
+            jpaRepository.updatePriority(sub.getSubscription().getId(), sub.getPriority());
+        }
+    }
 }

@@ -8,11 +8,13 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.family.domain.Family;
+import hotspot.user.family.domain.PriorityType;
 import hotspot.user.family.infrastructure.entity.FamilyEntity;
 
 /**
@@ -44,5 +46,33 @@ class FamilyRepositoryImplTest {
         // then
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(familyId);
+    }
+
+    @Test
+    @DisplayName("가족 정보 저장 성공")
+    void saveSuccess() {
+        // given
+        Family family = Family.builder()
+                .id(1L)
+                .familyNum(4)
+                .familyDataAmount(10000)
+                .priorityType(PriorityType.PRIORITY)
+                .build();
+
+        FamilyEntity entity = FamilyEntity.builder()
+                .familyId(1L)
+                .familyNum(4)
+                .familyDataAmount(10000)
+                .priorityType(PriorityType.PRIORITY)
+                .build();
+
+        given(familyJpaRepository.save(ArgumentMatchers.any(FamilyEntity.class))).willReturn(entity);
+
+        // when
+        Family result = familyRepository.save(family);
+
+        // then
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getPriorityType()).isEqualTo(PriorityType.PRIORITY);
     }
 }

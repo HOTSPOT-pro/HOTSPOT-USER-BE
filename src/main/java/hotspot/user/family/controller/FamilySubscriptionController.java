@@ -12,8 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
+import hotspot.user.family.controller.port.UpdateFamilyPriorityService;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
+import hotspot.user.family.controller.request.UpdateFamilyPriorityRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
+import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
 import hotspot.user.family.controller.swagger.FamilySubscriptionApi;
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class FamilySubscriptionController implements FamilySubscriptionApi {
 
     private final UpdateDataLimitService updateDataLimitService;
+    private final UpdateFamilyPriorityService updateFamilyPriorityService;
 
     // 구성원의 가족 공유 데이터 한도 조정
     @Override
@@ -35,6 +39,21 @@ public class FamilySubscriptionController implements FamilySubscriptionApi {
             @AuthenticationPrincipal PrincipalDetails principal) {
 
         UpdateDataLimitResponse response = updateDataLimitService.updateDataLimit(
+                request,
+                principal.getFamilyId(),
+                principal.getRole()
+        );
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // 가족 우선순위 정책 및 구성원 순위 업데이트
+    @Override
+    @PatchMapping("/priority")
+    public ResponseEntity<ApiResponse<UpdateFamilyPriorityResponse>> updateFamilyPriority(
+            @Valid @RequestBody UpdateFamilyPriorityRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        UpdateFamilyPriorityResponse response = updateFamilyPriorityService.updateFamilyPriority(
                 request,
                 principal.getFamilyId(),
                 principal.getRole()
