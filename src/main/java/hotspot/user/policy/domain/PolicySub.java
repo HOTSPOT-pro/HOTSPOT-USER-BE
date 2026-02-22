@@ -14,7 +14,12 @@ import lombok.Getter;
 public class PolicySub {
     private final Long id;
     private final Long policyId;
-    private final Subscription subscription;
+    private final Long subId;
     private final DateSnapshot dateSnapshot;
     private Boolean isDeleted;
+
+    // 논리 삭제 메서드
+    public void delete() {
+        isDeleted = true;
+    }
 }
