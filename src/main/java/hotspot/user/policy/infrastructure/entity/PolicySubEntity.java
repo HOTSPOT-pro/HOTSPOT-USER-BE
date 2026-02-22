@@ -62,6 +62,7 @@ public class PolicySubEntity extends BaseEntity {
                 .policyId(this.policyId)
                 .subscription(this.subscription.entityToDomain())
                 .dateSnapshot(this.dateSnapshot)
+                .isDeleted(this.isDeleted)
                 .build();
     }
 
@@ -71,6 +72,7 @@ public class PolicySubEntity extends BaseEntity {
                 .policyId(policySub.getPolicyId())
                 .subscription(SubscriptionEntity.domainToEntity(policySub.getSubscription()))
                 .dateSnapshot(policySub.getDateSnapshot())
+                .isDeleted(policySub.getIsDeleted())
                 .build();
     }
 }

@@ -16,4 +16,5 @@ public class PolicySub {
     private final Long policyId;
     private final Subscription subscription;
     private final DateSnapshot dateSnapshot;
+    private Boolean isDeleted;
 }
