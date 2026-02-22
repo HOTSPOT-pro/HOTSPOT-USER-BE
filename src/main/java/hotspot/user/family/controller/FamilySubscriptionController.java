@@ -60,22 +60,4 @@ public class FamilySubscriptionController implements FamilySubscriptionApi {
         );
         return ResponseEntity.ok(ApiResponse.success(response));
     }
-
-
-    /*
-    // [테스트 전용] 로그인 없이 우선순위 업데이트 테스트
-    @PatchMapping("/priority-test")
-    public ResponseEntity<ApiResponse<UpdateFamilyPriorityResponse>> updateFamilyPriorityTest(
-            @Valid @RequestBody UpdateFamilyPriorityRequest request,
-            @RequestParam Long requesterFamilyId,
-            @RequestParam FamilyRole requesterRole) {
-
-        UpdateFamilyPriorityResponse response = updateFamilyPriorityService.updateFamilyPriority(
-                request,
-                requesterFamilyId,
-                requesterRole
-        );
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-    */
 }
