@@ -35,7 +35,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 방식 비활성화
                 .formLogin(FormLoginConfigurer::disable) // 기본 로그인 비활성화
-                .httpBasic(AbstractHttpConfigurer::disable); // Basic 인증 비활성화 : Basic 인증은 사용자 이름 & 비밀번호를 Base64로 인코딩하여 인증값으로 활용
+                // Basic 인증 비활성화 : Basic 인증은 사용자 이름 & 비밀번호를 Base64로 인코딩하여 인증값으로 활용
+                .httpBasic(AbstractHttpConfigurer::disable);
 
         // UsernamePasswordAuthenticationFilter : 이 클래스에서 폼 로그인 인증을 처리
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
