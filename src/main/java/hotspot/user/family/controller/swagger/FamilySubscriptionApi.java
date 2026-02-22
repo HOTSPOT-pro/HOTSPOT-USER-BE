@@ -1,6 +1,5 @@
 package hotspot.user.family.controller.swagger;
 
-import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
+import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

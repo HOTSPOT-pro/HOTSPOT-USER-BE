@@ -1,17 +1,14 @@
 package hotspot.user.family.domain;
 
-import hotspot.user.common.constant.FamilyConstant;
-import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.FamilyErrorCode;
-import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.subscription.domain.Subscription;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.FamilyErrorCode;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
 /**
  * 가족-회선 매핑 도메인 List 일급 컬렉션 (First Class Collection)

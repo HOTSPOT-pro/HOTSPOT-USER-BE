@@ -20,9 +20,6 @@ import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
 import hotspot.user.family.controller.swagger.FamilySubscriptionApi;
 import lombok.RequiredArgsConstructor;
 
-import hotspot.user.member.domain.FamilyRole;
-import org.springframework.web.bind.annotation.RequestParam;
-
 /**
  * FamilySubscription 관련 컨트롤러
  */

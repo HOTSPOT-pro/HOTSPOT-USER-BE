@@ -1,12 +1,12 @@
 package hotspot.user.family.domain.mapper;
 
+import java.util.List;
+
 import hotspot.user.family.controller.response.FamilyResponse;
 import hotspot.user.family.controller.response.MemberPriorityResponse;
 import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
-
-import java.util.List;
 
 /**
  * request Dto -> 도메인

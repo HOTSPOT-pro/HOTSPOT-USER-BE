@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import hotspot.user.family.controller.request.MemberPriorityRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +11,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.controller.port.UpdateFamilyPriorityService;
+import hotspot.user.family.controller.request.MemberPriorityRequest;
 import hotspot.user.family.controller.request.UpdateFamilyPriorityRequest;
 import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
 import hotspot.user.family.domain.Family;

@@ -2,9 +2,10 @@ package hotspot.user.family.controller.request;
 
 import java.util.List;
 
-import hotspot.user.family.domain.PriorityType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
+import hotspot.user.family.domain.PriorityType;
 
 /**
  * 가족 우선순위 정책 업데이트 request DTO
