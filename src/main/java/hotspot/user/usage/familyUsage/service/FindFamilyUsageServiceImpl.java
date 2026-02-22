@@ -2,6 +2,7 @@ package hotspot.user.usage.familyUsage.service;
 
 import java.util.List;
 
+import hotspot.user.usage.familyUsage.domain.FamilyUsage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,8 @@ public class FindFamilyUsageServiceImpl implements FindFamilyUsageService {
                 .map(FamilyUsageMapper::toFamilySubList)
                 .toList();
 
-        return findFamilyUsageRepository.findFamilyUsage(familyId, familySubList);
+        FamilyUsage familyUsage = findFamilyUsageRepository.findFamilyUsage(familyId, familySubList);
+
+        return FamilyUsageMapper.toFamilyUsageResponse(familyUsage, familySubList);
     }
 }

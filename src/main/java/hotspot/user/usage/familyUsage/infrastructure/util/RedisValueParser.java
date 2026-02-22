@@ -16,13 +16,4 @@ public class RedisValueParser {
 
         return Double.parseDouble(value.toString());
     }
-
-    public static double toDoubleFromList(List<Object> list, int index) {
-        if (list == null || list.size() <= index) {
-            return 0D;
-        }
-
-        Object v = list.get(index);
-        return toDouble(v);
-    }
 }

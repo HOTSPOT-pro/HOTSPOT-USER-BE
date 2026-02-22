@@ -17,14 +17,14 @@ public class FamilyUsageMapper {
         );
     }
 
-    public static FamilyUsageResponse toResponse(
+    public static FamilyUsageResponse toFamilyUsageResponse(
             FamilyUsage usage,
             List<FamilySubList> subs
     ) {
 
         List<FamilyUsageResponse.FamilySubUsageResponse> subResponses =
                 subs.stream()
-                        .map(sub -> toSubResponse(usage, sub))
+                        .map(sub -> toFamilySubUsageResponse(usage, sub))
                         .toList();
 
         return new FamilyUsageResponse(
@@ -36,7 +36,7 @@ public class FamilyUsageMapper {
         );
     }
 
-    private static FamilyUsageResponse.FamilySubUsageResponse toSubResponse(
+    private static FamilyUsageResponse.FamilySubUsageResponse toFamilySubUsageResponse(
             FamilyUsage usage,
             FamilySubList sub
     ) {

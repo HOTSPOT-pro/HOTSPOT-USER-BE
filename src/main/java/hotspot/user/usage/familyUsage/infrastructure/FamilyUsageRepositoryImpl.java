@@ -18,7 +18,7 @@ public class FamilyUsageRepositoryImpl implements FamilyUsageRepository {
     private final FamilyUsageRedisRepository redisRepository;
 
     @Override
-    public FamilyUsageResponse findFamilyUsage(
+    public FamilyUsage findFamilyUsage(
             Long familyId,
             List<FamilySubList> familySubList
     ) {
@@ -27,9 +27,6 @@ public class FamilyUsageRepositoryImpl implements FamilyUsageRepository {
                 .map(FamilySubList::subId)
                 .toList();
 
-        FamilyUsage usage =
-                redisRepository.findFamilyAndSubData(familyId, subIds);
-
-        return FamilyUsageMapper.toResponse(usage, familySubList);
+        return redisRepository.findFamilyAndSubData(familyId, subIds);
     }
 }
