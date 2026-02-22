@@ -1,8 +1,8 @@
 package hotspot.user.policy.controller.request;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.util.List;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * 구성원별 정책 업데이트 request dto

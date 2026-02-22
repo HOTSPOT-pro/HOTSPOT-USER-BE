@@ -1,8 +1,8 @@
 package hotspot.user.policy.controller.response;
 
-import lombok.Builder;
-
 import java.util.List;
+
+import lombok.Builder;
 
 /**
  * 구성원별 정책 업데이트 response dto

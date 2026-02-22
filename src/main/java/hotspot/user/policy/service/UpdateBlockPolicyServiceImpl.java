@@ -1,5 +1,11 @@
 package hotspot.user.policy.service;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
@@ -7,29 +13,17 @@ import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
-
 import hotspot.user.policy.controller.port.UpdateBlockPolicyService;
-
 import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
-
 import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.DateSnapshot;
-import hotspot.user.policy.domain.PolicySnapshot;
 import hotspot.user.policy.domain.PolicySub;
-import hotspot.user.policy.domain.mapper.AppBlockedServiceMapper;
-
 import hotspot.user.policy.domain.mapper.BlockPolicyMapper;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
-
 import hotspot.user.policy.service.port.PolicySubRepository;
 import hotspot.user.subscription.domain.Subscription;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 구성원별 정책 업데이트 서비스 코드 구현체

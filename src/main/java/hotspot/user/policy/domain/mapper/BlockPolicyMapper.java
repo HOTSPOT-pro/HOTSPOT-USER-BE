@@ -1,12 +1,11 @@
 package hotspot.user.policy.domain.mapper;
 
-import hotspot.user.policy.controller.response.BlockPolicyResponse;
+import java.util.List;
 
+import hotspot.user.policy.controller.response.BlockPolicyResponse;
 import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.PolicySub;
-
-import java.util.List;
 
 /**
  * request -> 도메인

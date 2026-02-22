@@ -1,8 +1,9 @@
 package hotspot.user.common.exception.code;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 /**
  * 회선 도메인 관련 에러 코드
