@@ -1,6 +1,7 @@
 package hotspot.user.policy.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
@@ -50,5 +51,21 @@ class BlockPolicyRepositoryImplTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getName()).isEqualTo("기본 차단");
         assertThat(result.get(0).getPolicyType()).isEqualTo(PolicyType.SCHEDULED);
+    }
+
+    @Test
+    @DisplayName("성공: ID 리스트로 정책들을 일괄 조회한다")
+    void findAllByIdSuccess() {
+        // given
+        BlockPolicyEntity entity1 = BlockPolicyEntity.builder().blockPolicyId(1L).policyName("P1").build();
+        BlockPolicyEntity entity2 = BlockPolicyEntity.builder().blockPolicyId(2L).policyName("P2").build();
+        given(blockPolicyJpaRepository.findAllById(anyList())).willReturn(List.of(entity1, entity2));
+
+        // when
+        List<BlockPolicy> result = blockPolicyRepository.findAllById(List.of(1L, 2L));
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
     }
 }

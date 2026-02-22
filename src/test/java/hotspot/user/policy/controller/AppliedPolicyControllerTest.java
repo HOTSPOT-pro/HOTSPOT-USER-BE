@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +30,15 @@ import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
+import hotspot.user.policy.controller.port.UpdateBlockPolicyService;
+import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
+import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 @WebMvcTest(AppliedPolicyController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -39,11 +47,17 @@ class AppliedPolicyControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     private FindMemberAppliedPolicyService findMemberAppliedPolicyService;
 
     @MockBean
     private FindFamilyAppliedPolicyService findFamilyAppliedPolicyService;
+
+    @MockBean
+    private UpdateBlockPolicyService updateBlockPolicyService;
 
     @MockBean
     private JwtFilter jwtFilter;
@@ -127,21 +141,29 @@ class AppliedPolicyControllerTest {
     }
 
     @Test
-    @DisplayName("임시 테스트 API 조회 성공: 파라미터 기반 조회 확인")
-    void getAppliedPoliciesTestApiSuccess() throws Exception {
+    @DisplayName("구성원별 정책 업데이트 성공: OWNER 권한일 때")
+    void updateBlockPolicySuccess() throws Exception {
         // given
-        AppliedPolicyResponse response = AppliedPolicyResponse.builder()
-                .memberId(1L)
-                .memberName("테스트유저")
+        setAuthentication(FamilyRole.OWNER);
+        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L, 2L));
+        UpdateBlockPolicyResponse response = UpdateBlockPolicyResponse.builder()
+                .familyId(100L)
+                .subId(1L)
+                .blockedPolicyIdList(List.of(1L, 2L))
                 .build();
-        given(findMemberAppliedPolicyService.findByMemberId(1L)).willReturn(response);
+
+        given(updateBlockPolicyService.updateBlockPolicy(
+                any(UpdateBlockPolicyRequest.class),
+                eq(100L),
+                eq(FamilyRole.OWNER)))
+                .willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/v1/policies/applied/test")
-                        .param("testMemberId", "1")
-                        .param("isFamily", "false")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(put("/api/v1/policies/apply")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.memberName").value("테스트유저"));
+                .andExpect(jsonPath("$.data.familyId").value(100L))
+                .andExpect(jsonPath("$.data.blockedPolicyIdList[0]").value(1L));
     }
 }
