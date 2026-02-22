@@ -19,4 +19,11 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         return familyJpaRepository.findById(id)
                 .map(FamilyEntity::entityToDomain);
     }
+
+    @Override
+    public Family save(Family family) {
+        FamilyEntity entity = FamilyEntity.domainToEntity(family);
+        FamilyEntity savedEntity = familyJpaRepository.save(entity);
+        return savedEntity.entityToDomain();
+    }
 }
