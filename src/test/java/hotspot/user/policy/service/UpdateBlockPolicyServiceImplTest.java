@@ -1,8 +1,25 @@
 package hotspot.user.policy.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
-import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
@@ -11,26 +28,9 @@ import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
 import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
 import hotspot.user.policy.domain.BlockPolicy;
-import hotspot.user.policy.domain.DateSnapshot;
 import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateBlockPolicyServiceImplTest {
@@ -56,13 +56,16 @@ class UpdateBlockPolicyServiceImplTest {
         UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(familyId, subId, List.of(1L));
 
         setAuthMock(familyId, subId);
-        
+
         BlockPolicy policy = BlockPolicy.builder().id(1L).name("Test Policy").build();
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(policy));
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>());
 
         // when
-        UpdateBlockPolicyResponse response = updateBlockPolicyService.updateBlockPolicy(request, familyId, FamilyRole.OWNER);
+        UpdateBlockPolicyResponse response = updateBlockPolicyService.updateBlockPolicy(
+                request,
+                familyId,
+                FamilyRole.OWNER);
 
         // then
         assertThat(response.subId()).isEqualTo(subId);
@@ -88,7 +91,10 @@ class UpdateBlockPolicyServiceImplTest {
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(newPolicy));
 
         // when
-        UpdateBlockPolicyResponse response = updateBlockPolicyService.updateBlockPolicy(request, familyId, FamilyRole.OWNER);
+        UpdateBlockPolicyResponse response = updateBlockPolicyService.updateBlockPolicy(
+                request,
+                familyId,
+                FamilyRole.OWNER);
 
         // then
         assertThat(response.blockedPolicyIdList()).containsExactly(2L);
@@ -123,7 +129,7 @@ class UpdateBlockPolicyServiceImplTest {
     void updateBlockPolicyFailByRole() {
         // given
         UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L));
-        
+
         // when & then
         assertThatThrownBy(() -> updateBlockPolicyService.updateBlockPolicy(request, 100L, FamilyRole.CHILD))
                 .isInstanceOf(ApplicationException.class)

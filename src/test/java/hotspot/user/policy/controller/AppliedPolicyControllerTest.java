@@ -1,14 +1,16 @@
 package hotspot.user.policy.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
@@ -35,10 +39,6 @@ import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
 import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 @WebMvcTest(AppliedPolicyController.class)
 @AutoConfigureMockMvc(addFilters = false)
