@@ -4,8 +4,8 @@ import java.util.List;
 
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.usage.familyUsage.controller.response.FamilyUsageResponse;
-import hotspot.user.usage.familyUsage.domain.FamilyUsage;
 import hotspot.user.usage.familyUsage.domain.FamilySubUsage;
+import hotspot.user.usage.familyUsage.domain.FamilyUsage;
 import hotspot.user.usage.familyUsage.service.schema.FamilySubList;
 
 public class FamilyUsageMapper {

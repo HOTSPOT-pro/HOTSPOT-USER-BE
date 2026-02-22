@@ -2,7 +2,7 @@ package hotspot.user.usage.familyUsage.domain;
 
 import java.util.Map;
 
-import hotspot.user.usage.familyUsage.infrastructure.util.RedisUsageCalculator;
+import hotspot.user.common.util.redis.RedisUsageCalculator;
 
 public class FamilyUsage {
 

@@ -1,8 +1,10 @@
 package hotspot.user.usage.familyUsage.controller.swagger;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.ErrorResponse;
+
 import hotspot.user.common.security.PrincipalDetails;
-import hotspot.user.family.controller.request.UpdateDataLimitRequest;
-import hotspot.user.family.controller.response.UpdateDataLimitResponse;
 import hotspot.user.usage.familyUsage.controller.response.FamilyUsageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,9 +13,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.ErrorResponse;
 
 @Tag(name = "Family Usage", description = "가족 공유 데이터 사용량 조회 API")
 public interface FamilyUsageApi {

@@ -1,21 +1,22 @@
-package hotspot.user.usage.familyUsage.infrastructure;
+package hotspot.user.usage.familyUsage.infrastructure.respository;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.FamilyUsageErrorCode;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.stereotype.Repository;
 
-import hotspot.user.usage.familyUsage.domain.FamilyUsage;
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.FamilyUsageErrorCode;
+import hotspot.user.common.util.redis.PipelineResultMapper;
+import hotspot.user.common.util.redis.RedisPipelineExecutor;
+import hotspot.user.common.util.redis.RedisValueParser;
 import hotspot.user.usage.familyUsage.domain.FamilySubUsage;
-import hotspot.user.usage.familyUsage.infrastructure.util.FamilyUsageRedisKeyBuilder;
-import hotspot.user.usage.familyUsage.infrastructure.util.RedisPipelineExecutor;
-import hotspot.user.usage.familyUsage.infrastructure.util.RedisValueParser;
+import hotspot.user.usage.familyUsage.domain.FamilyUsage;
+import hotspot.user.usage.familyUsage.infrastructure.keybuilder.FamilyUsageRedisKeyBuilder;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -32,7 +33,7 @@ public class FamilyUsageRedisRepository {
     public FamilyUsage findFamilyAndSubData(Long familyId, List<Long> subIds) {
 
         PipelineResult pipeline = executePipeline(familyId, subIds);
-        Map<String, Object> resultMap = toResultMap(pipeline);
+        Map<String, Object> resultMap = PipelineResultMapper.toMap(pipeline.requestKeys(), pipeline.rawResults());
 
         Object familyLimitValue = resultMap.get(K_FAMILY_LIMIT);
 
@@ -104,26 +105,6 @@ public class FamilyUsageRedisRepository {
                     pipelineExecutor.serialize("member_family_used")
             );
         }
-    }
-
-
-    private Map<String, Object> toResultMap(PipelineResult pipeline) {
-
-        List<Object> raw = pipeline.rawResults() == null ? List.of() : pipeline.rawResults();
-        List<String> keys = pipeline.requestKeys();
-
-        Map<String, Object> resultMap = new HashMap<>(keys.size());
-
-        int size = Math.min(keys.size(), raw.size());
-        for (int i = 0; i < size; i++) {
-            resultMap.put(keys.get(i), raw.get(i));
-        }
-
-        for (int i = size; i < keys.size(); i++) {
-            resultMap.put(keys.get(i), null);
-        }
-
-        return resultMap;
     }
 
 

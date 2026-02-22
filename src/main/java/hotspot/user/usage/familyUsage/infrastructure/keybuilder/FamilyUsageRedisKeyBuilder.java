@@ -1,4 +1,4 @@
-package hotspot.user.usage.familyUsage.infrastructure.util;
+package hotspot.user.usage.familyUsage.infrastructure.keybuilder;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
