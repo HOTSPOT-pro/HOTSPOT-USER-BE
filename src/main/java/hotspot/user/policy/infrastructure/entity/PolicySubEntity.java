@@ -60,7 +60,7 @@ public class PolicySubEntity extends BaseEntity {
         return PolicySub.builder()
                 .id(this.policySubId)
                 .policyId(this.policyId)
-                .subId(this.subscription.entityToDomain().getId())
+                .subId(this.subscription != null ? this.subscription.getSubId() : null)
                 .dateSnapshot(this.dateSnapshot)
                 .isDeleted(this.isDeleted)
                 .build();
