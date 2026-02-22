@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import hotspot.user.common.security.PrincipalDetails;
@@ -30,16 +31,16 @@ public interface FamilySubscriptionApi {
                                          + "- COMMON_002: 입력값 유효성 검증 실패\n"
                                          + "- FAMILY_004: 데이터 한도 범위 오류 (-1 미만)",
                      content = @Content(schema = @Schema(
-                             implementation = hotspot.user.common.exception.ErrorResponse.class))),
+                             implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "403", description = "권한 없음\n"
                                          + "- AUTH_004: OWNER 권한이 아님\n"
                                          + "- FAMILY_003: 동일 가족 구성원이 아님",
                      content = @Content(schema = @Schema(
-                             implementation = hotspot.user.common.exception.ErrorResponse.class))),
+                             implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "404", description = "찾을 수 없음\n"
                                          + "- FAMILY_002: 해당 회선(Subscription)이 가족에 등록되어 있지 않음",
                      content = @Content(schema = @Schema(
-                             implementation = hotspot.user.common.exception.ErrorResponse.class)))
+                             implementation = ErrorResponse.class)))
     })
     ResponseEntity<hotspot.user.common.ApiResponse<UpdateDataLimitResponse>> updateDataLimit(
             @Valid @RequestBody UpdateDataLimitRequest request,
@@ -53,13 +54,13 @@ public interface FamilySubscriptionApi {
                                          + "- FAMILY_007: 중복된 우선순위 값 존재\n"
                                          + "- FAMILY_008: 우선순위 값이 연속적이지 않음\n"
                                          + "- FAMILY_009: 일부 구성원의 우선순위 값 누락",
-                     content = @Content(schema = @Schema(implementation = hotspot.user.common.exception.ErrorResponse.class))),
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "403", description = "권한 없음\n"
                                          + "- AUTH_004: OWNER 권한이 아님\n"
                                          + "- FAMILY_003: 동일 가족 구성원이 아님",
-                     content = @Content(schema = @Schema(implementation = hotspot.user.common.exception.ErrorResponse.class))),
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "404", description = "가족 정보를 찾을 수 없음",
-                     content = @Content(schema = @Schema(implementation = hotspot.user.common.exception.ErrorResponse.class)))
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<hotspot.user.common.ApiResponse<UpdateFamilyPriorityResponse>> updateFamilyPriority(
             @Valid @RequestBody hotspot.user.family.controller.request.UpdateFamilyPriorityRequest request,

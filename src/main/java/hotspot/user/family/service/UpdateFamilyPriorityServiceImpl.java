@@ -67,7 +67,9 @@ public class UpdateFamilyPriorityServiceImpl implements UpdateFamilyPriorityServ
         return FamilyMapper.toUpdateFamilyPriorityResponse(family, members.toList());
     }
 
-    private void validateAuthority(UpdateFamilyPriorityRequest request, Long requesterFamilyId, FamilyRole requesterRole) {
+    private void validateAuthority(UpdateFamilyPriorityRequest request,
+                                   Long requesterFamilyId,
+                                   FamilyRole requesterRole) {
         if (requesterRole != FamilyRole.OWNER) {
             throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
         }
