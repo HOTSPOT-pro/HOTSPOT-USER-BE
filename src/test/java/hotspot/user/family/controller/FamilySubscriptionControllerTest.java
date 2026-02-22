@@ -8,11 +8,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import hotspot.user.family.controller.request.MemberPriorityRequest;
-import hotspot.user.family.controller.request.UpdateFamilyPriorityRequest;
-import hotspot.user.family.controller.response.MemberPriorityResponse;
-import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
-import hotspot.user.family.domain.PriorityType;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +31,16 @@ import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.port.UpdateFamilyPriorityService;
+import hotspot.user.family.controller.request.MemberPriorityRequest;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
+import hotspot.user.family.controller.request.UpdateFamilyPriorityRequest;
+import hotspot.user.family.controller.response.MemberPriorityResponse;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
+import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
+import hotspot.user.family.domain.PriorityType;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
-
-import java.util.List;
 
 /**
  * FamilySubscription Controller 단위 테스트

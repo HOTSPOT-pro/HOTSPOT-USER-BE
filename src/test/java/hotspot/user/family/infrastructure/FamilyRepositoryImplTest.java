@@ -5,7 +5,6 @@ import static org.mockito.BDDMockito.given;
 
 import java.util.Optional;
 
-import hotspot.user.family.domain.PriorityType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.family.domain.Family;
+import hotspot.user.family.domain.PriorityType;
 import hotspot.user.family.infrastructure.entity.FamilyEntity;
 
 /**
