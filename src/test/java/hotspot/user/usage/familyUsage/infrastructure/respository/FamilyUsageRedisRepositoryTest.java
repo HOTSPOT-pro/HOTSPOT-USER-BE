@@ -6,11 +6,17 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import hotspot.user.common.util.redis.RedisPipelineExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -21,17 +27,22 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import hotspot.user.usage.familyUsage.domain.FamilyUsage;
 
 @Testcontainers
-@SpringBootTest
+@DataRedisTest
+@Import({
+        FamilyUsageRedisRepository.class,
+        FamilyUsageRedisRepositoryTest.RedisTestConfig.class
+})
 class FamilyUsageRedisRepositoryTest {
+
+    @SpringBootConfiguration
+    @EnableAutoConfiguration
+    static class TestBootConfig {
+    }
 
     @Container
     static GenericContainer<?> redis =
             new GenericContainer<>("redis:7-alpine")
                     .withExposedPorts(6379);
-
-    static {
-        redis.start();
-    }
 
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
@@ -45,6 +56,17 @@ class FamilyUsageRedisRepositoryTest {
 
     @Autowired
     StringRedisTemplate redisTemplate;
+
+    @TestConfiguration
+    static class RedisTestConfig {
+
+        @Bean
+        RedisPipelineExecutor redisPipelineExecutor(
+                StringRedisTemplate redisTemplate
+        ) {
+            return new RedisPipelineExecutor(redisTemplate);
+        }
+    }
 
     @BeforeEach
     void clearRedis() {
