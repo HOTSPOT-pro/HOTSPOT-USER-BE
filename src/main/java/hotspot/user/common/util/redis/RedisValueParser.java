@@ -1,7 +1,6 @@
-package hotspot.user.usage.familyUsage.infrastructure.util;
+package hotspot.user.common.util.redis;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 public class RedisValueParser {
 

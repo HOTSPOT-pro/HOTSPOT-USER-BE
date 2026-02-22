@@ -1,4 +1,4 @@
-package hotspot.user.usage.familyUsage.infrastructure.util;
+package hotspot.user.common.util.redis;
 
 import java.util.List;
 
