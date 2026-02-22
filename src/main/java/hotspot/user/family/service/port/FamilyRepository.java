@@ -9,4 +9,5 @@ import hotspot.user.family.domain.Family;
  */
 public interface FamilyRepository {
     Optional<Family> findById(Long id);
+    Optional<Family> save(Family family);
 }

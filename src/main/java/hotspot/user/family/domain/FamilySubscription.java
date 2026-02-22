@@ -32,4 +32,9 @@ public class FamilySubscription {
         }
         this.dataLimit = dataLimit;
     }
+
+    // 우선순위 업데이트
+    public void updatePriority(int priority) {
+        this.priority = priority;
+    }
 }

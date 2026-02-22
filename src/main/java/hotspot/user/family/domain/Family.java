@@ -11,8 +11,13 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class Family {
-    private final Long id;
-    private final int familyNum;
-    private final int familyDataAmount;
-    private final PriorityType priorityType;
+    private Long id;
+    private int familyNum;
+    private int familyDataAmount;
+    private PriorityType priorityType;
+
+    // 우선순위 정책 타입 업데이트
+    public void updatePriorityType(PriorityType priorityType) {
+        this.priorityType = priorityType;
+    }
 }
