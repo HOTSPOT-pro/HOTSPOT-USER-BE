@@ -13,6 +13,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PolicySub {
     private final Long id;
+    private final Long policyId;
     private final Subscription subscription;
     private final DateSnapshot dateSnapshot;
 }

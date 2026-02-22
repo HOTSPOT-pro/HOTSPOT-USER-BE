@@ -45,6 +45,9 @@ public class PolicySubEntity extends BaseEntity {
     @JoinColumn(name = "sub_id")
     private SubscriptionEntity subscription;
 
+    @Column(name = "policy_id")
+    private Long policyId;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb") // PostgreSQL
     private DateSnapshot dateSnapshot;
@@ -56,8 +59,18 @@ public class PolicySubEntity extends BaseEntity {
     public PolicySub entityToDomain() {
         return PolicySub.builder()
                 .id(this.policySubId)
+                .policyId(this.policyId)
                 .subscription(this.subscription.entityToDomain())
                 .dateSnapshot(this.dateSnapshot)
+                .build();
+    }
+
+    public static PolicySubEntity domainToEntity(PolicySub policySub) {
+        return PolicySubEntity.builder()
+                .policySubId(policySub.getId())
+                .policyId(policySub.getPolicyId())
+                .subscription(SubscriptionEntity.domainToEntity(policySub.getSubscription()))
+                .dateSnapshot(policySub.getDateSnapshot())
                 .build();
     }
 }
