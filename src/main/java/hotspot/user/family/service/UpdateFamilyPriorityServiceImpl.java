@@ -83,6 +83,11 @@ public class UpdateFamilyPriorityServiceImpl implements UpdateFamilyPriorityServ
         if (request.priorityType() == PriorityType.FIFO) {
             members.updateAllToFifo();
         } else {
+            // PRIORITY 타입일 때 리스트가 null이거나 비어있으면 예외 발생
+            if (request.memberPriorities() == null || request.memberPriorities().isEmpty()) {
+                throw new ApplicationException(FamilyErrorCode.MISSING_PRIORITY_VALUES);
+            }
+
             // DTO 리스트를 Map으로 변환하여 도메인 객체에 전달
             Map<Long, Integer> priorityMap = request.memberPriorities().stream()
                     .collect(Collectors.toMap(

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
+import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
@@ -198,5 +199,28 @@ class FamilySubscriptionControllerTest {
                             .isInstanceOf(ApplicationException.class)
                             .hasMessage(AuthErrorCode.ACCESS_DENIED.getMessage());
                 });
+    }
+
+    @Test
+    @DisplayName("실패: 우선순위 모드일 때 memberPriorities가 비어있으면 400 에러를 반환한다")
+    void updateFamilyPriorityFailByEmptyMemberPriorities() throws Exception {
+        // given
+        setAuthentication(FamilyRole.OWNER);
+        UpdateFamilyPriorityRequest request = new UpdateFamilyPriorityRequest(
+                100L,
+                PriorityType.PRIORITY,
+                null);
+
+        given(updateFamilyPriorityService.updateFamilyPriority(any(UpdateFamilyPriorityRequest.class),
+                eq(100L),
+                eq(FamilyRole.OWNER)))
+                .willThrow(new ApplicationException(FamilyErrorCode.MISSING_PRIORITY_VALUES));
+
+        // when & then
+        mockMvc.perform(patch("/api/v1/families/priority")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("FAMILY_009"));
     }
 }
