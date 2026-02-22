@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import hotspot.user.common.constant.FamilyConstant;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import lombok.AllArgsConstructor;
@@ -50,7 +51,7 @@ public class FamilySubscriptions {
     }
 
     private void validateNoMinusOne(Map<Long, Integer> newPriorityMap) {
-        if (newPriorityMap.containsValue(-1)) {
+        if (newPriorityMap.containsValue(FamilyConstant.FIFO_PRIORITY)) {
             throw new ApplicationException(FamilyErrorCode.INVALID_PRIORITY_VALUE);
         }
     }
