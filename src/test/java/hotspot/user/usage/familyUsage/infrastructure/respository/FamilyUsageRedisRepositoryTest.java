@@ -2,6 +2,7 @@ package hotspot.user.usage.familyUsage.infrastructure.respository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -42,12 +44,16 @@ class FamilyUsageRedisRepositoryTest {
     @Container
     static GenericContainer<?> redis =
             new GenericContainer<>("redis:7-alpine")
-                    .withExposedPorts(6379);
+                    .withExposedPorts(6379)
+                    .waitingFor(
+                            Wait.forListeningPort()
+                                    .withStartupTimeout(Duration.ofSeconds(30))
+                    );
 
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.redis.host", redis::getHost);
-        registry.add("spring.redis.port",
+        registry.add("spring.data.redis.host", redis::getHost);
+        registry.add("spring.data.redis.port",
                 () -> redis.getMappedPort(6379));
     }
 
