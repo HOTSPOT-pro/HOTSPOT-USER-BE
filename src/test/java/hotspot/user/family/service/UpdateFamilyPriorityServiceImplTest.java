@@ -75,7 +75,10 @@ class UpdateFamilyPriorityServiceImplTest {
                 new MemberPriorityRequest(100L, 2),
                 new MemberPriorityRequest(101L, 1)
         );
-        UpdateFamilyPriorityRequest request = new UpdateFamilyPriorityRequest(familyId, PriorityType.PRIORITY, memberRequests);
+        UpdateFamilyPriorityRequest request = new UpdateFamilyPriorityRequest(
+                familyId,
+                PriorityType.PRIORITY,
+                memberRequests);
 
         Family family = Family.builder().id(familyId).priorityType(PriorityType.FIFO).build();
         FamilySubscription sub1 = createFamilySubscription(100L, -1);

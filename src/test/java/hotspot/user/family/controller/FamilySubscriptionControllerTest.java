@@ -143,7 +143,10 @@ class FamilySubscriptionControllerTest {
                 new MemberPriorityRequest(1L, 1),
                 new MemberPriorityRequest(2L, 2)
         );
-        UpdateFamilyPriorityRequest request = new UpdateFamilyPriorityRequest(100L, PriorityType.PRIORITY, memberPriorities);
+        UpdateFamilyPriorityRequest request = new UpdateFamilyPriorityRequest(
+                100L,
+                PriorityType.PRIORITY,
+                memberPriorities);
 
         List<MemberPriorityResponse> memberPriorityResponses = List.of(
                 MemberPriorityResponse.builder().subId(1L).priority(1).build(),
@@ -155,7 +158,9 @@ class FamilySubscriptionControllerTest {
                 .memberPriorities(memberPriorityResponses)
                 .build();
 
-        given(updateFamilyPriorityService.updateFamilyPriority(any(UpdateFamilyPriorityRequest.class), eq(100L), eq(FamilyRole.OWNER)))
+        given(updateFamilyPriorityService.updateFamilyPriority(any(UpdateFamilyPriorityRequest.class),
+                eq(100L),
+                eq(FamilyRole.OWNER)))
                 .willReturn(response);
 
         // when & then
@@ -173,9 +178,14 @@ class FamilySubscriptionControllerTest {
     void updateFamilyPriorityFailByChild() throws Exception {
         // given
         setAuthentication(FamilyRole.CHILD);
-        UpdateFamilyPriorityRequest request = new UpdateFamilyPriorityRequest(100L, PriorityType.FIFO, null);
+        UpdateFamilyPriorityRequest request = new UpdateFamilyPriorityRequest(
+                100L,
+                PriorityType.FIFO,
+                null);
 
-        given(updateFamilyPriorityService.updateFamilyPriority(any(UpdateFamilyPriorityRequest.class), eq(100L), eq(FamilyRole.CHILD)))
+        given(updateFamilyPriorityService.updateFamilyPriority(any(UpdateFamilyPriorityRequest.class),
+                eq(100L),
+                eq(FamilyRole.CHILD)))
                 .willThrow(new ApplicationException(AuthErrorCode.ACCESS_DENIED));
 
         // when & then
