@@ -47,7 +47,9 @@ public class UpdateFamilyPriorityServiceImpl implements UpdateFamilyPriorityServ
         // 2. 가족 도메인 조회 및 정책 타입 변경
         Family family = familyRepository.findById(request.familyId())
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
+
         family.updatePriorityType(request.priorityType());
+        familyRepository.save(family);
 
         // 3. 구성원 리스트 조회 및 일급 컬렉션 생성
         List<FamilySubscription> familySubList = familySubscriptionRepository.findByFamilyId(family.getId());
@@ -55,15 +57,13 @@ public class UpdateFamilyPriorityServiceImpl implements UpdateFamilyPriorityServ
                 .subscriptions(familySubList)
                 .build();
 
-
-        // 4. 도메인 로직 실행 (우선순위 동기화 및 검증)
+        // 4. 도메인 로직 실행 (우선순위 동기화 및 꼼꼼한 비즈니스 규칙 검증)
         syncPriorities(members, request);
 
-        // 5. 변경 사항 영속화 (Save Port 호출)
-        familyRepository.save(family);
-        familySubscriptionRepository.saveAll(members.toList());
+        // 5. 변경 사항 영속화 (UPDATE만)
+        familySubscriptionRepository.updatePriorities(members.toList());
 
-        // 6. 결과 반환
+        // 6. 결과 반환 (DB 재조회 없이, 최신화된 메모리 도메인 객체를 바로 매퍼로 전달)
         return FamilyMapper.toUpdateFamilyPriorityResponse(family, members.toList());
     }
 
