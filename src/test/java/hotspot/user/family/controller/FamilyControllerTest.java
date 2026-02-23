@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import hotspot.user.member.controller.response.MemberResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,7 @@ class FamilyControllerTest {
         Long familyId = 100L;
         setAuthentication(familyId);
 
-        hotspot.user.member.controller.response.MemberResponse member1 = hotspot.user.member.controller.response.MemberResponse.builder()
+        MemberResponse member1 = MemberResponse.builder()
                 .id(1L)
                 .name("홍길동")
                 .email("test@test.com")
@@ -80,7 +81,7 @@ class FamilyControllerTest {
                 .status(Status.APPROVED)
                 .build();
 
-        hotspot.user.member.controller.response.MemberResponse member2 = hotspot.user.member.controller.response.MemberResponse.builder()
+        MemberResponse member2 = MemberResponse.builder()
                 .id(2L)
                 .name("김철수")
                 .email("chulsoo@test.com")

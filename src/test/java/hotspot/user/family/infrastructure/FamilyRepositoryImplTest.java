@@ -6,11 +6,6 @@ import static org.mockito.BDDMockito.given;
 import java.util.List;
 import java.util.Optional;
 
-import hotspot.user.family.domain.FamilyDetailInfo;
-import hotspot.user.family.infrastructure.entity.FamilyDetailInfoDto;
-import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.member.domain.Status;
-import hotspot.user.member.infrastructure.entity.MemberEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,8 +15,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.family.domain.Family;
+import hotspot.user.family.domain.FamilyDetailInfo;
 import hotspot.user.family.domain.PriorityType;
+import hotspot.user.family.infrastructure.entity.FamilyDetailInfoDto;
 import hotspot.user.family.infrastructure.entity.FamilyEntity;
+import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.member.domain.Status;
+import hotspot.user.member.infrastructure.entity.MemberEntity;
 
 /**
  * 가족 Repository 단위 테스트
