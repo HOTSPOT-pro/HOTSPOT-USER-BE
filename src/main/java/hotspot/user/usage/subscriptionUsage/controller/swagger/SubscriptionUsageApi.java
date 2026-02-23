@@ -1,9 +1,10 @@
 package hotspot.user.usage.subscriptionUsage.controller.swagger;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.ErrorResponse;
-import org.springframework.web.bind.annotation.PathVariable;
 
+import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.usage.subscriptionUsage.controller.response.SubscriptionUsageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,5 +27,5 @@ public interface SubscriptionUsageApi {
                             implementation = ErrorResponse.class)))
     })
     ResponseEntity<hotspot.user.common.ApiResponse<SubscriptionUsageResponse>> findSubscriptionUsage(
-            @Parameter(hidden = false) @PathVariable Long subscriptionId);
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails details);
 }
