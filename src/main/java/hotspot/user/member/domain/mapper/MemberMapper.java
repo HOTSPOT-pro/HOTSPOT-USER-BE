@@ -2,10 +2,7 @@ package hotspot.user.member.domain.mapper;
 
 import hotspot.user.member.controller.request.CreateSocialAccountRequest;
 import hotspot.user.member.controller.response.MemberResponse;
-import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.member.domain.Member;
-import hotspot.user.member.domain.SocialAccount;
-import hotspot.user.member.domain.Status;
+import hotspot.user.member.domain.*;
 import hotspot.user.subscription.domain.Subscription;
 
 /**
@@ -21,25 +18,18 @@ public class MemberMapper {
                 .build();
     }
 
-    // Domain -> Response (회원 정보 조회 시 조립)
-    public static MemberResponse toMemberResponse(Member member,
-                                            SocialAccount socialAccount,
-                                            Subscription subscription,
-                                            FamilyRole familyRole,
-                                            Long familyId) {
-        String email = (socialAccount != null) ? socialAccount.getEmail() : null;
-        String phone = (subscription != null) ? subscription.getPhoneEnc() : null;
-        Long subId = (subscription != null) ? subscription.getId() : null;
-
+    // Domain -> Response
+    public static MemberResponse toMemberResponse(MemberDetailInfo info) {
         return MemberResponse.builder()
-                .id(member.getId())
-                .name(member.getName())
-                .email(email)
-                .phone(phone)
-                .familyRole(familyRole)
-                .familyId(familyId)
-                .subId(subId)
-                .status(member.getStatus())
-                .build();
+             .id(info.getMember().getId())
+             .name(info.getMember().getName())
+             .email(info.getEmail())
+             .phone(info.getPhone())
+             .familyRole(info.getRole())
+             .familyId(info.getFamilyId())
+             .subId(info.getSubId())
+             .status(info.getMember().getStatus())
+             .build();
     }
+
 }
