@@ -15,8 +15,11 @@ import hotspot.user.member.infrastructure.entity.MemberEntity;
 public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
 
     // MemberId로 여러 테이블 JOIN 해서 한 번에 조회
+    // MemberDetailInfoDto로 바로 변환해야함 But, Builder는 JPQL에서 불가능
     @Query("""
-           SELECT m, sa.email, s.phoneEnc, s.subId, fs.familyRole, fs.family.familyId
+           SELECT new hotspot.user.member.infrastructure.entity.MemberDetailInfoDto(
+               m, sa.email, s.phoneEnc, s.subId, fs.familyRole, fs.family.familyId
+           )
            FROM MemberEntity m
            LEFT JOIN SocialAccountEntity sa ON sa.member = m
            LEFT JOIN SubscriptionEntity s ON s.member = m
