@@ -1,11 +1,12 @@
 package hotspot.user.subscription.service;
 
+import org.springframework.stereotype.Service;
+
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
 import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

@@ -10,6 +10,8 @@ public class SubscriptionUsage {
     private final double planLimitKb;
     private final double planUsedKb;
     private final List<GiftUsage> gifts;
+    private final double giftTotalLimitKb;
+    private final double giftTotalUsedKb;
 
     public SubscriptionUsage(
             Long subId,
@@ -21,6 +23,8 @@ public class SubscriptionUsage {
         this.planLimitKb = planLimitKb;
         this.planUsedKb = planUsedKb;
         this.gifts = gifts;
+        this.giftTotalLimitKb = gifts.stream().mapToDouble(GiftUsage::limitKb).sum();
+        this.giftTotalUsedKb = gifts.stream().mapToDouble(GiftUsage::usedKb).sum();
     }
 
     public Long subId() {
@@ -52,21 +56,17 @@ public class SubscriptionUsage {
     }
 
     public double giftTotalLimitKb() {
-        return gifts.stream()
-                .mapToDouble(GiftUsage::limitKb)
-                .sum();
+        return giftTotalLimitKb;
     }
 
     public double giftTotalUsedKb() {
-        return gifts.stream()
-                .mapToDouble(GiftUsage::usedKb)
-                .sum();
+        return giftTotalUsedKb;
     }
 
     public double giftTotalRemainKb() {
         return RedisUsageCalculator.calculateRemain(
-                giftTotalLimitKb(),
-                giftTotalUsedKb()
+                giftTotalLimitKb,
+                giftTotalUsedKb
         );
     }
 

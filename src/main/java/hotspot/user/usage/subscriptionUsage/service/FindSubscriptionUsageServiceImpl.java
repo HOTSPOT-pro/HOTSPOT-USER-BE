@@ -3,12 +3,11 @@ package hotspot.user.usage.subscriptionUsage.service;
 import java.util.List;
 import java.util.Map;
 
-import hotspot.user.subscription.domain.Subscription;
-import hotspot.user.subscription.service.SubscriptionService;
-import hotspot.user.subscription.service.port.SubscriptionRepository;
 import org.springframework.stereotype.Service;
 
 import hotspot.user.presentData.service.port.PresentDataRepository;
+import hotspot.user.subscription.domain.Subscription;
+import hotspot.user.subscription.service.SubscriptionService;
 import hotspot.user.usage.subscriptionUsage.controller.port.FindSubscriptionUsageService;
 import hotspot.user.usage.subscriptionUsage.controller.response.SubscriptionUsageResponse;
 import hotspot.user.usage.subscriptionUsage.domain.GiftUsage;
