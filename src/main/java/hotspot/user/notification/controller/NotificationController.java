@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,6 +52,17 @@ public class NotificationController implements NotificationApi {
             @AuthenticationPrincipal PrincipalDetails details
     ) {
         notificationService.markAllRead(details.getId());
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    // 로그인 사용자의 특정 알림 1건을 읽음 상태로 변경한다.
+    @Override
+    @PatchMapping("/{notificationId}/read")
+    public ResponseEntity<ApiResponse<Void>> markRead(
+            @AuthenticationPrincipal PrincipalDetails details,
+            @PathVariable Long notificationId
+    ) {
+        notificationService.markRead(details.getId(), notificationId);
         return ResponseEntity.ok(ApiResponse.success());
     }
 }
