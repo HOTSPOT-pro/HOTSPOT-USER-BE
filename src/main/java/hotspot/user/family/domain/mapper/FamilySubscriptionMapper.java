@@ -1,6 +1,5 @@
 package hotspot.user.family.domain.mapper;
 
-import hotspot.user.family.controller.request.UpdateFamilyRoleRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
 import hotspot.user.family.controller.response.UpdateFamilyRoleResponse;
 import hotspot.user.family.domain.FamilySubscription;

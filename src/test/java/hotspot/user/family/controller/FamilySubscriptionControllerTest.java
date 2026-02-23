@@ -28,7 +28,6 @@ import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
-import hotspot.user.family.controller.port.CreateFamilyApplyService;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.port.UpdateFamilyPriorityService;
 import hotspot.user.family.controller.port.UpdateFamilyRoleService;
@@ -226,7 +225,8 @@ class FamilySubscriptionControllerTest {
                 .familyRole(FamilyRole.PARENT)
                 .build();
 
-        given(updateFamilyRoleService.update(eq(1L), eq(100L), eq(FamilyRole.OWNER), eq(2L), any(UpdateFamilyRoleRequest.class)))
+        given(updateFamilyRoleService.update(
+                eq(1L), eq(100L), eq(FamilyRole.OWNER), eq(2L), any(UpdateFamilyRoleRequest.class)))
                 .willReturn(response);
 
         // when & then
@@ -245,7 +245,8 @@ class FamilySubscriptionControllerTest {
         setAuthentication(1L, 100L, FamilyRole.OWNER);
         UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.PARENT);
 
-        given(updateFamilyRoleService.update(eq(1L), eq(100L), eq(FamilyRole.OWNER), eq(10L), any(UpdateFamilyRoleRequest.class)))
+        given(updateFamilyRoleService.update(
+                eq(1L), eq(100L), eq(FamilyRole.OWNER), eq(10L), any(UpdateFamilyRoleRequest.class)))
                 .willThrow(new ApplicationException(FamilyErrorCode.CANNOT_CHANGE_OWNER_ROLE));
 
         // when & then
@@ -263,7 +264,8 @@ class FamilySubscriptionControllerTest {
         setAuthentication(1L, 100L, FamilyRole.OWNER);
         UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.OWNER);
 
-        given(updateFamilyRoleService.update(eq(1L), eq(100L), eq(FamilyRole.OWNER), eq(2L), any(UpdateFamilyRoleRequest.class)))
+        given(updateFamilyRoleService.update(
+                eq(1L), eq(100L), eq(FamilyRole.OWNER), eq(2L), any(UpdateFamilyRoleRequest.class)))
                 .willThrow(new ApplicationException(FamilyErrorCode.CANNOT_ASSIGN_OWNER_ROLE));
 
         // when & then

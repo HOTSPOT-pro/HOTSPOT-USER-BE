@@ -1,5 +1,8 @@
 package hotspot.user.family.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
@@ -14,8 +17,6 @@ import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,12 @@ public class UpdateFamilyRoleServiceImpl implements UpdateFamilyRoleService {
             throw new ApplicationException(FamilyErrorCode.CANNOT_ASSIGN_OWNER_ROLE);
         }
 
-        // 6. 가족 내 역할 업데이트
+        // 6. 변경하려는 역할이 현재와 동일한 경우 처리 생략 (Early Return)
+        if (familySub.getFamilyRole() == request.familyRole()) {
+            return FamilySubscriptionMapper.toUpdateFamilyRoleResponse(familySub);
+        }
+
+        // 7. 가족 내 역할 업데이트
         familySub.updateFamilyRole(request.familyRole());
         familySubscriptionRepository.save(familySub);
 

@@ -1,5 +1,22 @@
 package hotspot.user.family.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.Optional;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
@@ -11,20 +28,6 @@ import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateFamilyRoleServiceImplTest {
@@ -68,13 +71,42 @@ class UpdateFamilyRoleServiceImplTest {
     }
 
     @Test
+    @DisplayName("성공: 변경하려는 역할이 현재와 동일하면 DB 저장을 수행하지 않고 즉시 반환한다")
+    void updateFamilyRoleSuccessWithSameRole() {
+        // given
+        Long requesterMemberId = 1L;
+        Long requesterFamilyId = 100L;
+        Long targetSubId = 2L;
+        UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.CHILD);
+
+        Subscription requesterSub = Subscription.builder().id(10L).build();
+        given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
+
+        Family family = Family.builder().id(requesterFamilyId).build();
+        FamilySubscription targetFamilySub = FamilySubscription.builder()
+                .family(family)
+                .subscription(Subscription.builder().id(targetSubId).build())
+                .familyRole(FamilyRole.CHILD)
+                .build();
+        given(familySubscriptionRepository.findBySubId(targetSubId)).willReturn(Optional.of(targetFamilySub));
+
+        // when
+        updateFamilyRoleService.update(
+                requesterMemberId, requesterFamilyId, FamilyRole.OWNER, targetSubId, request);
+
+        // then
+        verify(familySubscriptionRepository, never()).save(any(FamilySubscription.class));
+    }
+
+    @Test
     @DisplayName("실패: OWNER 권한이 아닌 사용자가 수정을 시도하면 예외가 발생한다")
     void updateFamilyRoleFailByRole() {
         // given
         UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.PARENT);
 
         // when & then
-        assertThatThrownBy(() -> updateFamilyRoleService.update(1L, 100L, FamilyRole.PARENT, 2L, request))
+        assertThatThrownBy(() -> updateFamilyRoleService.update(
+                1L, 100L, FamilyRole.PARENT, 2L, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(AuthErrorCode.ACCESS_DENIED.getMessage());
     }
@@ -91,7 +123,8 @@ class UpdateFamilyRoleServiceImplTest {
         given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
 
         // when & then
-        assertThatThrownBy(() -> updateFamilyRoleService.update(requesterMemberId, 100L, FamilyRole.OWNER, targetSubId, request))
+        assertThatThrownBy(() -> updateFamilyRoleService.update(
+                requesterMemberId, 100L, FamilyRole.OWNER, targetSubId, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(FamilyErrorCode.CANNOT_CHANGE_OWNER_ROLE.getMessage());
     }
@@ -117,7 +150,8 @@ class UpdateFamilyRoleServiceImplTest {
         given(familySubscriptionRepository.findBySubId(targetSubId)).willReturn(Optional.of(targetFamilySub));
 
         // when & then
-        assertThatThrownBy(() -> updateFamilyRoleService.update(requesterMemberId, requesterFamilyId, FamilyRole.OWNER, targetSubId, request))
+        assertThatThrownBy(() -> updateFamilyRoleService.update(
+                requesterMemberId, requesterFamilyId, FamilyRole.OWNER, targetSubId, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(FamilyErrorCode.CANNOT_ASSIGN_OWNER_ROLE.getMessage());
     }
@@ -138,11 +172,13 @@ class UpdateFamilyRoleServiceImplTest {
         FamilySubscription targetFamilySub = FamilySubscription.builder()
                 .family(otherFamily)
                 .subscription(Subscription.builder().id(targetSubId).build())
+                .familyRole(FamilyRole.CHILD)
                 .build();
         given(familySubscriptionRepository.findBySubId(targetSubId)).willReturn(Optional.of(targetFamilySub));
 
         // when & then
-        assertThatThrownBy(() -> updateFamilyRoleService.update(requesterMemberId, requesterFamilyId, FamilyRole.OWNER, targetSubId, request))
+        assertThatThrownBy(() -> updateFamilyRoleService.update(
+                requesterMemberId, requesterFamilyId, FamilyRole.OWNER, targetSubId, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(FamilyErrorCode.NOT_FAMILY_MEMBER.getMessage());
     }
