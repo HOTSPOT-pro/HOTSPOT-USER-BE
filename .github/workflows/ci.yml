@@ -21,11 +21,16 @@ jobs:
           java-version: '17'
           cache: gradle
 
+      - name: Verify Docker (for Testcontainers)
+        run: docker --version
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
       - name: Run Gradle Check
         run: ./gradlew clean check
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: true
 
       # 테스트 리포트 업로드
       - name: Upload Test Report

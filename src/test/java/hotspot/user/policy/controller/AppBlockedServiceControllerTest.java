@@ -1,5 +1,6 @@
 package hotspot.user.policy.controller;
 
+import static hotspot.user.util.TestSecurityUtil.setAuthentication;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -18,17 +19,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.member.domain.Status;
 import hotspot.user.policy.controller.port.FindAppBlockedService;
 import hotspot.user.policy.controller.port.UpdateAppBlockedServiceService;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
@@ -63,20 +60,6 @@ class AppBlockedServiceControllerTest {
     @MockBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
-    private void setAuthentication(FamilyRole role) {
-        PrincipalDetails principal = PrincipalDetails.builder()
-                .id(1L)
-                .email("test@test.com")
-                .familyId(100L)
-                .role(role)
-                .status(Status.APPROVED)
-                .build();
-
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                principal, null, principal.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(auth);
-    }
-
     @Test
     @DisplayName("앱 차단 서비스 전체 목록 조회 API 성공")
     void getAllAppBlockedServicesSuccess() throws Exception {
@@ -102,7 +85,7 @@ class AppBlockedServiceControllerTest {
     @DisplayName("성공: OWNER 권한으로 앱 차단 설정을 업데이트한다")
     void updateAppBlockedServiceSuccess() throws Exception {
         // given
-        setAuthentication(FamilyRole.OWNER);
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
         UpdateAppBlockedServiceRequest request = new UpdateAppBlockedServiceRequest(1L, 100L, List.of(1L, 2L));
         UpdateAppBlockedServiceResponse response = new UpdateAppBlockedServiceResponse(1L, 100L, List.of(1L, 2L));
 

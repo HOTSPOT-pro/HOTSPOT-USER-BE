@@ -12,32 +12,32 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 @Configuration
 public class SwaggerConfig {
 
-  private static final String SECURITY_SCHEME_NAME = "BearerAuth";
+    private static final String SECURITY_SCHEME_NAME = "BearerAuth";
 
-  @Bean
-  public OpenAPI openAPI() {
-    return new OpenAPI()
-        .info(apiInfo())
-        .addSecurityItem(securityRequirement())
-        .components(securityComponents());
-  }
+    @Bean
+    public OpenAPI openAPI() {
+        return new OpenAPI()
+                .info(apiInfo())
+                .addSecurityItem(securityRequirement())
+                .components(securityComponents());
+    }
 
-  private Info apiInfo() {
-    return new Info().title("Hotspot User API").version("v1").description("Hotspot 사용자 API 명세");
-  }
+    private Info apiInfo() {
+        return new Info().title("Hotspot User API").version("v1").description("Hotspot 사용자 API 명세");
+    }
 
-  private SecurityRequirement securityRequirement() {
-    return new SecurityRequirement().addList(SECURITY_SCHEME_NAME);
-  }
+    private SecurityRequirement securityRequirement() {
+        return new SecurityRequirement().addList(SECURITY_SCHEME_NAME);
+    }
 
-  private Components securityComponents() {
-    return new Components()
-        .addSecuritySchemes(
-            SECURITY_SCHEME_NAME,
-            new SecurityScheme()
-                .name(SECURITY_SCHEME_NAME)
-                .type(SecurityScheme.Type.HTTP)
-                .scheme("bearer")
-                .bearerFormat("JWT"));
-  }
+    private Components securityComponents() {
+        return new Components()
+                .addSecuritySchemes(
+                        SECURITY_SCHEME_NAME,
+                        new SecurityScheme()
+                                .name(SECURITY_SCHEME_NAME)
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT"));
+    }
 }
