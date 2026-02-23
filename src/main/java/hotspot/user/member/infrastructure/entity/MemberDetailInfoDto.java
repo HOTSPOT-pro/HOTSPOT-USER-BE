@@ -1,8 +1,7 @@
-package hotspot.user.member.domain;
+package hotspot.user.member.infrastructure.entity;
 
-import hotspot.user.member.infrastructure.entity.MemberEntity;
+import hotspot.user.member.domain.FamilyRole;
 import lombok.Builder;
-import lombok.Getter;
 
 /**
  * 회원 상세 정보 조회를 위한 통합 도메인 모델
