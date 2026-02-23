@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class NotificationServiceImpl implements NotificationService {
 
-    private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final int DEFAULT_PAGE_SIZE = 10;
 
     private final NotificationRepository notificationRepository;
     private final SubscriptionService subscriptionService;
