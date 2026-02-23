@@ -80,7 +80,9 @@ class NotificationRepositoryImplTest {
                 .isRead(false)
                 .build();
 
-        given(notificationJpaRepository.findBySubscriptionSubIdOrderByCreatedTimeDesc(eq(1L), any()))
+        given(notificationJpaRepository
+                .findBySubscriptionSubIdAndCreatedTimeGreaterThanEqualOrderByCreatedTimeDesc(
+                        eq(1L), any(), any()))
                 .willReturn(new PageImpl<>(List.of(entity), PageRequest.of(0, 20), 1));
 
         var result = notificationRepository.findRecentBySubId(1L, PageRequest.of(0, 20));
