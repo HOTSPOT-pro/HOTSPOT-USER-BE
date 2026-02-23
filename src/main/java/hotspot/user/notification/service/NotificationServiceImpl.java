@@ -7,6 +7,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.NotificationErrorCode;
+import hotspot.user.common.exception.code.SubscriptionErrorCode;
 import hotspot.user.notification.controller.port.NotificationService;
 import hotspot.user.notification.controller.response.NotificationListResponse;
 import hotspot.user.notification.controller.response.UnreadNotificationCountResponse;
@@ -56,13 +59,23 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void markRead(Long memberId, Long notificationId) {
         Long subId = resolveSubIdByMemberId(memberId);
-        notificationRepository.markReadById(notificationId, subId);
+        int updatedCount = notificationRepository.markReadById(notificationId, subId);
+        if (updatedCount == 0) {
+            throw new ApplicationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
+        }
     }
 
     // 인증 사용자(memberId)의 소유 회선(subId)을 조회한다.
     private Long resolveSubIdByMemberId(Long memberId) {
-        Subscription subscription = subscriptionService.findByMemberId(memberId);
-        return subscription.getId();
+        try {
+            Subscription subscription = subscriptionService.findByMemberId(memberId);
+            return subscription.getId();
+        } catch (ApplicationException e) {
+            if (e.getCode() == SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND) {
+                throw new ApplicationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
+            }
+            throw e;
+        }
     }
 
     // 기본 정렬(createdTime DESC)과 기본 페이지 크기를 강제한다.
