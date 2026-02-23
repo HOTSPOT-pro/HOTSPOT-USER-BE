@@ -9,9 +9,9 @@ import hotspot.user.member.domain.FamilyRole;
  */
 public interface UpdateFamilyRoleService {
     UpdateFamilyRoleResponse update(
+            Long requesterMemberId,
             Long requesterFamilyId,
             FamilyRole requesterFamilyRole,
-            Long targetFamilyId,
             Long targetSubId,
             UpdateFamilyRoleRequest request);
 }

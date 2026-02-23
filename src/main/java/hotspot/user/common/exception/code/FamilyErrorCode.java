@@ -26,6 +26,8 @@ public enum FamilyErrorCode implements BaseErrorCode {
     TARGET_ALREADY_IN_FAMILY(HttpStatus.BAD_REQUEST, "FAMILY_013", "이미 가족에 속해있는 구성원입니다."),
     TARGET_NOT_IN_FAMILY(HttpStatus.BAD_REQUEST, "FAMILY_014", "해당 가족에 속해있지 않은 구성원입니다."),
     DUPLICATE_FAMILY_APPLY(HttpStatus.CONFLICT, "FAMILY_015", "이미 처리 대기 중인 신청이 존재합니다."),
+    CANNOT_CHANGE_OWNER_ROLE(HttpStatus.BAD_REQUEST, "FAMILY_016", "가족 관리자(OWNER) 본인의 역할은 변경할 수 없습니다."),
+    CANNOT_ASSIGN_OWNER_ROLE(HttpStatus.BAD_REQUEST, "FAMILY_017", "타인에게 OWNER 역할을 부여할 수 없습니다."),
     ;
 
     private final HttpStatus httpStatus;
