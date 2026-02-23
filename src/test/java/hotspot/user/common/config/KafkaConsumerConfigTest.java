@@ -1,4 +1,4 @@
-package hotspot.user.common.config.kafka;
+package hotspot.user.common.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -18,7 +18,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import hotspot.user.notification.dto.UserAlertEvent;
+import hotspot.user.kafka.dto.UserAlertEvent;
 
 class KafkaConsumerConfigTest {
 

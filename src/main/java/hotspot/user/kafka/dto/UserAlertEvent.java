@@ -1,4 +1,4 @@
-package hotspot.user.notification.dto;
+package hotspot.user.kafka.dto;
 
 import java.time.Instant;
 
@@ -10,6 +10,10 @@ public record UserAlertEvent(
         String eventType,
         String alertType,
         String threshold,
+        String policyName,
+        String serviceName,
+        String presentSenderName,
+        String presentAmount,
         Instant occurredAt,
         Long subId,
         Long familyId,
