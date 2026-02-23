@@ -22,7 +22,7 @@ public class UserAlertEventNotificationMapper {
 
     private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+");
 
-    // Kafka eventType에 따라 알림 매핑 메서드를 분기한다.
+    // Kafka 이벤트 타입에 따라 알림 매핑 분기를 수행한다.
     public AlertNotificationMappingResult map(UserAlertEvent event) {
         KafkaEventType eventType = KafkaEventType.from(normalize(event.eventType()));
         return switch (eventType) {
@@ -34,11 +34,16 @@ public class UserAlertEventNotificationMapper {
         };
     }
 
-    // 매핑 결과를 Notification 도메인 객체로 변환한다.
+    // 이벤트의 기본 대상 subId로 Notification 도메인을 만든다.
     public Notification toNotification(UserAlertEvent event) {
+        return toNotification(event, event.subId());
+    }
+
+    // 지정된 대상 subId로 Notification 도메인을 만든다.
+    public Notification toNotification(UserAlertEvent event, Long targetSubId) {
         AlertNotificationMappingResult mapping = map(event);
         return Notification.builder()
-                .subId(requireSubId(event.subId()))
+                .subId(requireSubId(targetSubId))
                 .eventId(resolveEventId(event))
                 .notificationType(mapping.notificationType().name())
                 .content(mapping.content().body())
@@ -85,22 +90,7 @@ public class UserAlertEventNotificationMapper {
         throw new ApplicationException(KafkaErrorCode.UNSUPPORTED_KAFKA_ALERT_TYPE);
     }
 
-    // 개인 요금제 잔여량 알림 타입인지 확인한다.
-    private boolean isSingleAlertType(String alertType) {
-        return "PLAN_REMAINING".equals(alertType);
-    }
-
-    // 가족 공유 풀 잔여량 알림 타입인지 확인한다.
-    private boolean isFamilyAlertType(String alertType) {
-        return "FAMILY_POOL_REMAINING".equals(alertType);
-    }
-
-    // 선물 데이터 잔여량 알림 타입인지 확인한다.
-    private boolean isGiftAlertType(String alertType) {
-        return "GIFT_REMAINING".equals(alertType);
-    }
-
-    // 시간 차단 정책 적용/해제 이벤트를 알림으로 변환한다.
+    // 시간 차단 정책 이벤트를 알림으로 변환한다.
     private AlertNotificationMappingResult mapTimeWindowPolicy(UserAlertEvent event) {
         String normalizedAlertType = normalize(event.alertType());
         String policyName = defaultIfBlank(event.policyName(), "정책");
@@ -120,7 +110,7 @@ public class UserAlertEventNotificationMapper {
         };
     }
 
-    // 즉시 차단 적용/해제 이벤트를 알림으로 변환한다.
+    // 즉시 차단 이벤트를 알림으로 변환한다.
     private AlertNotificationMappingResult mapImmediateBlock(UserAlertEvent event) {
         String normalizedAlertType = normalize(event.alertType());
 
@@ -139,7 +129,7 @@ public class UserAlertEventNotificationMapper {
         };
     }
 
-    // 서비스 차단 적용/해제 이벤트를 알림으로 변환한다.
+    // 서비스 접근 제어 이벤트를 알림으로 변환한다.
     private AlertNotificationMappingResult mapServiceAccess(UserAlertEvent event) {
         String normalizedAlertType = normalize(event.alertType());
         String serviceName = defaultIfBlank(event.serviceName(), "서비스");
@@ -171,7 +161,7 @@ public class UserAlertEventNotificationMapper {
         );
     }
 
-    // 공통 매핑 결과 객체를 생성한다.
+    // 공통 알림 매핑 결과 객체를 생성한다.
     private AlertNotificationMappingResult create(NotificationType notificationType, String title, String body) {
         return new AlertNotificationMappingResult(
                 notificationType,
@@ -179,7 +169,7 @@ public class UserAlertEventNotificationMapper {
         );
     }
 
-    // threshold 문자열 또는 remainingPct에서 임계치 값을 추출한다.
+    // threshold 또는 remainingPct에서 숫자 임계치를 추출한다.
     private int resolveThreshold(UserAlertEvent event) {
         String thresholdRaw = defaultIfBlank(event.threshold(), String.valueOf(event.remainingPct()));
         Matcher matcher = NUMBER_PATTERN.matcher(thresholdRaw);
@@ -189,7 +179,7 @@ public class UserAlertEventNotificationMapper {
         return Integer.parseInt(matcher.group());
     }
 
-    // sourceEventId 우선으로 알림 이벤트 ID를 결정한다.
+    // sourceEventId 우선으로 저장 이벤트 ID를 결정한다.
     private String resolveEventId(UserAlertEvent event) {
         String eventId = defaultIfBlank(event.sourceEventId(), event.alertId());
         if (eventId.isBlank()) {
@@ -198,7 +188,7 @@ public class UserAlertEventNotificationMapper {
         return eventId;
     }
 
-    // occurredAt을 UTC 기준 LocalDateTime으로 변환한다.
+    // 발생 시각을 UTC 기준 LocalDateTime으로 변환한다.
     private LocalDateTime resolveCreatedTime(UserAlertEvent event) {
         if (event.occurredAt() == null) {
             return LocalDateTime.now(ZoneOffset.UTC);
@@ -206,7 +196,7 @@ public class UserAlertEventNotificationMapper {
         return LocalDateTime.ofInstant(event.occurredAt(), ZoneOffset.UTC);
     }
 
-    // 대소문자/구분자 차이를 제거해 비교 가능한 문자열로 정규화한다.
+    // 문자열 비교를 위해 대소문자/구분자를 정규화한다.
     private static String normalize(String value) {
         if (value == null) {
             return "";
@@ -217,7 +207,7 @@ public class UserAlertEventNotificationMapper {
                 .toUpperCase(Locale.ROOT);
     }
 
-    // 문자열이 비어있으면 기본값을 반환한다.
+    // 값이 비어있으면 기본값으로 치환한다.
     private static String defaultIfBlank(String value, String fallback) {
         if (value == null || value.isBlank()) {
             return fallback;
@@ -225,7 +215,22 @@ public class UserAlertEventNotificationMapper {
         return value;
     }
 
-    // subId 필수값을 검증한다.
+    // 개인 요금제 잔여량 알림 타입인지 확인한다.
+    private boolean isSingleAlertType(String alertType) {
+        return "PLAN_REMAINING".equals(alertType);
+    }
+
+    // 가족 공유 잔여량 알림 타입인지 확인한다.
+    private boolean isFamilyAlertType(String alertType) {
+        return "FAMILY_POOL_REMAINING".equals(alertType);
+    }
+
+    // 선물 데이터 잔여량 알림 타입인지 확인한다.
+    private boolean isGiftAlertType(String alertType) {
+        return "GIFT_REMAINING".equals(alertType);
+    }
+
+    // 유효한 subId인지 검증한다.
     private static Long requireSubId(Long subId) {
         if (subId == null) {
             throw new ApplicationException(KafkaErrorCode.KAFKA_SUB_ID_REQUIRED);
