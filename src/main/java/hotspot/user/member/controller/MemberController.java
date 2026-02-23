@@ -4,6 +4,7 @@ import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.member.controller.port.FindMemberService;
 import hotspot.user.member.controller.response.MemberResponse;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +27,6 @@ public class MemberController {
 
         MemberResponse result = findMemberService.findById(principal.getId());
 
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }
