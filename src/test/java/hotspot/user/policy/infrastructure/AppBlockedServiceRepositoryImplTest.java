@@ -66,4 +66,38 @@ class AppBlockedServiceRepositoryImplTest {
         // then
         assertThat(count).isEqualTo(2L);
     }
+
+    @Test
+    @DisplayName("삭제되지 않은 ID 목록으로 조회 후 도메인 변환한다")
+    void findAllByAppBlackedServiceIdsSuccess() {
+
+        // given
+        List<Long> ids = List.of(1L, 2L);
+
+        AppBlockedServiceEntity entity1 = AppBlockedServiceEntity.builder()
+                .appBlockedServiceId(1L)
+                .blockedServiceName("YouTube")
+                .blockedServiceCode("YOUTUBE")
+                .isDeleted(false)
+                .build();
+
+        AppBlockedServiceEntity entity2 = AppBlockedServiceEntity.builder()
+                .appBlockedServiceId(2L)
+                .blockedServiceName("TikTok")
+                .blockedServiceCode("TIKTOK")
+                .isDeleted(false)
+                .build();
+
+        given(appBlockedServiceJpaRepository.findByIdInAndIsDeletedFalse(ids))
+                .willReturn(List.of(entity1, entity2));
+
+        // when
+        List<AppBlockedService> result =
+                appBlockedServiceRepository.findAllByAppBlockedServiceIds(ids);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getName()).isEqualTo("YouTube");
+        assertThat(result.get(1).getName()).isEqualTo("TikTok");
+    }
 }
