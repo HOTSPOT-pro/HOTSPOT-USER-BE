@@ -1,13 +1,29 @@
 package hotspot.user.family.infrastructure.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
 import hotspot.user.common.BaseEntity;
 import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.FamilyApply;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 
 @Entity
 @Getter
@@ -79,8 +95,10 @@ public class FamilyApplyEntity extends BaseEntity {
     public FamilyApply entityToDomain() {
         return FamilyApply.builder()
                 .id(this.familyApplyId)
-                .requesterSubId(this.requesterSubscription != null ? this.requesterSubscription.getSubId() : null) // NPE 방지
-                .targetSubId(this.targetSubscription != null ? this.targetSubscription.getSubId() : null) // NPE 방지
+                .requesterSubId(this.requesterSubscription != null ?
+                        this.requesterSubscription.getSubId() : null) // NPE 방지
+                .targetSubId(this.targetSubscription != null ?
+                        this.targetSubscription.getSubId() : null) // NPE 방지
                 .familyId(this.family != null ? this.family.getFamilyId() : null) // NPE 방지
                 .applyType(this.applyType)
                 .targetFamilyRole(this.targetFamilyRole)

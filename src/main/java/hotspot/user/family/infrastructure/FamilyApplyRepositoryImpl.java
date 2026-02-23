@@ -1,10 +1,11 @@
 package hotspot.user.family.infrastructure;
 
+import org.springframework.stereotype.Repository;
+
 import hotspot.user.family.domain.FamilyApply;
 import hotspot.user.family.infrastructure.entity.FamilyApplyEntity;
 import hotspot.user.family.service.port.FamilyApplyRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor

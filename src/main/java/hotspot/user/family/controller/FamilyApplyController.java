@@ -1,16 +1,21 @@
 package hotspot.user.family.controller;
 
+import jakarta.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.family.controller.port.CreateFamilyApplyService;
 import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
 import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
 import hotspot.user.family.controller.swagger.FamilyApplyApi;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
 
 /**
  * FamilySubscription 관련 컨트롤러

@@ -1,5 +1,8 @@
 package hotspot.user.family.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
@@ -16,8 +19,6 @@ import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 가족 구성원 추가 / 삭제 신청 서비스 구현체
