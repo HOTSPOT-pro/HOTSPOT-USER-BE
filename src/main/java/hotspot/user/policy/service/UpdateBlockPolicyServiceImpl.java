@@ -24,7 +24,6 @@ import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.policy.domain.mapper.BlockPolicyMapper;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
-import hotspot.user.subscription.domain.Subscription;
 import lombok.RequiredArgsConstructor;
 
 /**
