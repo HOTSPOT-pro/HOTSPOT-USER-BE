@@ -30,6 +30,7 @@ public class FamilyApplyMapper {
     // 도메인 -> response
     public static CreateFamilyApplyResponse toCreateFamilyApplyResponse(FamilyApply familyApply) {
         return CreateFamilyApplyResponse.builder()
+                .requesterSubId(familyApply.getRequesterSubId())
                 .targetSubId(familyApply.getTargetSubId())
                 .familyId(familyApply.getFamilyId())
                 .applyType(familyApply.getApplyType())
