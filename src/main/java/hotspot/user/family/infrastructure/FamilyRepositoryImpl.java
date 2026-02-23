@@ -40,17 +40,17 @@ public class FamilyRepositoryImpl implements FamilyRepository {
             return Optional.empty();
         }
 
-        // 2. 첫 번째 행에서 가족 공통 정보 추출 (결과가 1개 이상임은 위에서 보장됨)
-        FamilyDetailInfoDto first = results.get(0);
-        FamilyEntity familyEntity = first.familyEntity();
+        // 2. 첫 번째 행에서 가족 공통 정보 추출
+        FamilyEntity familyEntity = results.get(0).familyEntity();
 
-        // 3. 멤버 데이터 조립 (방어 로직 추가)
+        // 3. 멤버 매핑
+        // [To-Do] 지금은 1대1이라고 생각해서 개발해서 나중에 수정 필요
         List<MemberDetailInfo> members = results.stream()
-                // LEFT JOIN으로 인해 멤버 정보가 null인 빈 행은 무시
+                // LEFT JOIN 방어: 멤버가 없는(0명인) 가족일 경우 이 필터에서 걸러짐
                 .filter(dto -> dto.memberEntity() != null)
                 .map(dto -> MemberDetailInfo.builder()
                         .member(dto.memberEntity().entityToDomain())
-                        .email(dto.email())
+                        .email(dto.email()) // LEFT JOIN이라 null일 수 있음 (소셜 연동 안한 유저)
                         .phone(dto.phone())
                         .subId(dto.subId())
                         .role(dto.role())

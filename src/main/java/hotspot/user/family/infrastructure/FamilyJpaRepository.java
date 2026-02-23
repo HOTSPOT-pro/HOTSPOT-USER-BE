@@ -19,9 +19,9 @@ public interface FamilyJpaRepository extends JpaRepository<FamilyEntity, Long> {
                f, m, sa.email, s.phoneEnc, s.subId, fs.familyRole
            )
            FROM FamilyEntity f
-           JOIN FamilySubscriptionEntity fs ON fs.family = f
-           JOIN SubscriptionEntity s ON fs.subscription = s
-           JOIN MemberEntity m ON s.member = m
+           LEFT JOIN FamilySubscriptionEntity fs ON fs.family = f
+           LEFT JOIN SubscriptionEntity s ON fs.subscription = s
+           LEFT JOIN MemberEntity m ON s.member = m
            LEFT JOIN SocialAccountEntity sa ON sa.member = m
            WHERE f.familyId = :familyId
            """)
