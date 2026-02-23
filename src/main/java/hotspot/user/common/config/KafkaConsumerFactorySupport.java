@@ -1,4 +1,4 @@
-package hotspot.user.common.config.kafka.consumer;
+package hotspot.user.common.config;
 
 import java.util.HashMap;
 import java.util.Map;
