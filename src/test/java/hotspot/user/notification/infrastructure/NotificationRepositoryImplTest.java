@@ -105,4 +105,15 @@ class NotificationRepositoryImplTest {
         then(notificationJpaRepository).should().countBySubscriptionSubIdAndIsReadFalse(1L);
         then(notificationJpaRepository).should().markAllReadBySubId(1L);
     }
+
+    @Test
+    @DisplayName("markReadById delegates to jpa query")
+    void markReadByIdSuccess() {
+        given(notificationJpaRepository.markReadByIdAndSubId(10L, 1L)).willReturn(1);
+
+        int updated = notificationRepository.markReadById(10L, 1L);
+
+        assertThat(updated).isEqualTo(1);
+        then(notificationJpaRepository).should().markReadByIdAndSubId(10L, 1L);
+    }
 }
