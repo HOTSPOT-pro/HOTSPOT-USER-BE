@@ -20,7 +20,9 @@ public class FamilyUsageRedisKeyBuilder {
         return "usage:family:" + familyId + ":" + format(date);
     }
 
-    public static String subUsage(Long subId, LocalDate date) {return "usage:sub:" + subId + ":" + format(date);}
+    public static String subUsage(Long subId, LocalDate date) {
+        return "usage:sub:" + subId + ":" + format(date);
+    }
 
     private static String format(LocalDate date) {
         return date.format(yyyyMM);
