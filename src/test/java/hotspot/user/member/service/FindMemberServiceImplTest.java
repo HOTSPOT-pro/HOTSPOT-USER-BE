@@ -60,7 +60,7 @@ class FindMemberServiceImplTest {
         given(memberRepository.findDetailByIdAndEmail(memberId, email)).willReturn(Optional.of(detailInfo));
 
         // when
-        MemberResponse response = findMemberService.findById(memberId, email);
+        MemberResponse response = findMemberService.findByIdAndEmail(memberId, email);
 
         // then
         assertThat(response.id()).isEqualTo(memberId);
@@ -80,7 +80,7 @@ class FindMemberServiceImplTest {
         given(memberRepository.findDetailByIdAndEmail(memberId, email)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> findMemberService.findById(memberId, email))
+        assertThatThrownBy(() -> findMemberService.findByIdAndEmail(memberId, email))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(MemberErrorCode.MEMBER_NOT_FOUND.getMessage());
     }
