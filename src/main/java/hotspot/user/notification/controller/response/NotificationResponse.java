@@ -13,6 +13,6 @@ public class NotificationResponse {
     private String eventId;
     private String notificationType;
     private String content;
-    private Boolean isRead;
+    private boolean isRead;
     private LocalDateTime createdTime;
 }
