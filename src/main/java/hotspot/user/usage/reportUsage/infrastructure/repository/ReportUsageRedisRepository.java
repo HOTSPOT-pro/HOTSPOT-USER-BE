@@ -50,7 +50,13 @@ public class ReportUsageRedisRepository {
         for (Long subId : subIds) {
             for (LocalDate date : dates) {
 
-                long totalKb = rawSums.get(index++);
+                long totalKb = 0L;
+
+                if (index < rawSums.size() && rawSums.get(index) != null) {
+                    totalKb = rawSums.get(index);
+                }
+
+                index++;
 
                 double gb =
                         RedisUsageCalculator.kbToGb(totalKb);
@@ -92,7 +98,13 @@ public class ReportUsageRedisRepository {
         for (Long subId : subIds) {
             for (YearMonth month : months) {
 
-                long totalKb = rawSums.get(index++);
+                long totalKb = 0L;
+
+                if (index < rawSums.size() && rawSums.get(index) != null) {
+                    totalKb = rawSums.get(index);
+                }
+
+                index++;
 
                 double gb =
                         RedisUsageCalculator.kbToGb(totalKb);

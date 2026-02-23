@@ -43,13 +43,31 @@ public class FindReportUsageMonthServiceImpl
         Long selfSubId =
                 subscriptionService.findByMemberId(memberId).getId();
 
-        List<FamilySubList> familySubList =
-                familySubscriptionRepository.findByFamilyId(familyId)
-                        .stream()
-                        .map(FamilyUsageMapper::toFamilySubList)
-                        .toList();
+        List<FamilySubList> familySubList;
 
-        validateTargetInFamily(familySubList, targetSubId);
+        if (familyId == null) {
+
+            // 🔒 가족이 없는 사용자 → 본인만 조회 가능
+            if (targetSubId != null && !targetSubId.equals(selfSubId)) {
+                throw new ApplicationException(
+                        ReportUsageErrorCode.TARGET_SUBSCRIPTION_NOT_IN_FAMILY
+                );
+            }
+
+            familySubList = List.of(
+                    new FamilySubList(selfSubId, null)
+            );
+
+        } else {
+
+            familySubList =
+                    familySubscriptionRepository.findByFamilyId(familyId)
+                            .stream()
+                            .map(FamilyUsageMapper::toFamilySubList)
+                            .toList();
+
+            validateTargetInFamily(familySubList, targetSubId);
+        }
 
         List<Long> subIds =
                 familySubList.stream()

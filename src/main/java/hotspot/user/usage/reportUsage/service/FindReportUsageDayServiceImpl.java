@@ -42,20 +42,36 @@ public class FindReportUsageDayServiceImpl implements FindReportUsageDayService 
         Long selfSubId =
                 subscriptionService.findByMemberId(memberId).getId();
 
-        List<FamilySubList> familySubList =
-                familySubscriptionRepository.findByFamilyId(familyId)
-                        .stream()
-                        .map(FamilyUsageMapper::toFamilySubList)
-                        .toList();
+        List<FamilySubList> familySubList;
+
+        if (familyId == null) {
+            // 가족이 없는 경우 → 본인만 조회 가능
+            if (targetSubId != null && !targetSubId.equals(selfSubId)) {
+                throw new ApplicationException(
+                        ReportUsageErrorCode.TARGET_SUBSCRIPTION_NOT_IN_FAMILY
+                );
+            }
+
+            familySubList = List.of(
+                    new FamilySubList(selfSubId, null) // 이름은 mapper에서 처리하거나 null 허용
+            );
+
+        } else {
+
+            familySubList =
+                    familySubscriptionRepository.findByFamilyId(familyId)
+                            .stream()
+                            .map(FamilyUsageMapper::toFamilySubList)
+                            .toList();
+
+            validateTargetInFamily(familySubList, targetSubId);
+        }
 
         List<Long> subIds = familySubList.stream()
                 .map(FamilySubList::subId)
                 .toList();
 
-        validateTargetInFamily(familySubList, targetSubId);
-
-        List<LocalDate> dates =
-                generateMonthDates();
+        List<LocalDate> dates = generateMonthDates();
 
         Map<Long, Map<LocalDate, Double>> subDailyMap =
                 reportUsageRepository

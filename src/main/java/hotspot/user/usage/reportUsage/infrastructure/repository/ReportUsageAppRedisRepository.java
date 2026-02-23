@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -11,6 +12,7 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Repository;
 
 import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.redis.RedisValueParser;
 import hotspot.user.usage.reportUsage.domain.AppUsage;
 import hotspot.user.usage.reportUsage.infrastructure.keybuilder.ReportUsageRedisKeyBuilder;
 import lombok.RequiredArgsConstructor;
@@ -58,8 +60,8 @@ public class ReportUsageAppRedisRepository {
                 .filter(tuple -> tuple.getValue() != null)
                 .map(tuple -> {
 
-                    Long appId =
-                            Long.parseLong(tuple.getValue());
+                    Long appId = RedisValueParser.toLong(tuple.getValue());
+
 
                     double usedKb =
                             tuple.getScore() == null
@@ -71,6 +73,7 @@ public class ReportUsageAppRedisRepository {
 
                     return new AppUsage(appId, usedGb);
                 })
+                .filter(Objects::nonNull)
                 .toList();
     }
 }
