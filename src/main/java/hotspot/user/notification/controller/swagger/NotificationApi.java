@@ -3,6 +3,7 @@ package hotspot.user.notification.controller.swagger;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ErrorResponse;
@@ -57,5 +58,20 @@ public interface NotificationApi {
     })
     ResponseEntity<ApiResponse<Void>> markAllRead(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails details
+    );
+
+    @Operation(summary = "알림 단건 읽음 처리", description = "로그인 사용자의 특정 알림 1건을 읽음 상태로 변경합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "처리 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "회선 정보를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+    ResponseEntity<ApiResponse<Void>> markRead(
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails details,
+            @Parameter(description = "읽음 처리할 알림 ID", example = "10")
+            @PathVariable Long notificationId
     );
 }
