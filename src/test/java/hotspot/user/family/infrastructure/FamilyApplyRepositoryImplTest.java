@@ -2,6 +2,7 @@ package hotspot.user.family.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 import org.junit.jupiter.api.DisplayName;
@@ -16,8 +17,6 @@ import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.FamilyApply;
 import hotspot.user.family.infrastructure.entity.FamilyApplyEntity;
 import hotspot.user.member.domain.FamilyRole;
-
-import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 class FamilyApplyRepositoryImplTest {
