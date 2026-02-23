@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/families/")
+@RequestMapping("/api/v1/families")
 public class FamilyController implements FamilyApi {
 
     private final FindFamilyInfoService findFamilyInfoService;
@@ -29,8 +29,6 @@ public class FamilyController implements FamilyApi {
             @AuthenticationPrincipal PrincipalDetails principal) {
 
         FamilyInfoResponse response = findFamilyInfoService.findFamilyInfoById(principal.getFamilyId());
-        return ResponseEntity.ok(
-                ApiResponse.success(response));
-
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
