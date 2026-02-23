@@ -2,8 +2,10 @@ package hotspot.user.usage.familyUsage.infrastructure.respository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -72,6 +74,16 @@ class FamilyUsageRedisRepositoryTest {
         ) {
             return new RedisPipelineExecutor(redisTemplate);
         }
+
+        @Bean
+        Clock clock() {
+            return Clock.fixed(
+                    LocalDate.of(2026, 2, 1)
+                            .atStartOfDay(ZoneId.systemDefault())
+                            .toInstant(),
+                    ZoneId.systemDefault()
+            );
+        }
     }
 
     @BeforeEach
@@ -86,7 +98,7 @@ class FamilyUsageRedisRepositoryTest {
     @DisplayName("가족 사용량 정상 조회")
     void shouldReturnFamilyUsageSuccessfully() {
 
-        String yyyymm = LocalDate.now()
+        String yyyyMM = LocalDate.now()
                 .format(DateTimeFormatter.ofPattern("yyyyMM"));
 
         // 가족 한도 20GB
@@ -98,7 +110,7 @@ class FamilyUsageRedisRepositoryTest {
 
         // 가족 사용량 5GB
         redisTemplate.opsForHash().put(
-                "usage:family:1:" + yyyymm,
+                "usage:family:1:" + yyyyMM,
                 "family_used",
                 "5242880"
         );
@@ -112,7 +124,7 @@ class FamilyUsageRedisRepositoryTest {
 
         // 구성원 1 사용량 3GB
         redisTemplate.opsForHash().put(
-                "usage:sub:1:" + yyyymm,
+                "usage:sub:1:" + yyyyMM,
                 "member_family_used",
                 "3145728"
         );
