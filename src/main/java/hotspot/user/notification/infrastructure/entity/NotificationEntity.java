@@ -1,7 +1,10 @@
 package hotspot.user.notification.infrastructure.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,7 +14,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import hotspot.user.common.BaseEntity;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import hotspot.user.notification.domain.Notification;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 import lombok.AccessLevel;
@@ -25,6 +30,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @Table(
         name = "notification",
         uniqueConstraints = {
@@ -34,7 +40,7 @@ import lombok.NoArgsConstructor;
                 )
         }
 )
-public class NotificationEntity extends BaseEntity {
+public class NotificationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,6 +63,11 @@ public class NotificationEntity extends BaseEntity {
     @Builder.Default
     private Boolean isRead = false;
 
+    @CreatedDate
+    @Column(name = "created_time", nullable = false, updatable = false)
+    private LocalDateTime createdTime;
+
+    // 도메인 객체를 JPA 엔티티로 변환한다.
     public static NotificationEntity domainToEntity(Notification notification) {
         SubscriptionEntity subscriptionProxy = SubscriptionEntity.builder()
                 .subId(notification.getSubId())
@@ -69,9 +80,11 @@ public class NotificationEntity extends BaseEntity {
                 .notificationType(notification.getNotificationType())
                 .content(notification.getContent())
                 .isRead(notification.getIsRead())
+                .createdTime(notification.getCreatedTime())
                 .build();
     }
 
+    // JPA 엔티티를 도메인 객체로 변환한다.
     public Notification entityToDomain() {
         return Notification.builder()
                 .id(this.notificationId)
@@ -80,6 +93,7 @@ public class NotificationEntity extends BaseEntity {
                 .notificationType(this.notificationType)
                 .content(this.content)
                 .isRead(this.isRead)
+                .createdTime(this.createdTime)
                 .build();
     }
 }
