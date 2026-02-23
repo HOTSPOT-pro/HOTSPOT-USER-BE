@@ -1,8 +1,6 @@
 package hotspot.user.family.controller;
 
-import hotspot.user.family.controller.port.ManageFamilyMemberService;
-import hotspot.user.family.controller.request.ManageFamilyMemberRequest;
-import hotspot.user.family.controller.response.ManageFamilyMemberResponse;
+import hotspot.user.family.controller.port.CreateFamilyApplyService;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -30,7 +28,7 @@ public class FamilySubscriptionController implements FamilySubscriptionApi {
 
     private final UpdateDataLimitService updateDataLimitService;
     private final UpdateFamilyPriorityService updateFamilyPriorityService;
-    private final ManageFamilyMemberService manageFamilyMemberService; // 가족 구성원 추가 / 삭제 신청 서비스
+    private final CreateFamilyApplyService createFamilyApplyService; // 가족 구성원 추가 / 삭제 신청 서비스
 
     // 구성원의 가족 공유 데이터 한도 조정
     @Override
@@ -60,22 +58,5 @@ public class FamilySubscriptionController implements FamilySubscriptionApi {
                 principal.getRole()
         );
         return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
-    // 가족 구성원 추가 / 삭제 신청
-    @PostMapping
-    public ResponseEntity<ApiResponse<ManageFamilyMemberResponse>> manageFamilyMember(
-            @Valid @RequestBody ManageFamilyMemberRequest request,
-            @AuthenticationPrincipal PrincipalDetails principal) {
-
-        ManageFamilyMemberResponse response = manageFamilyMemberService.manage(
-                principal.getId(),
-                principal.getFamilyId(),
-                principal.getRole(),
-                request
-        );
-
-        return ResponseEntity.ok(ApiResponse.success(response));
-
     }
 }
