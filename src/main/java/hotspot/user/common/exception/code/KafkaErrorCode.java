@@ -13,6 +13,7 @@ public enum KafkaErrorCode implements BaseErrorCode {
     UNSUPPORTED_KAFKA_THRESHOLD(HttpStatus.BAD_REQUEST, "KAFKA_003", "지원하지 않는 Kafka threshold 입니다."),
     KAFKA_EVENT_ID_REQUIRED(HttpStatus.BAD_REQUEST, "KAFKA_004", "Kafka eventId(sourceEventId or alertId)가 필요합니다."),
     KAFKA_SUB_ID_REQUIRED(HttpStatus.BAD_REQUEST, "KAFKA_005", "Kafka subId가 필요합니다."),
+    KAFKA_SUB_ID_INVALID(HttpStatus.BAD_REQUEST, "KAFKA_006", "Kafka subId가 유효하지 않습니다."),
     ;
 
     private final HttpStatus httpStatus;
