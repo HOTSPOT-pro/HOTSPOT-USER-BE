@@ -30,9 +30,9 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public Optional<MemberDetailInfo> findDetailById(Long id) {
+    public Optional<MemberDetailInfo> findDetailByIdAndEmail(Long id, String email) {
         // 쿼리 결과를 DTO로 받고, 안전하게 도메인 객체(MemberDetailInfo)로 변환
-        return memberJpaRepository.findDetailQueryResult(id)
+        return memberJpaRepository.findDetailQueryResult(id, email)
                 .map(dto -> MemberDetailInfo.builder()
                         .member(dto.memberEntity().entityToDomain())
                         .email(dto.email())

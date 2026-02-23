@@ -24,9 +24,9 @@ public class FindMemberServiceImpl implements FindMemberService {
     private final MemberRepository memberRepository;
 
     @Override
-    public MemberResponse findById(Long id) {
+    public MemberResponse findByIdAndEmail(Long id, String email) {
          // 1. 통합 조회 (JOIN 쿼리 실행)
-        MemberDetailInfo detailInfo = memberRepository.findDetailById(id)
+        MemberDetailInfo detailInfo = memberRepository.findDetailByIdAndEmail(id, email)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // 2. 매퍼를 통해 응답 DTO로 변환

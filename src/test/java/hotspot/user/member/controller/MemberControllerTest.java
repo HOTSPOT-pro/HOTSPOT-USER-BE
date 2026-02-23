@@ -75,7 +75,7 @@ class MemberControllerTest {
                 .status(Status.APPROVED)
                 .build();
 
-        given(findMemberService.findById(memberId)).willReturn(response);
+        given(findMemberService.findByIdAndEmail(memberId, "test@test.com")).willReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/v1/members/me")

@@ -27,7 +27,7 @@ public class MemberController implements MemberApi {
     public ResponseEntity<ApiResponse<MemberResponse>> getMemberInfo(
             @AuthenticationPrincipal PrincipalDetails principal) {
 
-        MemberResponse result = findMemberService.findById(principal.getId());
+        MemberResponse result = findMemberService.findByIdAndEmail(principal.getId(), principal.getEmail());
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }

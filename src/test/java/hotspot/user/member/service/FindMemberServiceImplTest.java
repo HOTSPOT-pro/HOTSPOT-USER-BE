@@ -39,6 +39,7 @@ class FindMemberServiceImplTest {
     void findByIdSuccessAllInfo() {
         // given
         Long memberId = 1L;
+        String email = "test@email.com";
         Long subId = 10L;
 
         Member member = Member.builder()
@@ -49,21 +50,21 @@ class FindMemberServiceImplTest {
 
         MemberDetailInfo detailInfo = MemberDetailInfo.builder()
                 .member(member)
-                .email("test@email.com")
+                .email(email)
                 .phone("010-1234-5678")
                 .subId(subId)
                 .role(FamilyRole.PARENT)
                 .familyId(100L)
                 .build();
 
-        given(memberRepository.findDetailById(memberId)).willReturn(Optional.of(detailInfo));
+        given(memberRepository.findDetailByIdAndEmail(memberId, email)).willReturn(Optional.of(detailInfo));
 
         // when
-        MemberResponse response = findMemberService.findById(memberId);
+        MemberResponse response = findMemberService.findById(memberId, email);
 
         // then
         assertThat(response.id()).isEqualTo(memberId);
-        assertThat(response.email()).isEqualTo("test@email.com");
+        assertThat(response.email()).isEqualTo(email);
         assertThat(response.phone()).isEqualTo("010-1234-5678");
         assertThat(response.familyRole()).isEqualTo(FamilyRole.PARENT);
         assertThat(response.familyId()).isEqualTo(100L);
@@ -75,10 +76,11 @@ class FindMemberServiceImplTest {
     void findByIdFailMemberNotFound() {
         // given
         Long memberId = 999L;
-        given(memberRepository.findDetailById(memberId)).willReturn(Optional.empty());
+        String email = "notfound@email.com";
+        given(memberRepository.findDetailByIdAndEmail(memberId, email)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> findMemberService.findById(memberId))
+        assertThatThrownBy(() -> findMemberService.findById(memberId, email))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(MemberErrorCode.MEMBER_NOT_FOUND.getMessage());
     }

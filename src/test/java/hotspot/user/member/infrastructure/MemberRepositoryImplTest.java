@@ -71,26 +71,27 @@ class MemberRepositoryImplTest {
     void findDetailByIdSuccess() {
         // given
         Long memberId = 1L;
+        String email = "test@email.com";
         MemberEntity entity = MemberEntity.builder().id(memberId).name("홍길동").status(Status.APPROVED).build();
         MemberDetailInfoDto dto = MemberDetailInfoDto.builder()
                 .memberEntity(entity)
-                .email("test@email.com")
+                .email(email)
                 .phone("010-1234-5678")
                 .subId(10L)
                 .role(FamilyRole.OWNER)
                 .familyId(100L)
                 .build();
 
-        given(memberJpaRepository.findDetailQueryResult(memberId)).willReturn(Optional.of(dto));
+        given(memberJpaRepository.findDetailQueryResult(memberId, email)).willReturn(Optional.of(dto));
 
         // when
-        Optional<MemberDetailInfo> result = memberRepository.findDetailById(memberId);
+        Optional<MemberDetailInfo> result = memberRepository.findDetailByIdAndEmail(memberId, email);
 
         // then
         assertThat(result).isPresent();
         MemberDetailInfo info = result.get();
         assertThat(info.getMember().getId()).isEqualTo(memberId);
-        assertThat(info.getEmail()).isEqualTo("test@email.com");
+        assertThat(info.getEmail()).isEqualTo(email);
         assertThat(info.getPhone()).isEqualTo("010-1234-5678");
         assertThat(info.getRole()).isEqualTo(FamilyRole.OWNER);
         assertThat(info.getFamilyId()).isEqualTo(100L);
@@ -102,10 +103,11 @@ class MemberRepositoryImplTest {
     void findDetailByIdNotFound() {
         // given
         Long memberId = 999L;
-        given(memberJpaRepository.findDetailQueryResult(memberId)).willReturn(Optional.empty());
+        String email = "notfound@email.com";
+        given(memberJpaRepository.findDetailQueryResult(memberId, email)).willReturn(Optional.empty());
 
         // when
-        Optional<MemberDetailInfo> result = memberRepository.findDetailById(memberId);
+        Optional<MemberDetailInfo> result = memberRepository.findDetailByIdAndEmail(memberId, email);
 
         // then
         assertThat(result).isEmpty();
