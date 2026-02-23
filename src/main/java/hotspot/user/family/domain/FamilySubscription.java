@@ -37,4 +37,9 @@ public class FamilySubscription {
     public void updatePriority(int priority) {
         this.priority = priority;
     }
+
+    // 가족 내 역할 업데이트
+    public void updateFamilyRole(FamilyRole familyRole) {
+        this.familyRole = familyRole;
+    }
 }
