@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import hotspot.user.member.domain.Member;
+import hotspot.user.member.domain.MemberDetailInfo;
 import hotspot.user.member.infrastructure.entity.MemberEntity;
 import hotspot.user.member.service.port.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,21 @@ public class MemberRepositoryImpl implements MemberRepository {
     public Optional<Member> findById(Long id) {
         return memberJpaRepository.findById(id)
                 .map(MemberEntity::entityToDomain);
+    }
+
+    @Override
+    public Optional<MemberDetailInfo> findDetailByIdAndEmail(Long id, String email) {
+        // 쿼리 결과를 DTO로 받고, 안전하게 도메인 객체(MemberDetailInfo)로 변환
+        return memberJpaRepository.findDetailQueryResult(id, email)
+                .map(dto -> MemberDetailInfo.builder()
+                        .member(dto.memberEntity().entityToDomain())
+                        .email(dto.email())
+                        .phone(dto.phone())
+                        .subId(dto.subId())
+                        .role(dto.role())
+                        .familyId(dto.familyId())
+                        .build()
+                );
     }
 
     @Override
