@@ -3,6 +3,9 @@ package hotspot.user.usage.subscriptionUsage.service;
 import java.util.List;
 import java.util.Map;
 
+import hotspot.user.subscription.domain.Subscription;
+import hotspot.user.subscription.service.SubscriptionService;
+import hotspot.user.subscription.service.port.SubscriptionRepository;
 import org.springframework.stereotype.Service;
 
 import hotspot.user.presentData.service.port.PresentDataRepository;
@@ -20,14 +23,17 @@ public class FindSubscriptionUsageServiceImpl implements FindSubscriptionUsageSe
 
     private final SubscriptionUsageRepository subscriptionUsageRepository;
     private final PresentDataRepository presentDataRepository;
+    private final SubscriptionService subscriptionService;
 
     @Override
-    public SubscriptionUsageResponse findSubscriptionUsage(Long subscriptionId) {
+    public SubscriptionUsageResponse findSubscriptionUsage(Long memberId) {
+
+        Subscription subscription = subscriptionService.findByMemberId(memberId);
 
         // Redis에서 숫자 + giftId 조회
         SubscriptionUsage usage =
                 subscriptionUsageRepository
-                        .findSubscriptionUsage(subscriptionId);
+                        .findSubscriptionUsage(subscription.getId());
 
         // giftId 리스트 추출
         List<Long> giftIds =
