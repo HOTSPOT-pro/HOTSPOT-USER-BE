@@ -20,6 +20,12 @@ public enum FamilyErrorCode implements BaseErrorCode {
     DUPLICATE_PRIORITY(HttpStatus.BAD_REQUEST, "FAMILY_007", "중복된 우선순위 값이 존재합니다."),
     NOT_CONTINUOUS_PRIORITY(HttpStatus.BAD_REQUEST, "FAMILY_008", "우선순위는 1부터 시작하여 연속적이어야 합니다."),
     MISSING_PRIORITY_VALUES(HttpStatus.BAD_REQUEST, "FAMILY_009", "모든 가족 구성원의 우선순위 값이 필요합니다."),
+    ONLY_OWNER_CAN_MANAGE(HttpStatus.FORBIDDEN, "FAMILY_010", "가족 관리자(OWNER)만 구성원 관리가 가능합니다."),
+    DOC_URL_REQUIRED(HttpStatus.BAD_REQUEST, "FAMILY_011", "구성원 추가 시 증빙 서류는 필수입니다."),
+    TARGET_ROLE_REQUIRED(HttpStatus.BAD_REQUEST, "FAMILY_012", "구성원 추가 시 부여할 역할 정보는 필수입니다."),
+    TARGET_ALREADY_IN_FAMILY(HttpStatus.BAD_REQUEST, "FAMILY_013", "이미 가족에 속해있는 구성원입니다."),
+    TARGET_NOT_IN_FAMILY(HttpStatus.BAD_REQUEST, "FAMILY_014", "해당 가족에 속해있지 않은 구성원입니다."),
+    DUPLICATE_FAMILY_APPLY(HttpStatus.CONFLICT, "FAMILY_015", "이미 처리 대기 중인 신청이 존재합니다."),
     ;
 
     private final HttpStatus httpStatus;

@@ -2,11 +2,14 @@ package hotspot.user.family.domain.mapper;
 
 import java.util.List;
 
+import hotspot.user.family.controller.response.FamilyInfoResponse;
 import hotspot.user.family.controller.response.FamilyResponse;
 import hotspot.user.family.controller.response.MemberPriorityResponse;
 import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
 import hotspot.user.family.domain.Family;
+import hotspot.user.family.domain.FamilyDetailInfo;
 import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.member.domain.mapper.MemberMapper;
 
 /**
  * request Dto -> 도메인
@@ -41,5 +44,15 @@ public class FamilyMapper {
                         .priority(sub.getPriority())
                         .build())
                 .toList();
+    }
+
+    public static FamilyInfoResponse toFamilyInfoResponse(FamilyDetailInfo detailInfo) {
+        return FamilyInfoResponse.builder()
+                .familyId(detailInfo.getFamilyId())
+                .familyNum(detailInfo.getFamilyNum())
+                .memberInfoList(detailInfo.getMemberDetailInfoList().stream()
+                        .map(MemberMapper::toMemberResponse)
+                        .toList())
+                .build();
     }
 }
