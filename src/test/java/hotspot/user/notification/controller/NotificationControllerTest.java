@@ -29,7 +29,8 @@ import hotspot.user.common.exception.code.NotificationErrorCode;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.notification.controller.port.NotificationService;
+import hotspot.user.notification.controller.port.FindNotificationService;
+import hotspot.user.notification.controller.port.ReadNotificationService;
 import hotspot.user.notification.controller.response.NotificationListResponse;
 import hotspot.user.notification.controller.response.NotificationResponse;
 import hotspot.user.notification.controller.response.UnreadNotificationCountResponse;
@@ -42,7 +43,10 @@ class NotificationControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private NotificationService notificationService;
+    private FindNotificationService findNotificationService;
+
+    @MockBean
+    private ReadNotificationService readNotificationService;
 
     @MockBean
     private JwtFilter jwtFilter;
@@ -74,7 +78,7 @@ class NotificationControllerTest {
                 .hasNext(false)
                 .build();
 
-        given(notificationService.findNotifications(eq(1L), isA(Pageable.class)))
+        given(findNotificationService.findNotifications(eq(1L), isA(Pageable.class)))
                 .willReturn(response);
 
         mockMvc.perform(get("/api/v1/notifications")
@@ -85,14 +89,14 @@ class NotificationControllerTest {
                 .andExpect(jsonPath("$.data.notifications[0].eventId").value("evt-1"))
                 .andExpect(jsonPath("$.data.totalElements").value(1));
 
-        then(notificationService).should().findNotifications(eq(1L), isA(Pageable.class));
+        then(findNotificationService).should().findNotifications(eq(1L), isA(Pageable.class));
     }
 
     @Test
     @DisplayName("get unread count success")
     void getUnreadCountSuccess() throws Exception {
         setAuthentication(1L, 100L, FamilyRole.OWNER);
-        given(notificationService.findUnreadCount(1L))
+        given(findNotificationService.findUnreadCount(1L))
                 .willReturn(UnreadNotificationCountResponse.builder()
                         .unreadCount(3)
                         .build());
@@ -107,7 +111,7 @@ class NotificationControllerTest {
     void getUnreadCountFailWhenNotificationNotFound() throws Exception {
         setAuthentication(1L, 100L, FamilyRole.OWNER);
         willThrow(new ApplicationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND))
-                .given(notificationService).findUnreadCount(1L);
+                .given(findNotificationService).findUnreadCount(1L);
 
         mockMvc.perform(get("/api/v1/notifications/unread-count"))
                 .andExpect(status().isNotFound())
@@ -123,7 +127,7 @@ class NotificationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").doesNotExist());
 
-        then(notificationService).should().markAllRead(1L);
+        then(readNotificationService).should().markAllRead(1L);
     }
 
     @Test
@@ -135,7 +139,7 @@ class NotificationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").doesNotExist());
 
-        then(notificationService).should().markRead(1L, 10L);
+        then(readNotificationService).should().markRead(1L, 10L);
     }
 
     @Test
@@ -143,7 +147,7 @@ class NotificationControllerTest {
     void markReadFailWhenNotificationNotFound() throws Exception {
         setAuthentication(1L, 100L, FamilyRole.OWNER);
         willThrow(new ApplicationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND))
-                .given(notificationService).markRead(1L, 10L);
+                .given(readNotificationService).markRead(1L, 10L);
 
         mockMvc.perform(patch("/api/v1/notifications/10/read"))
                 .andExpect(status().isNotFound())
