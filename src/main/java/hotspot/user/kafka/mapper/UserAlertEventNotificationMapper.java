@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.KafkaErrorCode;
+import hotspot.user.kafka.domain.KafkaEventType;
 import hotspot.user.kafka.domain.NotificationType;
 import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.kafka.model.AlertNotificationContent;
@@ -21,16 +22,15 @@ public class UserAlertEventNotificationMapper {
 
     private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+");
 
-    // Kafka 이벤트 타입에 따라 알림 매핑을 분기한다.
+    // Kafka eventType에 따라 알림 매핑 메서드를 분기한다.
     public AlertNotificationMappingResult map(UserAlertEvent event) {
-        String normalizedEventType = normalize(event.eventType());
-        return switch (normalizedEventType) {
-            case "USAGE_THRESHOLD" -> mapUsageThreshold(event);
-            case "TIME_WINDOW_POLICY" -> mapTimeWindowPolicy(event);
-            case "IMMEDIATE_BLOCK" -> mapImmediateBlock(event);
-            case "SERVICE_ACCESS" -> mapServiceAccess(event);
-            case "PRESENT_DATA" -> mapPresentData(event);
-            default -> throw new ApplicationException(KafkaErrorCode.UNSUPPORTED_KAFKA_EVENT_TYPE);
+        KafkaEventType eventType = KafkaEventType.from(normalize(event.eventType()));
+        return switch (eventType) {
+            case USAGE_THRESHOLD -> mapUsageThreshold(event);
+            case TIME_WINDOW_POLICY -> mapTimeWindowPolicy(event);
+            case IMMEDIATE_BLOCK -> mapImmediateBlock(event);
+            case SERVICE_ACCESS -> mapServiceAccess(event);
+            case PRESENT_DATA -> mapPresentData(event);
         };
     }
 
