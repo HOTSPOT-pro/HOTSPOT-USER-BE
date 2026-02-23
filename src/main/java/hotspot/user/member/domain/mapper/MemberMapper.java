@@ -22,13 +22,24 @@ public class MemberMapper {
     }
 
     // Domain -> Response (회원 정보 조회 시 조립)
-    public static MemberResponse toResponse(Member member,
+    public static MemberResponse toMemberResponse(Member member,
                                             SocialAccount socialAccount,
                                             Subscription subscription,
-                                            FamilyRole familyRole) {
+                                            FamilyRole familyRole,
+                                            Long familyId) {
         String email = (socialAccount != null) ? socialAccount.getEmail() : null;
         String phone = (subscription != null) ? subscription.getPhoneEnc() : null;
+        Long subId = (subscription != null) ? subscription.getId() : null;
 
-        return MemberResponse.of(member, email, phone, familyRole);
+        return MemberResponse.builder()
+                .id(member.getId())
+                .name(member.getName())
+                .email(email)
+                .phone(phone)
+                .familyRole(familyRole)
+                .familyId(familyId)
+                .subId(subId)
+                .status(member.getStatus())
+                .build();
     }
 }

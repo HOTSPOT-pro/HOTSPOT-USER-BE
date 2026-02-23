@@ -1,12 +1,15 @@
 package hotspot.user.member.controller.response;
 
 import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.member.domain.Member;
+
 import hotspot.user.member.domain.Status;
+import lombok.Builder;
+
 
 /**
  * 회원 정보 응답 DTO
  */
+@Builder
 public record MemberResponse(
         Long id,
         String name,
