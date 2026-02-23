@@ -135,8 +135,7 @@ def reportExcludes = [
 		'**/entity/**',
 		'**/exception/**',
 		'**/common/**',
-		'**/HealthController',
-		'**/usage/subscriptionUsage/**'
+		'**/HealthController'
 ]
 
 /*
@@ -153,8 +152,7 @@ def verificationExcludes = [
 		'*.mapper.*',
 		'*.common.*',
 		'**.*Application*',    // 메인 애플리케이션
-		'**.*HealthController', // 특정 컨트롤러
-		'*.usage.subscriptionUsage.*'
+		'**.*HealthController' // 특정 컨트롤러
 ]
 
 jacocoTestReport {
