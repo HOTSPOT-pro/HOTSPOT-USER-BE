@@ -8,10 +8,6 @@ public class FamilyUsageRedisKeyBuilder {
     private static final DateTimeFormatter yyyyMM =
             DateTimeFormatter.ofPattern("yyyyMM");
 
-    private static String currentYYYYMM() {
-        return LocalDate.now().format(yyyyMM);
-    }
-
     public static String familyLimit(Long familyId) {
         return "limit:family:" + familyId;
     }
@@ -20,15 +16,13 @@ public class FamilyUsageRedisKeyBuilder {
         return "limit:family_sub:" + familyId + ":" + subId;
     }
 
-    public static String familyUsage(Long familyId) {
-        return "usage:family:" + familyId + ":" + currentYYYYMM();
+    public static String familyUsage(Long familyId, LocalDate date) {
+        return "usage:family:" + familyId + ":" + format(date);
     }
 
-    public static String subLimit(Long subId) {
-        return "limit:sub:" + subId;
-    }
+    public static String subUsage(Long subId, LocalDate date) {return "usage:sub:" + subId + ":" + format(date);}
 
-    public static String subUsage(Long subId) {
-        return "usage:sub:" + subId + ":" + currentYYYYMM();
+    private static String format(LocalDate date) {
+        return date.format(yyyyMM);
     }
 }

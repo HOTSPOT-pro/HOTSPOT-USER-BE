@@ -1,5 +1,7 @@
 package hotspot.user.usage.familyUsage.infrastructure.respository;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +31,7 @@ public class FamilyUsageRedisRepository {
     private static final String K_SUB_USAGE_PREFIX = "sub_usage:";
 
     private final RedisPipelineExecutor pipelineExecutor;
+    private final Clock clock;
 
     public FamilyUsage findFamilyAndSubData(Long familyId, List<Long> subIds) {
 
@@ -78,7 +81,7 @@ public class FamilyUsageRedisRepository {
 
         requestKeys.add(K_FAMILY_USED);
         connection.hGet(
-                pipelineExecutor.serialize(FamilyUsageRedisKeyBuilder.familyUsage(familyId)),
+                pipelineExecutor.serialize(FamilyUsageRedisKeyBuilder.familyUsage(familyId, LocalDate.now(clock))),
                 pipelineExecutor.serialize("family_used")
         );
     }
@@ -101,7 +104,7 @@ public class FamilyUsageRedisRepository {
 
             requestKeys.add(K_SUB_USAGE_PREFIX + subId);
             connection.hGet(
-                    pipelineExecutor.serialize(FamilyUsageRedisKeyBuilder.subUsage(subId)),
+                    pipelineExecutor.serialize(FamilyUsageRedisKeyBuilder.subUsage(subId, LocalDate.now(clock))),
                     pipelineExecutor.serialize("member_family_used")
             );
         }

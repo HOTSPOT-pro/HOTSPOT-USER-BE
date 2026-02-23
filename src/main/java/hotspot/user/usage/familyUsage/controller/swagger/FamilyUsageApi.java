@@ -23,7 +23,7 @@ public interface FamilyUsageApi {
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "찾을 수 없음\n"
                     + "- FAMILY_USAGE_001: 가족 공유 데이터 전체 한도를 조회할 수 없습니다\n"
-                    + "- FAMILY_USAGE_002: 가족 공유 데이터 가족 공유 데이터 구성원별 한도를 조회할 없습니다",
+                    + "- FAMILY_USAGE_002: 가족 공유 데이터 가족 공유 데이터 구성원별 한도를 조회할 수 없습니다",
                     content = @Content(schema = @Schema(
                             implementation = ErrorResponse.class)))
     })
