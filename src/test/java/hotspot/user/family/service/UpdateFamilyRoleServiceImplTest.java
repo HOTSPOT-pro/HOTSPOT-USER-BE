@@ -26,8 +26,8 @@ import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.member.domain.Member;
 import hotspot.user.subscription.domain.Subscription;
-import hotspot.user.subscription.service.port.SubscriptionRepository;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateFamilyRoleServiceImplTest {
@@ -38,9 +38,6 @@ class UpdateFamilyRoleServiceImplTest {
     @Mock
     private FamilySubscriptionRepository familySubscriptionRepository;
 
-    @Mock
-    private SubscriptionRepository subscriptionRepository;
-
     @Test
     @DisplayName("성공: 타 구성원의 역할을 정상적으로 수정한다")
     void updateFamilyRoleSuccess() {
@@ -50,13 +47,13 @@ class UpdateFamilyRoleServiceImplTest {
         Long targetSubId = 2L;
         UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.PARENT);
 
-        Subscription requesterSub = Subscription.builder().id(10L).build();
-        given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
-
         Family family = Family.builder().id(requesterFamilyId).build();
         FamilySubscription targetFamilySub = FamilySubscription.builder()
                 .family(family)
-                .subscription(Subscription.builder().id(targetSubId).build())
+                .subscription(Subscription.builder()
+                        .id(targetSubId)
+                        .member(hotspot.user.member.domain.Member.builder().id(2L).build()) // 본인이 아님
+                        .build())
                 .familyRole(FamilyRole.CHILD)
                 .build();
         given(familySubscriptionRepository.findBySubId(targetSubId)).willReturn(Optional.of(targetFamilySub));
@@ -79,13 +76,13 @@ class UpdateFamilyRoleServiceImplTest {
         Long targetSubId = 2L;
         UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.CHILD);
 
-        Subscription requesterSub = Subscription.builder().id(10L).build();
-        given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
-
         Family family = Family.builder().id(requesterFamilyId).build();
         FamilySubscription targetFamilySub = FamilySubscription.builder()
                 .family(family)
-                .subscription(Subscription.builder().id(targetSubId).build())
+                .subscription(Subscription.builder()
+                        .id(targetSubId)
+                        .member(Member.builder().id(2L).build()) // 본인이 아님
+                        .build())
                 .familyRole(FamilyRole.CHILD)
                 .build();
         given(familySubscriptionRepository.findBySubId(targetSubId)).willReturn(Optional.of(targetFamilySub));
@@ -119,8 +116,13 @@ class UpdateFamilyRoleServiceImplTest {
         Long targetSubId = 10L;
         UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.PARENT);
 
-        Subscription requesterSub = Subscription.builder().id(targetSubId).build();
-        given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
+        FamilySubscription targetFamilySub = FamilySubscription.builder()
+                .subscription(Subscription.builder()
+                        .id(targetSubId)
+                        .member(Member.builder().id(requesterMemberId).build()) // 본인
+                        .build())
+                .build();
+        given(familySubscriptionRepository.findBySubId(targetSubId)).willReturn(Optional.of(targetFamilySub));
 
         // when & then
         assertThatThrownBy(() -> updateFamilyRoleService.update(
@@ -138,13 +140,13 @@ class UpdateFamilyRoleServiceImplTest {
         Long targetSubId = 2L;
         UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.OWNER);
 
-        Subscription requesterSub = Subscription.builder().id(10L).build();
-        given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
-
         Family family = Family.builder().id(requesterFamilyId).build();
         FamilySubscription targetFamilySub = FamilySubscription.builder()
                 .family(family)
-                .subscription(Subscription.builder().id(targetSubId).build())
+                .subscription(Subscription.builder()
+                        .id(targetSubId)
+                        .member(Member.builder().id(2L).build())
+                        .build())
                 .familyRole(FamilyRole.CHILD)
                 .build();
         given(familySubscriptionRepository.findBySubId(targetSubId)).willReturn(Optional.of(targetFamilySub));
@@ -165,13 +167,13 @@ class UpdateFamilyRoleServiceImplTest {
         Long targetSubId = 2L;
         UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.PARENT);
 
-        Subscription requesterSub = Subscription.builder().id(10L).build();
-        given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
-
         Family otherFamily = Family.builder().id(200L).build();
         FamilySubscription targetFamilySub = FamilySubscription.builder()
                 .family(otherFamily)
-                .subscription(Subscription.builder().id(targetSubId).build())
+                .subscription(Subscription.builder()
+                        .id(targetSubId)
+                        .member(Member.builder().id(2L).build())
+                        .build())
                 .familyRole(FamilyRole.CHILD)
                 .build();
         given(familySubscriptionRepository.findBySubId(targetSubId)).willReturn(Optional.of(targetFamilySub));
