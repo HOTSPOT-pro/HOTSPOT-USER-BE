@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.NotificationErrorCode;
@@ -46,7 +47,7 @@ class NotificationServiceImplTest {
     private NotificationServiceImpl notificationService;
 
     @Test
-    @DisplayName("알림 목록 조회 성공: 인증 사용자 회선(subId)으로만 조회한다")
+    @DisplayName("find notifications success")
     void findNotificationsSuccess() {
         Long memberId = 10L;
         Long mySubId = 100L;
@@ -64,7 +65,7 @@ class NotificationServiceImplTest {
                 .subId(mySubId)
                 .eventId("evt-1")
                 .notificationType("ALERT")
-                .content("80% 사용")
+                .content("80% used")
                 .isRead(false)
                 .createdTime(LocalDateTime.of(2026, 2, 23, 10, 0))
                 .build();
@@ -73,10 +74,13 @@ class NotificationServiceImplTest {
                 .willReturn(new PageImpl<>(List.of(notification), PageRequest.of(0, 20), 1));
 
         NotificationListResponse response = notificationService.findNotifications(memberId, PageRequest.of(0, 10));
+        @SuppressWarnings("unchecked")
+        List<Object> notifications = (List<Object>) ReflectionTestUtils.getField(response, "notifications");
+        Object first = notifications.get(0);
 
-        assertThat(response.notifications()).hasSize(1);
-        assertThat(response.notifications().get(0).id()).isEqualTo(1L);
-        assertThat(response.notifications().get(0).eventId()).isEqualTo("evt-1");
+        assertThat(notifications).hasSize(1);
+        assertThat(ReflectionTestUtils.getField(first, "id")).isEqualTo(1L);
+        assertThat(ReflectionTestUtils.getField(first, "eventId")).isEqualTo("evt-1");
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         then(notificationRepository).should().findRecentBySubId(eq(mySubId), pageableCaptor.capture());
@@ -84,7 +88,7 @@ class NotificationServiceImplTest {
     }
 
     @Test
-    @DisplayName("타 사용자 접근 차단: memberId로 자신의 subId를 찾아 unreadCount를 조회한다")
+    @DisplayName("find unread count success")
     void findUnreadCountUsesOnlyOwnSubscription() {
         Long memberId = 10L;
         Long mySubId = 100L;
@@ -95,12 +99,12 @@ class NotificationServiceImplTest {
 
         UnreadNotificationCountResponse response = notificationService.findUnreadCount(memberId);
 
-        assertThat(response.unreadCount()).isEqualTo(7L);
+        assertThat(ReflectionTestUtils.getField(response, "unreadCount")).isEqualTo(7L);
         then(notificationRepository).should().countUnreadBySubId(mySubId);
     }
 
     @Test
-    @DisplayName("회선이 없으면 NOTI_001 예외로 변환한다")
+    @DisplayName("find unread count fail when subscription not found")
     void findUnreadCountFailWhenSubscriptionNotFound() {
         Long memberId = 10L;
         given(subscriptionService.findByMemberId(memberId))
@@ -112,7 +116,7 @@ class NotificationServiceImplTest {
     }
 
     @Test
-    @DisplayName("전체 읽음 처리 성공")
+    @DisplayName("mark all read success")
     void markAllReadSuccess() {
         Long memberId = 11L;
         Long mySubId = 200L;
@@ -125,7 +129,7 @@ class NotificationServiceImplTest {
     }
 
     @Test
-    @DisplayName("단건 읽음 처리 성공")
+    @DisplayName("mark single read success")
     void markReadSuccess() {
         Long memberId = 11L;
         Long mySubId = 200L;
@@ -141,7 +145,7 @@ class NotificationServiceImplTest {
     }
 
     @Test
-    @DisplayName("단건 읽음 처리 실패: 대상 알림이 없으면 예외를 던진다")
+    @DisplayName("mark single read fail when notification not found")
     void markReadFailWhenNotificationNotFound() {
         Long memberId = 11L;
         Long mySubId = 200L;
