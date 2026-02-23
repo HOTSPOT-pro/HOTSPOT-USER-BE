@@ -22,6 +22,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("maps Lua usage threshold for plan remaining")
+    // 개인 요금제 임계치 매핑 결과를 검증한다.
     void mapLuaPlanRemaining() {
         UserAlertEvent event = event("USAGE_THRESHOLD", "PLAN_REMAINING", "50", null, null, null, null);
 
@@ -33,6 +34,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("maps Lua usage threshold for family pool")
+    // 가족 공유 임계치 매핑 결과를 검증한다.
     void mapLuaFamilyPoolRemaining() {
         UserAlertEvent event = event("USAGE_THRESHOLD", "FAMILY_POOL_REMAINING", "0", null, null, null, null);
 
@@ -44,6 +46,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("maps Lua usage threshold for gift remaining")
+    // 선물 데이터 임계치 매핑 결과를 검증한다.
     void mapLuaGiftRemaining() {
         UserAlertEvent event = event("USAGE_THRESHOLD", "GIFT_REMAINING", "10", null, null, null, null);
 
@@ -55,6 +58,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("maps present data amount as-is")
+    // 선물 데이터 알림 문구에 용량이 반영되는지 검증한다.
     void mapPresentData() {
         UserAlertEvent event = event("PRESENT_DATA", null, null, null, null, "홍길동", "500MB");
 
@@ -66,6 +70,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("maps policy and service events")
+    // 정책/서비스 이벤트 매핑 결과를 검증한다.
     void mapPolicyAndServiceEvents() {
         UserAlertEvent timeApplied = event("TIME_WINDOW_POLICY", "APPLIED", null, "야간 차단", null, null, null);
         UserAlertEvent immediateReleased = event("IMMEDIATE_BLOCK", "RELEASED", null, null, null, null, null);
@@ -83,6 +88,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("same input always produces same output")
+    // 동일 입력에 대해 같은 매핑 결과가 나오는지 검증한다.
     void sameInputSameOutput() {
         UserAlertEvent event = event("USAGE_THRESHOLD", "GIFT_REMAINING", "10", null, null, null, null);
 
@@ -94,6 +100,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("toNotification maps deterministic fields")
+    // Notification 변환 시 핵심 필드 매핑을 검증한다.
     void toNotificationSuccess() {
         Instant occurredAt = Instant.parse("2026-02-23T10:15:30Z");
         UserAlertEvent event = new UserAlertEvent(
@@ -126,6 +133,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("throws common exception when event type is unsupported")
+    // 지원하지 않는 eventType이면 예외가 나는지 검증한다.
     void mapUnsupportedEventType() {
         UserAlertEvent event = event("UNKNOWN_EVENT", "ANY", "50", null, null, null, null);
 
@@ -136,6 +144,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("throws common exception when alert type is unsupported")
+    // 지원하지 않는 alertType이면 예외가 나는지 검증한다.
     void mapUnsupportedAlertType() {
         UserAlertEvent event = event("USAGE_THRESHOLD", "UNKNOWN_ALERT", "50", null, null, null, null);
 
@@ -146,6 +155,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("throws common exception when threshold is unsupported")
+    // 지원하지 않는 threshold이면 예외가 나는지 검증한다.
     void mapUnsupportedThreshold() {
         UserAlertEvent event = event("USAGE_THRESHOLD", "PLAN_REMAINING", "77", null, null, null, null);
 
@@ -156,6 +166,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("throws common exception when subId is missing")
+    // subId가 없을 때 예외가 나는지 검증한다.
     void toNotificationWithoutSubId() {
         UserAlertEvent event = new UserAlertEvent(
                 "alert-1",
@@ -182,6 +193,7 @@ class UserAlertEventNotificationMapperTest {
 
     @Test
     @DisplayName("throws common exception when subId is invalid")
+    // subId가 0 이하일 때 예외가 나는지 검증한다.
     void toNotificationWithInvalidSubId() {
         UserAlertEvent event = new UserAlertEvent(
                 "alert-1",
@@ -206,6 +218,7 @@ class UserAlertEventNotificationMapperTest {
                 .hasMessage(KafkaErrorCode.KAFKA_SUB_ID_INVALID.getMessage());
     }
 
+    // 테스트용 UserAlertEvent 객체를 생성한다.
     private UserAlertEvent event(
             String eventType,
             String alertType,
