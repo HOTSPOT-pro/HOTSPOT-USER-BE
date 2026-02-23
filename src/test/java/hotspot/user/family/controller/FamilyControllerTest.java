@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
-import hotspot.user.member.controller.response.MemberResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,7 @@ import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.family.controller.port.FindFamilyInfoService;
 import hotspot.user.family.controller.response.FamilyInfoResponse;
+import hotspot.user.member.controller.response.MemberResponse;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
 
