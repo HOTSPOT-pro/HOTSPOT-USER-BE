@@ -43,7 +43,9 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public UnreadNotificationCountResponse findUnreadCount(Long memberId) {
         Long subId = resolveSubIdByMemberId(memberId);
-        return new UnreadNotificationCountResponse(notificationRepository.countUnreadBySubId(subId));
+        return UnreadNotificationCountResponse.builder()
+                .unreadCount(notificationRepository.countUnreadBySubId(subId))
+                .build();
     }
 
     // memberId -> subId를 해석한 뒤 알림 전체를 읽음 처리한다.

@@ -11,29 +11,29 @@ public final class NotificationMapper {
     private NotificationMapper() {
     }
 
-    // 알림 도메인을 단건 응답 DTO로 변환한다.
+    // Converts notification domain to response DTO.
     public static NotificationResponse toResponse(Notification notification) {
-        return new NotificationResponse(
-                notification.getId(),
-                notification.getEventId(),
-                notification.getNotificationType(),
-                notification.getContent(),
-                notification.getIsRead(),
-                notification.getCreatedTime()
-        );
+        return NotificationResponse.builder()
+                .id(notification.getId())
+                .eventId(notification.getEventId())
+                .notificationType(notification.getNotificationType())
+                .content(notification.getContent())
+                .isRead(notification.getIsRead())
+                .createdTime(notification.getCreatedTime())
+                .build();
     }
 
-    // 알림 페이지를 목록 응답 DTO로 변환한다.
+    // Converts paged notifications to list response DTO.
     public static NotificationListResponse toListResponse(Page<Notification> notifications) {
-        return new NotificationListResponse(
-                notifications.getContent().stream()
+        return NotificationListResponse.builder()
+                .notifications(notifications.getContent().stream()
                         .map(NotificationMapper::toResponse)
-                        .toList(),
-                notifications.getNumber(),
-                notifications.getSize(),
-                notifications.getTotalPages(),
-                notifications.getTotalElements(),
-                notifications.hasNext()
-        );
+                        .toList())
+                .page(notifications.getNumber())
+                .size(notifications.getSize())
+                .totalPages(notifications.getTotalPages())
+                .totalElements(notifications.getTotalElements())
+                .hasNext(notifications.hasNext())
+                .build();
     }
 }
