@@ -1,6 +1,5 @@
 package hotspot.user.usage.reportUsage.controller;
 
-import hotspot.user.usage.reportUsage.controller.swagger.ReportUsageApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +16,7 @@ import hotspot.user.usage.reportUsage.controller.port.FindReportUsageMonthServic
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageAppResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageDayResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageMonthResponse;
+import hotspot.user.usage.reportUsage.controller.swagger.ReportUsageApi;
 import lombok.RequiredArgsConstructor;
 
 @RestController
