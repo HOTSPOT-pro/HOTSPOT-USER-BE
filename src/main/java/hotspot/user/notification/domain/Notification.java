@@ -1,5 +1,7 @@
 package hotspot.user.notification.domain;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,4 +16,5 @@ public class Notification {
     private String notificationType;
     private String content;
     private Boolean isRead;
+    private LocalDateTime createdTime;
 }
