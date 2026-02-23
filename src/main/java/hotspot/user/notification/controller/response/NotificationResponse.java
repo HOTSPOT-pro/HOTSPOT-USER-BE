@@ -2,12 +2,17 @@ package hotspot.user.notification.controller.response;
 
 import java.time.LocalDateTime;
 
-public record NotificationResponse(
-        Long id,
-        String eventId,
-        String notificationType,
-        String content,
-        Boolean isRead,
-        LocalDateTime createdTime
-) {
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+
+import lombok.Builder;
+
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+@Builder
+public class NotificationResponse {
+    private Long id;
+    private String eventId;
+    private String notificationType;
+    private String content;
+    private Boolean isRead;
+    private LocalDateTime createdTime;
 }
