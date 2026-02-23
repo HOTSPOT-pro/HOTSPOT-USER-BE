@@ -1,9 +1,11 @@
 package hotspot.user.policy.controller;
 
-import static hotspot.user.util.TestSecurityUtil.setAuthentication;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -17,17 +19,26 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
+import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.member.domain.Status;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
+import hotspot.user.policy.controller.port.UpdateBlockPolicyService;
+import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
+import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
 
 @WebMvcTest(AppliedPolicyController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -36,11 +47,17 @@ class AppliedPolicyControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     private FindMemberAppliedPolicyService findMemberAppliedPolicyService;
 
     @MockBean
     private FindFamilyAppliedPolicyService findFamilyAppliedPolicyService;
+
+    @MockBean
+    private UpdateBlockPolicyService updateBlockPolicyService;
 
     @MockBean
     private JwtFilter jwtFilter;
@@ -51,11 +68,25 @@ class AppliedPolicyControllerTest {
     @MockBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
+    private void setAuthentication(FamilyRole role) {
+        PrincipalDetails principal = PrincipalDetails.builder()
+                .id(1L)
+                .email("test@test.com")
+                .familyId(100L)
+                .role(role)
+                .status(Status.APPROVED)
+                .build();
+
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                principal, null, principal.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
     @Test
     @DisplayName("본인 적용 정책 조회 성공: 역할에 상관없이 조회 가능하다")
     void getAppliedPoliciesIndividualSuccess() throws Exception {
         // given
-        setAuthentication(1L, 100L, FamilyRole.CHILD);
+        setAuthentication(FamilyRole.CHILD);
         AppliedPolicyResponse response = AppliedPolicyResponse.builder()
                 .memberId(1L)
                 .memberName("자녀")
@@ -75,7 +106,7 @@ class AppliedPolicyControllerTest {
     @DisplayName("가족 전체 정책 조회 성공: PARENT 권한일 때")
     void getAppliedPoliciesFamilySuccessByParent() throws Exception {
         // given
-        setAuthentication(1L, 100L, FamilyRole.PARENT);
+        setAuthentication(FamilyRole.PARENT);
         FamilyAppliedPolicyResponse response = FamilyAppliedPolicyResponse.builder()
                 .familyId(100L)
                 .memberPolicies(List.of())
@@ -95,7 +126,7 @@ class AppliedPolicyControllerTest {
     @DisplayName("가족 전체 정책 조회 실패: CHILD 권한일 때 (ACCESS_DENIED)")
     void getAppliedPoliciesFamilyFailByChild() throws Exception {
         // given
-        setAuthentication(1L, 100L, FamilyRole.CHILD);
+        setAuthentication(FamilyRole.CHILD);
 
         // when & then
         mockMvc.perform(get("/api/v1/policies/applied")
@@ -110,21 +141,29 @@ class AppliedPolicyControllerTest {
     }
 
     @Test
-    @DisplayName("임시 테스트 API 조회 성공: 파라미터 기반 조회 확인")
-    void getAppliedPoliciesTestApiSuccess() throws Exception {
+    @DisplayName("구성원별 정책 업데이트 성공: OWNER 권한일 때")
+    void updateBlockPolicySuccess() throws Exception {
         // given
-        AppliedPolicyResponse response = AppliedPolicyResponse.builder()
-                .memberId(100L)
-                .memberName("테스트유저")
+        setAuthentication(FamilyRole.OWNER);
+        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L, 2L));
+        UpdateBlockPolicyResponse response = UpdateBlockPolicyResponse.builder()
+                .familyId(100L)
+                .subId(1L)
+                .blockedPolicyIdList(List.of(1L, 2L))
                 .build();
-        given(findMemberAppliedPolicyService.findByMemberId(1L)).willReturn(response);
+
+        given(updateBlockPolicyService.updateBlockPolicy(
+                any(UpdateBlockPolicyRequest.class),
+                eq(100L),
+                eq(FamilyRole.OWNER)))
+                .willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/v1/policies/applied/test")
-                        .param("testMemberId", "1")
-                        .param("isFamily", "false")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(put("/api/v1/policies/apply")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.memberName").value("테스트유저"));
+                .andExpect(jsonPath("$.data.familyId").value(100L))
+                .andExpect(jsonPath("$.data.blockedPolicyIdList[0]").value(1L));
     }
 }

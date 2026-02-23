@@ -9,4 +9,5 @@ import hotspot.user.policy.domain.PolicySub;
  */
 public interface PolicySubRepository {
     List<PolicySub> findBySubId(Long subId);
+    List<PolicySub> saveAll(List<PolicySub> policySubList);
 }

@@ -1,7 +1,10 @@
 package hotspot.user.policy.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
@@ -60,5 +63,35 @@ class PolicySubRepositoryImplTest {
         // then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getDateSnapshot().getPolicyName()).isEqualTo("수면 모드");
+    }
+
+    @Test
+    @DisplayName("성공: 신규 PolicySub 정보를 저장한다")
+    void saveAllSuccessWithNewEntities() {
+        // given
+        PolicySub domain = PolicySub.builder().id(null).subId(1L).policyId(1L).build();
+        PolicySubEntity entity = PolicySubEntity.builder().policySubId(1L).build();
+        given(jpaRepository.saveAll(anyList())).willReturn(List.of(entity));
+
+        // when
+        List<PolicySub> result = repository.saveAll(List.of(domain));
+
+        // then
+        assertThat(result).hasSize(1);
+        verify(jpaRepository, times(1)).saveAll(anyList());
+    }
+
+    @Test
+    @DisplayName("성공: 기존 PoliySub row를 논리 삭제(업데이트)한다")
+    void saveAllSuccessWithUpdateEntities() {
+        // given
+        PolicySub domain = PolicySub.builder().id(10L).subId(1L).policyId(1L).isDeleted(true).build();
+
+        // when
+        List<PolicySub> result = repository.saveAll(List.of(domain));
+
+        // then
+        assertThat(result).isEmpty();
+        verify(jpaRepository, times(1)).bulkSoftDelete(anyList());
     }
 }
