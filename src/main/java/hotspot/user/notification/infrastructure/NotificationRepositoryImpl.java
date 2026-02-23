@@ -1,5 +1,7 @@
 package hotspot.user.notification.infrastructure;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -12,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 @Repository
 @RequiredArgsConstructor
 public class NotificationRepositoryImpl implements NotificationRepository {
+
+    private static final long RECENT_DAYS = 30L;
 
     private final NotificationJpaRepository notificationJpaRepository;
 
@@ -31,7 +35,13 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     // JPA 페이지 결과를 도메인 페이지로 변환한다.
     @Override
     public Page<Notification> findRecentBySubId(Long subId, Pageable pageable) {
-        return notificationJpaRepository.findBySubscriptionSubIdOrderByCreatedTimeDesc(subId, pageable)
+        LocalDateTime cutoffDateTime = LocalDateTime.now().minusDays(RECENT_DAYS);
+        return notificationJpaRepository
+                .findBySubscriptionSubIdAndCreatedTimeGreaterThanEqualOrderByCreatedTimeDesc(
+                        subId,
+                        cutoffDateTime,
+                        pageable
+                )
                 .map(NotificationEntity::entityToDomain);
     }
 

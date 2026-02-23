@@ -45,9 +45,10 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationEnt
             @Param("createdTime") LocalDateTime createdTime
     );
 
-    // created_time 기준 최신순으로 알림을 조회한다.
-    Page<NotificationEntity> findBySubscriptionSubIdOrderByCreatedTimeDesc(
+    // created_time이 기준 시각 이상인 알림을 최신순으로 조회한다.
+    Page<NotificationEntity> findBySubscriptionSubIdAndCreatedTimeGreaterThanEqualOrderByCreatedTimeDesc(
             Long subId,
+            LocalDateTime cutoffDateTime,
             Pageable pageable
     );
 
