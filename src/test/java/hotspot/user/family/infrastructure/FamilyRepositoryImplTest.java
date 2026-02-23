@@ -3,6 +3,7 @@ package hotspot.user.family.infrastructure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -14,8 +15,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.family.domain.Family;
+import hotspot.user.family.domain.FamilyDetailInfo;
 import hotspot.user.family.domain.PriorityType;
+import hotspot.user.family.infrastructure.entity.FamilyDetailInfoDto;
 import hotspot.user.family.infrastructure.entity.FamilyEntity;
+import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.member.domain.Status;
+import hotspot.user.member.infrastructure.entity.MemberEntity;
 
 /**
  * 가족 Repository 단위 테스트
@@ -74,5 +80,59 @@ class FamilyRepositoryImplTest {
         // then
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getPriorityType()).isEqualTo(PriorityType.PRIORITY);
+    }
+
+    @Test
+    @DisplayName("가족 상세 정보 통합 조회 성공")
+    void findInfoByIdSuccess() {
+        // given
+        Long familyId = 1L;
+        FamilyEntity familyEntity = FamilyEntity.builder()
+                .familyId(familyId)
+                .familyNum(2)
+                .familyDataAmount(5000)
+                .build();
+
+        MemberEntity memberEntity = MemberEntity.builder()
+                .id(10L)
+                .name("멤버1")
+                .status(Status.APPROVED)
+                .build();
+
+        FamilyDetailInfoDto dto = new FamilyDetailInfoDto(
+                familyEntity,
+                memberEntity,
+                "test@email.com",
+                "010-1111-2222",
+                100L,
+                FamilyRole.OWNER
+        );
+
+        given(familyJpaRepository.findFamilyDetailQueryResult(familyId)).willReturn(List.of(dto));
+
+        // when
+        Optional<FamilyDetailInfo> result = familyRepository.findInfoById(familyId);
+
+        // then
+        assertThat(result).isPresent();
+        FamilyDetailInfo info = result.get();
+        assertThat(info.getFamilyId()).isEqualTo(familyId);
+        assertThat(info.getFamilyNum()).isEqualTo(2);
+        assertThat(info.getMemberDetailInfoList()).hasSize(1);
+        assertThat(info.getMemberDetailInfoList().get(0).getEmail()).isEqualTo("test@email.com");
+    }
+
+    @Test
+    @DisplayName("가족 상세 정보 조회 실패: 결과가 없는 경우")
+    void findInfoByIdNotFound() {
+        // given
+        Long familyId = 999L;
+        given(familyJpaRepository.findFamilyDetailQueryResult(familyId)).willReturn(List.of());
+
+        // when
+        Optional<FamilyDetailInfo> result = familyRepository.findInfoById(familyId);
+
+        // then
+        assertThat(result).isEmpty();
     }
 }
