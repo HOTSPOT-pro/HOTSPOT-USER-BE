@@ -1,10 +1,10 @@
 package hotspot.user.family.domain;
 
+import java.util.List;
+
 import hotspot.user.member.domain.MemberDetailInfo;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.List;
 
 /**
  * 가족 전체 상세 정보를 담는 통합 도메인 모델 (Read Model)

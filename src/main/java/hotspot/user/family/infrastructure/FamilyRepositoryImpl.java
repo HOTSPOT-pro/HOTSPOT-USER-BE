@@ -3,14 +3,14 @@ package hotspot.user.family.infrastructure;
 import java.util.List;
 import java.util.Optional;
 
-import hotspot.user.family.domain.FamilyDetailInfo;
-import hotspot.user.family.infrastructure.entity.FamilyDetailInfoDto;
-import hotspot.user.member.domain.MemberDetailInfo;
 import org.springframework.stereotype.Repository;
 
 import hotspot.user.family.domain.Family;
+import hotspot.user.family.domain.FamilyDetailInfo;
+import hotspot.user.family.infrastructure.entity.FamilyDetailInfoDto;
 import hotspot.user.family.infrastructure.entity.FamilyEntity;
 import hotspot.user.family.service.port.FamilyRepository;
+import hotspot.user.member.domain.MemberDetailInfo;
 import lombok.RequiredArgsConstructor;
 
 @Repository
