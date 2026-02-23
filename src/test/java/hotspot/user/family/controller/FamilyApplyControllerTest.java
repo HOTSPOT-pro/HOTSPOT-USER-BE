@@ -43,8 +43,12 @@ class FamilyApplyControllerTest {
     void manageFamilyMemberSuccess() throws Exception {
         // given
         setAuthentication(1L, 100L, FamilyRole.OWNER);
-        CreateFamilyApplyRequest request = new CreateFamilyApplyRequest(
-                2L, ApplyType.ADD, FamilyRole.CHILD, "http://doc.url");
+        CreateFamilyApplyRequest request = CreateFamilyApplyRequest.builder()
+                .targetSubId(2L)
+                .applyType(ApplyType.ADD)
+                .targetFamilyRole(FamilyRole.CHILD)
+                .docUrl("http://doc.url")
+                .build();
 
         CreateFamilyApplyResponse response = CreateFamilyApplyResponse.builder()
                 .status(hotspot.user.family.domain.ApplyStatus.PENDING)

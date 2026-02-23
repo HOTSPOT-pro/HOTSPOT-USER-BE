@@ -99,14 +99,14 @@ class FamilyRepositoryImplTest {
                 .status(Status.APPROVED)
                 .build();
 
-        FamilyDetailInfoDto dto = new FamilyDetailInfoDto(
-                familyEntity,
-                memberEntity,
-                "test@email.com",
-                "010-1111-2222",
-                100L,
-                FamilyRole.OWNER
-        );
+        FamilyDetailInfoDto dto = FamilyDetailInfoDto.builder()
+                .familyEntity(familyEntity)
+                .memberEntity(memberEntity)
+                .email("test@email.com")
+                .phone("010-1111-2222")
+                .subId(100L)
+                .role(FamilyRole.OWNER)
+                .build();
 
         given(familyJpaRepository.findFamilyDetailQueryResult(familyId)).willReturn(List.of(dto));
 
