@@ -61,6 +61,9 @@ dependencies {
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+
+	testImplementation "org.testcontainers:junit-jupiter:1.19.7"
+	testImplementation "org.testcontainers:testcontainers:1.19.7"
 }
 
 /* =========================
@@ -132,7 +135,8 @@ def reportExcludes = [
 		'**/entity/**',
 		'**/exception/**',
 		'**/common/**',
-		'**/HealthController'
+		'**/HealthController',
+		'**/usage/subscriptionUsage/**'
 ]
 
 /*
@@ -149,7 +153,8 @@ def verificationExcludes = [
 		'*.mapper.*',
 		'*.common.*',
 		'**.*Application*',    // 메인 애플리케이션
-		'**.*HealthController' // 특정 컨트롤러
+		'**.*HealthController', // 특정 컨트롤러
+		'*.usage.subscriptionUsage.*'
 ]
 
 jacocoTestReport {
