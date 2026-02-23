@@ -108,4 +108,16 @@ class NotificationControllerTest {
 
         then(notificationService).should().markAllRead(1L);
     }
+
+    @Test
+    @DisplayName("알림 단건 읽음 처리 성공")
+    void markReadSuccess() throws Exception {
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+
+        mockMvc.perform(patch("/api/v1/notifications/10/read"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
+
+        then(notificationService).should().markRead(1L, 10L);
+    }
 }
