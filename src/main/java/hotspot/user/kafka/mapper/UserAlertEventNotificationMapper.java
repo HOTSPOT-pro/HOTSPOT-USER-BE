@@ -230,6 +230,9 @@ public class UserAlertEventNotificationMapper {
         if (subId == null) {
             throw new ApplicationException(KafkaErrorCode.KAFKA_SUB_ID_REQUIRED);
         }
+        if (subId <= 0L) {
+            throw new ApplicationException(KafkaErrorCode.KAFKA_SUB_ID_INVALID);
+        }
         return subId;
     }
 }
