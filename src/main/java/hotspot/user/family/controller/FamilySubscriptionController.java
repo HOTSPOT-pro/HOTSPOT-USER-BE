@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
-import hotspot.user.family.controller.port.CreateFamilyApplyService;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.port.UpdateFamilyPriorityService;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
@@ -31,7 +30,6 @@ public class FamilySubscriptionController implements FamilySubscriptionApi {
 
     private final UpdateDataLimitService updateDataLimitService;
     private final UpdateFamilyPriorityService updateFamilyPriorityService;
-    private final CreateFamilyApplyService createFamilyApplyService; // 가족 구성원 추가 / 삭제 신청 서비스
 
     // 구성원의 가족 공유 데이터 한도 조정
     @Override
