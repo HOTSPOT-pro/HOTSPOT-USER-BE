@@ -5,6 +5,7 @@ import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.family.controller.port.CreateFamilyApplyService;
 import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
 import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
+import hotspot.user.family.controller.swagger.FamilyApplyApi;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/families")
-public class FamilyApplyController {
+public class FamilyApplyController implements FamilyApplyApi {
 
     private final CreateFamilyApplyService createFamilyApplyService; // 가족 구성원 추가 / 삭제 신청 서비스
 
