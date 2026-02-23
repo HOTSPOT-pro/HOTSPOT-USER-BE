@@ -37,7 +37,7 @@ public class UpdateFamilyRoleServiceImpl implements UpdateFamilyRoleService {
         }
 
         // 2. 본인 역할 변경 시도 차단 (가족 내 OWNER 부재 방지)
-        Subscription requesterSub = subscriptionRepository.findById(requesterMemberId)
+        Subscription requesterSub = subscriptionRepository.findByMemberId(requesterMemberId)
                 .orElseThrow(() -> new ApplicationException(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND));
 
         if (requesterSub.getId().equals(targetSubId)) {
