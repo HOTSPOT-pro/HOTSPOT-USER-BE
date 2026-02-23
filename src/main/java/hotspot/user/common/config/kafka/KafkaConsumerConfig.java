@@ -2,6 +2,7 @@ package hotspot.user.common.config.kafka;
 
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.ssl.SslBundles;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -22,6 +23,12 @@ public class KafkaConsumerConfig {
     private static final long BACKOFF_MAX_INTERVAL_MS = 10_000L;
     private static final long BACKOFF_MAX_ELAPSED_MS = 60_000L;
 
+    private final String userAlertConsumerGroup;
+
+    public KafkaConsumerConfig(@Value("${app.consumer-groups.user-alert}") String userAlertConsumerGroup) {
+        this.userAlertConsumerGroup = userAlertConsumerGroup;
+    }
+
     @Bean
     public ConsumerFactory<String, UserAlertEvent> userAlertEventConsumerFactory(
             KafkaProperties kafkaProperties,
@@ -30,7 +37,8 @@ public class KafkaConsumerConfig {
         return KafkaConsumerFactorySupport.createConsumerFactory(
                 kafkaProperties,
                 sslBundles,
-                UserAlertEvent.class
+                UserAlertEvent.class,
+                userAlertConsumerGroup
         );
     }
 

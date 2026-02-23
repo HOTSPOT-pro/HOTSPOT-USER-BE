@@ -71,7 +71,7 @@ class KafkaConsumerConfigTest {
     @DisplayName("Builds consumer factory and listener factory with manual ack and error handler")
     void shouldBuildKafkaConsumerAndListenerFactory() {
         // given
-        KafkaConsumerConfig kafkaConsumerConfig = new KafkaConsumerConfig();
+        KafkaConsumerConfig kafkaConsumerConfig = new KafkaConsumerConfig("user-alert-consumer-group");
 
         KafkaProperties kafkaProperties = new KafkaProperties();
         kafkaProperties.setBootstrapServers(List.of("localhost:9092"));

@@ -16,9 +16,11 @@ public class KafkaConsumerFactorySupport {
     public static <T> ConsumerFactory<String, T> createConsumerFactory(
             KafkaProperties props,
             SslBundles sslBundles,
-            Class<T> clazz
+            Class<T> clazz,
+            String groupId
     ) {
         Map<String, Object> cfg = new HashMap<>(props.buildConsumerProperties(sslBundles));
+        cfg.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         cfg.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         cfg.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
