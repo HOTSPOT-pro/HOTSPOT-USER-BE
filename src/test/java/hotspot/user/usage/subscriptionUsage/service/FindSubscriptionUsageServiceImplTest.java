@@ -18,6 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.presentData.service.port.PresentDataRepository;
+import hotspot.user.subscription.domain.Subscription;
+import hotspot.user.subscription.service.SubscriptionService;
 import hotspot.user.usage.subscriptionUsage.controller.response.SubscriptionUsageResponse;
 import hotspot.user.usage.subscriptionUsage.domain.GiftUsage;
 import hotspot.user.usage.subscriptionUsage.domain.SubscriptionUsage;
@@ -32,6 +34,9 @@ class FindSubscriptionUsageServiceImplTest {
     @Mock
     PresentDataRepository presentDataRepository;
 
+    @Mock
+    SubscriptionService subscriptionService;
+
     @InjectMocks
     FindSubscriptionUsageServiceImpl service;
 
@@ -39,11 +44,17 @@ class FindSubscriptionUsageServiceImplTest {
     @DisplayName("개인 데이터 사용량 서비스 정상 동작")
     void shouldReturnSubscriptionUsageSuccessfully() {
 
-        Long subId = 1L;
+        // given
+        Long memberId = 100L;
+        Long subscriptionId = 1L;
+
+        Subscription subscription = Subscription.builder()
+                .id(subscriptionId)
+                .build();
 
         SubscriptionUsage mockUsage =
                 new SubscriptionUsage(
-                        subId,
+                        subscriptionId,
                         24 * 1024 * 1024, // 24GB KB 단위
                         0,
                         List.of(
@@ -55,24 +66,32 @@ class FindSubscriptionUsageServiceImplTest {
                         )
                 );
 
-        when(subscriptionUsageRepository.findSubscriptionUsage(subId))
+        when(subscriptionService.findByMemberId(memberId))
+                .thenReturn(subscription);
+
+        when(subscriptionUsageRepository.findSubscriptionUsage(subscriptionId))
                 .thenReturn(mockUsage);
 
         when(presentDataRepository.findGiftGiverNames(eq(List.of(69395L))))
                 .thenReturn(Map.of(69395L, "김태연"));
 
+        // when
         SubscriptionUsageResponse response =
-                service.findSubscriptionUsage(subId);
+                service.findSubscriptionUsage(memberId);
 
+        // then
         assertNotNull(response);
-        assertEquals(subId, response.subId());
+        assertEquals(subscriptionId, response.subId());
 
         assertEquals(1, response.giftUsages().size());
         assertEquals("김태연",
                 response.giftUsages().get(0).giftUserName());
 
+        verify(subscriptionService)
+                .findByMemberId(memberId);
+
         verify(subscriptionUsageRepository)
-                .findSubscriptionUsage(subId);
+                .findSubscriptionUsage(subscriptionId);
 
         verify(presentDataRepository)
                 .findGiftGiverNames(anyList());
