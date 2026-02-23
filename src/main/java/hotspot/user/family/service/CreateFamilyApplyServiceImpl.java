@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CreateFamilyServiceImpl implements CreateFamilyApplyService {
+public class CreateFamilyApplyServiceImpl implements CreateFamilyApplyService {
     private final FamilyApplyRepository familyApplyRepository;
     private final SubscriptionRepository subscriptionRepository;
 
