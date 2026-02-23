@@ -51,6 +51,14 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.markAllReadBySubId(subId);
     }
 
+    // memberId -> subId를 해석한 뒤 알림 1건을 읽음 처리한다.
+    @Override
+    @Transactional
+    public void markRead(Long memberId, Long notificationId) {
+        Long subId = resolveSubIdByMemberId(memberId);
+        notificationRepository.markReadById(notificationId, subId);
+    }
+
     // 인증 사용자(memberId)의 소유 회선(subId)을 조회한다.
     private Long resolveSubIdByMemberId(Long memberId) {
         Subscription subscription = subscriptionService.findByMemberId(memberId);
