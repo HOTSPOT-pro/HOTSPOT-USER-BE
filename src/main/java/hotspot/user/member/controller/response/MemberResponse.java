@@ -13,16 +13,8 @@ public record MemberResponse(
         String email,
         String phone,
         FamilyRole familyRole,
+        Long familyId,
+        Long subId,
         Status status
 ) {
-    public static MemberResponse of(Member member, String email, String phone, FamilyRole familyRole) {
-        return new MemberResponse(
-                member.getId(),
-                member.getName(),
-                email,
-                phone,
-                familyRole,
-                member.getStatus()
-        );
-    }
 }
