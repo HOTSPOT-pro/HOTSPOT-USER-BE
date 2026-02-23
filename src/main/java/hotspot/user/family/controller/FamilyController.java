@@ -2,6 +2,7 @@ package hotspot.user.family.controller;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.family.controller.port.FindFamilyInfoService;
 import hotspot.user.family.controller.response.FamilyInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/families/")
 public class FamilyController {
 
+    private final FindFamilyInfoService findFamilyInfoService;
+
     @GetMapping
     public ResponseEntity<ApiResponse<FamilyInfoResponse>> getFamilyInfo(
             @AuthenticationPrincipal PrincipalDetails principal) {
-            return null;
+
+        FamilyInfoResponse response = findFamilyInfoService.findFamilyInfoById(principal.getFamilyId());
+        return ResponseEntity.ok(
+                ApiResponse.success(response));
 
     }
 }
