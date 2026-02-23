@@ -25,6 +25,7 @@ public enum FamilyErrorCode implements BaseErrorCode {
     TARGET_ROLE_REQUIRED(HttpStatus.BAD_REQUEST, "FAMILY_012", "구성원 추가 시 부여할 역할 정보는 필수입니다."),
     TARGET_ALREADY_IN_FAMILY(HttpStatus.BAD_REQUEST, "FAMILY_013", "이미 가족에 속해있는 구성원입니다."),
     TARGET_NOT_IN_FAMILY(HttpStatus.BAD_REQUEST, "FAMILY_014", "해당 가족에 속해있지 않은 구성원입니다."),
+    DUPLICATE_FAMILY_APPLY(HttpStatus.CONFLICT, "FAMILY_015", "이미 처리 대기 중인 신청이 존재합니다."),
     ;
 
     private final HttpStatus httpStatus;

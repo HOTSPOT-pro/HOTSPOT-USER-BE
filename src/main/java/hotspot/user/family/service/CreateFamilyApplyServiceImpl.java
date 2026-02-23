@@ -55,6 +55,11 @@ public class CreateFamilyApplyServiceImpl implements CreateFamilyApplyService {
         // 4. 타입별 비즈니스 규칙 검증
         validateApplyType(familyId, request, targetSub.getId());
 
+        // 5. 이미 처리 대기 중인 동일한 신청이 있는지 확인
+        if (familyApplyRepository.existsPendingApply(requesterSub.getId(), targetSub.getId(), familyId)) {
+            throw new ApplicationException(FamilyErrorCode.DUPLICATE_FAMILY_APPLY);
+        }
+
         FamilyApply familyApply = FamilyApplyMapper.toFamilyApply(
                 requesterSub.getId(),
                 familyId,
