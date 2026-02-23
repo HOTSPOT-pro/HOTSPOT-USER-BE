@@ -77,10 +77,6 @@ public class UpdateBlockPolicyServiceImpl implements UpdateBlockPolicyService {
                 activeMap.remove(policy.getId()); // 처리 완료된 항목은 Map에서 제거
             }
 
-            Subscription subscription = Subscription.builder()
-                    .id(request.subId())
-                    .build();
-
             // 무조건 신규 도메인 객체 생성 (새로운 스냅샷으로 Insert)
             PolicySub newSub = PolicySub.builder()
                     .subId(request.subId())
