@@ -1,0 +1,56 @@
+package hotspot.user.usage.subscriptionUsage.domain.mapper;
+
+import java.util.List;
+import java.util.Map;
+
+import hotspot.user.usage.subscriptionUsage.controller.response.SubscriptionUsageResponse;
+import hotspot.user.usage.subscriptionUsage.domain.SubscriptionUsage;
+
+public class SubscriptionUsageMapper {
+
+    public static SubscriptionUsageResponse toSubscriptionUsageResponse(
+            SubscriptionUsage usage,
+            Map<Long, String> giftIdToUserName
+    ) {
+
+        List<SubscriptionUsageResponse.GiftUsageResponse> giftResponses =
+                usage.gifts()
+                        .stream()
+                        .map(gift -> {
+
+                            String userName =
+                                    giftIdToUserName.getOrDefault(
+                                            gift.giftId(),
+                                            "Unknown"
+                                    );
+
+                            return new SubscriptionUsageResponse.GiftUsageResponse(
+                                    gift.giftId(),
+                                    userName,
+                                    gift.limitGb(),
+                                    gift.usedGb(),
+                                    gift.remainGb(),
+                                    gift.usagePercent()
+                            );
+                        })
+                        .toList();
+
+        return new SubscriptionUsageResponse(
+                usage.subId(),
+
+                // 개인 요금제
+                usage.limitGb(),
+                usage.usedGb(),
+                usage.remainGb(),
+                usage.usagePercent(),
+
+                // gift 총합
+                usage.giftTotalLimitGb(),
+                usage.giftTotalUsedGb(),
+                usage.giftTotalRemainGb(),
+                usage.giftUsagePercent(),
+
+                giftResponses
+        );
+    }
+}
