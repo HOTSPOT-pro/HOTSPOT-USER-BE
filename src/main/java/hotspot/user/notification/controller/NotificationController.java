@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
-import hotspot.user.notification.controller.port.NotificationService;
+import hotspot.user.notification.controller.port.FindNotificationService;
+import hotspot.user.notification.controller.port.ReadNotificationService;
 import hotspot.user.notification.controller.response.NotificationListResponse;
 import hotspot.user.notification.controller.response.UnreadNotificationCountResponse;
 import hotspot.user.notification.controller.swagger.NotificationApi;
@@ -22,7 +23,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/notifications")
 public class NotificationController implements NotificationApi {
 
-    private final NotificationService notificationService;
+    private final FindNotificationService findNotificationService;
+    private final ReadNotificationService readNotificationService;
 
     // 로그인 사용자의 최근 알림 목록을 페이지 단위로 조회한다.
     @Override
@@ -31,7 +33,7 @@ public class NotificationController implements NotificationApi {
             @AuthenticationPrincipal PrincipalDetails details,
             Pageable pageable
     ) {
-        NotificationListResponse response = notificationService.findNotifications(details.getId(), pageable);
+        NotificationListResponse response = findNotificationService.findNotifications(details.getId(), pageable);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -41,7 +43,7 @@ public class NotificationController implements NotificationApi {
     public ResponseEntity<ApiResponse<UnreadNotificationCountResponse>> getUnreadCount(
             @AuthenticationPrincipal PrincipalDetails details
     ) {
-        UnreadNotificationCountResponse response = notificationService.findUnreadCount(details.getId());
+        UnreadNotificationCountResponse response = findNotificationService.findUnreadCount(details.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -51,7 +53,7 @@ public class NotificationController implements NotificationApi {
     public ResponseEntity<ApiResponse<Void>> markAllRead(
             @AuthenticationPrincipal PrincipalDetails details
     ) {
-        notificationService.markAllRead(details.getId());
+        readNotificationService.markAllRead(details.getId());
         return ResponseEntity.ok(ApiResponse.success());
     }
 
@@ -62,7 +64,7 @@ public class NotificationController implements NotificationApi {
             @AuthenticationPrincipal PrincipalDetails details,
             @PathVariable Long notificationId
     ) {
-        notificationService.markRead(details.getId(), notificationId);
+        readNotificationService.markRead(details.getId(), notificationId);
         return ResponseEntity.ok(ApiResponse.success());
     }
 }
