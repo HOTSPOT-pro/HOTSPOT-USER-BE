@@ -75,7 +75,7 @@ class FindReportUsageAppServiceImplTest {
         );
 
         when(appBlockedServiceRepository
-                .findAllByAppBlackedServiceIds(List.of(1L, 2L)))
+                .findAllByAppBlockedServiceIds(List.of(1L, 2L)))
                 .thenReturn(services);
 
         ReportUsageAppResponse response =
@@ -91,7 +91,7 @@ class FindReportUsageAppServiceImplTest {
         verify(subscriptionService).findByMemberId(memberId);
         verify(reportUsageAppRepository).findMonthlyAppUsage(subId);
         verify(appBlockedServiceRepository)
-                .findAllByAppBlackedServiceIds(List.of(1L, 2L));
+                .findAllByAppBlockedServiceIds(List.of(1L, 2L));
     }
 
     @Test
@@ -114,7 +114,7 @@ class FindReportUsageAppServiceImplTest {
         );
 
         when(appBlockedServiceRepository
-                .findAllByAppBlackedServiceIds(List.of(3L)))
+                .findAllByAppBlockedServiceIds(List.of(3L)))
                 .thenReturn(services);
 
         ReportUsageAppResponse response =

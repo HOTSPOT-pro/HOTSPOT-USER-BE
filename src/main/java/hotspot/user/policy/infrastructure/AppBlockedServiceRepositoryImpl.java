@@ -28,7 +28,7 @@ public class AppBlockedServiceRepositoryImpl implements AppBlockedServiceReposit
     }
 
     @Override
-    public List<AppBlockedService> findAllByAppBlackedServiceIds(List<Long> ids) {
+    public List<AppBlockedService> findAllByAppBlockedServiceIds(List<Long> ids) {
         return appBlockedServiceJpaRepository.findByIdInAndIsDeletedFalse(ids)
                 .stream()
                 .map(AppBlockedServiceEntity::entityToDomain)

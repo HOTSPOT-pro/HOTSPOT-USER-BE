@@ -48,7 +48,7 @@ public class FindReportUsageAppServiceImpl
         // DB 조회
         List<AppBlockedService> services =
                 appBlockedServiceRepository
-                        .findAllByAppBlackedServiceIds(appIds);
+                        .findAllByAppBlockedServiceIds(appIds);
 
         // Mapper 위임
         return ReportUsageAppMapper.toReportUsageAppResponse(
@@ -76,7 +76,7 @@ public class FindReportUsageAppServiceImpl
 
         List<AppBlockedService> services =
                 appBlockedServiceRepository
-                        .findAllByAppBlackedServiceIds(appIds);
+                        .findAllByAppBlockedServiceIds(appIds);
 
         return ReportUsageAppMapper.toReportUsageAppResponse(
                 LocalDateTime.now(),
