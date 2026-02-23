@@ -1,6 +1,7 @@
 package hotspot.user.notification.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -20,6 +21,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.NotificationErrorCode;
+import hotspot.user.common.exception.code.SubscriptionErrorCode;
 import hotspot.user.member.domain.Member;
 import hotspot.user.notification.controller.response.NotificationListResponse;
 import hotspot.user.notification.controller.response.UnreadNotificationCountResponse;
@@ -96,6 +100,18 @@ class NotificationServiceImplTest {
     }
 
     @Test
+    @DisplayName("회선이 없으면 NOTI_001 예외로 변환한다")
+    void findUnreadCountFailWhenSubscriptionNotFound() {
+        Long memberId = 10L;
+        given(subscriptionService.findByMemberId(memberId))
+                .willThrow(new ApplicationException(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND));
+
+        assertThatThrownBy(() -> notificationService.findUnreadCount(memberId))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(NotificationErrorCode.NOTIFICATION_NOT_FOUND.getMessage());
+    }
+
+    @Test
     @DisplayName("전체 읽음 처리 성공")
     void markAllReadSuccess() {
         Long memberId = 11L;
@@ -122,5 +138,21 @@ class NotificationServiceImplTest {
         notificationService.markRead(memberId, notificationId);
 
         then(notificationRepository).should().markReadById(notificationId, mySubId);
+    }
+
+    @Test
+    @DisplayName("단건 읽음 처리 실패: 대상 알림이 없으면 예외를 던진다")
+    void markReadFailWhenNotificationNotFound() {
+        Long memberId = 11L;
+        Long mySubId = 200L;
+        Long notificationId = 33L;
+
+        given(subscriptionService.findByMemberId(memberId))
+                .willReturn(Subscription.builder().id(mySubId).build());
+        given(notificationRepository.markReadById(notificationId, mySubId)).willReturn(0);
+
+        assertThatThrownBy(() -> notificationService.markRead(memberId, notificationId))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(NotificationErrorCode.NOTIFICATION_NOT_FOUND.getMessage());
     }
 }
