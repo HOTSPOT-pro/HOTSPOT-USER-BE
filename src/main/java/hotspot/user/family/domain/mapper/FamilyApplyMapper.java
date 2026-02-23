@@ -13,7 +13,6 @@ public class FamilyApplyMapper {
     // request -> 도메인
     public static FamilyApply toFamilyApply(Long requesterSubId,
                                             Long familyId,
-                                            FamilyRole requesterFamilyRole,
                                             CreateFamilyApplyRequest createFamilyApplyRequest) {
         return FamilyApply.builder()
                 .requesterSubId(requesterSubId)

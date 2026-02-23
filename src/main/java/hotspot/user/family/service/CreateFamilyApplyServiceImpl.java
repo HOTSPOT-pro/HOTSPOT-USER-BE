@@ -58,7 +58,6 @@ public class CreateFamilyApplyServiceImpl implements CreateFamilyApplyService {
         FamilyApply familyApply = FamilyApplyMapper.toFamilyApply(
                 requesterSub.getId(),
                 familyId,
-                requesterFamilyRole,
                 request
         );
 
