@@ -107,4 +107,20 @@ class NotificationServiceImplTest {
         notificationService.markAllRead(memberId);
         then(notificationRepository).should().markAllReadBySubId(mySubId);
     }
+
+    @Test
+    @DisplayName("단건 읽음 처리 성공")
+    void markReadSuccess() {
+        Long memberId = 11L;
+        Long mySubId = 200L;
+        Long notificationId = 33L;
+
+        given(subscriptionService.findByMemberId(memberId))
+                .willReturn(Subscription.builder().id(mySubId).build());
+        given(notificationRepository.markReadById(notificationId, mySubId)).willReturn(1);
+
+        notificationService.markRead(memberId, notificationId);
+
+        then(notificationRepository).should().markReadById(notificationId, mySubId);
+    }
 }
