@@ -1,8 +1,12 @@
 package hotspot.user.policy.controller;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +18,10 @@ import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
+import hotspot.user.policy.controller.port.UpdateBlockPolicyService;
+import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
+import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
+import hotspot.user.policy.controller.swagger.AppliedPolicyApi;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -21,40 +29,19 @@ import lombok.RequiredArgsConstructor;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/policies/applied")
-public class AppliedPolicyController {
+@RequestMapping("/api/v1/policies")
+public class AppliedPolicyController implements AppliedPolicyApi {
 
     private final FindMemberAppliedPolicyService findMemberAppliedPolicyService; // 구성원별 적용 정책 조회
     private final FindFamilyAppliedPolicyService findFamilyAppliedPolicyService; // 가족 구성원 전체 적용 정책 조회
-
-    /**
-     * 적용된 정책 목록을 조회 Test API
-     * @param isFamily true일 경우 가족 전체의 정책을, false일 경우 본인의 정책만 조회
-     * 우리 정보로 만들어진 더미 데이터가 없기 때문에 파라미터로 memberId, familyId 전달할 수 있도록 한다.
-     * [To-Do] 더미 데이터 및 로그인 기능 최종 완료 시 삭제 예정
-     */
-    @GetMapping("/test")
-    public ResponseEntity<ApiResponse<Object>> getAppliedPoliciesTest(
-            @RequestParam(defaultValue = "false") boolean isFamily,
-            @RequestParam(required = false) Long testMemberId,
-            @RequestParam(required = false) Long testFamilyId
-    ) {
-        if (isFamily) {
-            return ResponseEntity.ok(ApiResponse.success(
-                    findFamilyAppliedPolicyService.findByFamilyId(testFamilyId)
-            ));
-        }
-
-        return ResponseEntity.ok(ApiResponse.success(
-                findMemberAppliedPolicyService.findByMemberId(testMemberId)
-        ));
-    }
+    private final UpdateBlockPolicyService updateBlockPolicyService; // 구성원 별 정책 업데이트 (적용)
 
     /**
      * 적용된 정책 목록을 조회 API
      * @param isFamily true일 경우 가족 전체의 정책을, false일 경우 본인의 정책만 조회
      */
-    @GetMapping
+    @Override
+    @GetMapping("/applied")
     public ResponseEntity<ApiResponse<Object>> getAppliedPolicies(
             @RequestParam(defaultValue = "false") boolean isFamily,
             @AuthenticationPrincipal PrincipalDetails principal
@@ -75,5 +62,24 @@ public class AppliedPolicyController {
         return ResponseEntity.ok(ApiResponse.success(
             findMemberAppliedPolicyService.findByMemberId(principal.getId())
         ));
+    }
+
+
+    // 구성원별 앱 차단 설정 업데이트
+    @Override
+    @PutMapping("/apply")
+    public ResponseEntity<ApiResponse<UpdateBlockPolicyResponse>> updateBlockPolicy(
+            @Valid @RequestBody UpdateBlockPolicyRequest request,
+            @AuthenticationPrincipal PrincipalDetails principalDetails
+            ) {
+
+        UpdateBlockPolicyResponse response = updateBlockPolicyService.updateBlockPolicy(
+                request,
+                principalDetails.getFamilyId(),
+                principalDetails.getRole()
+        );
+
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(response));
     }
 }

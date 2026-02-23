@@ -45,19 +45,41 @@ public class PolicySubEntity extends BaseEntity {
     @JoinColumn(name = "sub_id")
     private SubscriptionEntity subscription;
 
+    @Column(name = "policy_id")
+    private Long policyId;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb") // PostgreSQL
     private DateSnapshot dateSnapshot;
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 
     public PolicySub entityToDomain() {
         return PolicySub.builder()
                 .id(this.policySubId)
-                .subscription(this.subscription.entityToDomain())
+                .policyId(this.policyId)
+                .subId(this.subscription != null ? this.subscription.getSubId() : null)
                 .dateSnapshot(this.dateSnapshot)
+                .isDeleted(this.isDeleted)
+                .build();
+    }
+
+    public static PolicySubEntity domainToEntity(PolicySub policySub) {
+
+        // 연관관계(FK) 매핑을 위한 프록시(가짜) 엔티티 생성
+        // DB에서 전체 데이터를 읽어올 필요 없이, 외래키로 쓸 ID값만 세팅
+        SubscriptionEntity subscriptionProxy = SubscriptionEntity.builder()
+                .subId(policySub.getSubId()) // 도메인이 들고 있는 ID만 주입
+                .build();
+
+        return PolicySubEntity.builder()
+                .policySubId(policySub.getId())
+                .policyId(policySub.getPolicyId())
+                .subscription(subscriptionProxy)
+                .dateSnapshot(policySub.getDateSnapshot())
+                .isDeleted(policySub.isDeleted())
                 .build();
     }
 }

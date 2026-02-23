@@ -9,4 +9,5 @@ import hotspot.user.policy.domain.BlockPolicy;
  */
 public interface BlockPolicyRepository {
     List<BlockPolicy> findAll();
+    List<BlockPolicy> findAllById(List<Long> idList);
 }

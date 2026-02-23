@@ -1,6 +1,9 @@
 package hotspot.user.policy.domain.mapper;
 
+import java.util.List;
+
 import hotspot.user.policy.controller.response.BlockPolicyResponse;
+import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.PolicySub;
 
@@ -30,6 +33,16 @@ public class BlockPolicyMapper {
                 .name(policySub.getDateSnapshot().getPolicyName())
                 .policyType(policySub.getDateSnapshot().getPolicyType())
                 .policySnapshot(policySub.getDateSnapshot().getData())
+                .build();
+    }
+
+    // 구성원별 정책 업데이트response dto로 변환
+    public static UpdateBlockPolicyResponse toUpdateBlockPolicyResponse(
+            Long familyId, Long subId, List<Long> blockedPolicyIdList) {
+        return UpdateBlockPolicyResponse.builder()
+                .familyId(familyId)
+                .subId(subId)
+                .blockedPolicyIdList(blockedPolicyIdList)
                 .build();
     }
 }

@@ -20,4 +20,12 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
                 .map(BlockPolicyEntity::entityToDomain)
                 .toList();
     }
+
+    // policyId에 해당하는 모든 정책 리턴
+    @Override
+    public List<BlockPolicy> findAllById(List<Long> idList) {
+        return blockPolicyJpaRepository.findAllById(idList).stream()
+                .map(BlockPolicyEntity::entityToDomain)
+                .toList();
+    }
 }
