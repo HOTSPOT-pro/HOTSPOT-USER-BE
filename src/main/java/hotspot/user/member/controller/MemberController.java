@@ -1,16 +1,16 @@
 package hotspot.user.member.controller;
 
-import hotspot.user.common.ApiResponse;
-import hotspot.user.common.security.PrincipalDetails;
-import hotspot.user.member.controller.port.FindMemberService;
-import hotspot.user.member.controller.response.MemberResponse;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import hotspot.user.common.ApiResponse;
+import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.member.controller.port.FindMemberService;
+import hotspot.user.member.controller.response.MemberResponse;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor

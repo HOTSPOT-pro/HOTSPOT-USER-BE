@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-
 import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.MemberDetailInfo;
 import hotspot.user.member.infrastructure.entity.MemberEntity;

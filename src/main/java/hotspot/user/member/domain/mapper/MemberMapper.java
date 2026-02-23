@@ -2,8 +2,9 @@ package hotspot.user.member.domain.mapper;
 
 import hotspot.user.member.controller.request.CreateSocialAccountRequest;
 import hotspot.user.member.controller.response.MemberResponse;
-import hotspot.user.member.domain.*;
-import hotspot.user.subscription.domain.Subscription;
+import hotspot.user.member.domain.Member;
+import hotspot.user.member.domain.MemberDetailInfo;
+import hotspot.user.member.domain.Status;
 
 /**
  * Member 도메인과 DTO 간의 변환을 담당하는 매퍼

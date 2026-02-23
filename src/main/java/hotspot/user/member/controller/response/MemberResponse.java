@@ -1,7 +1,6 @@
 package hotspot.user.member.controller.response;
 
 import hotspot.user.member.domain.FamilyRole;
-
 import hotspot.user.member.domain.Status;
 import lombok.Builder;
 
