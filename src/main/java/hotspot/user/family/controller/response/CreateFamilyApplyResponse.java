@@ -7,13 +7,16 @@ import lombok.Builder;
 
 /**
  * 가족 구성원 추가 / 삭제 신청 response dto
+ * @param requesterSubId
  * @param targetSubId
  * @param familyId
  * @param applyType
+ * @param targetFamilyRole
  * @param docUrl
+ * @param status
  */
 @Builder
-public record ManageFamilyMemberResponse(
+public record CreateFamilyApplyResponse(
         Long requesterSubId,
         Long targetSubId,
         Long familyId,
