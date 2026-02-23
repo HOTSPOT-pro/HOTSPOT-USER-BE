@@ -180,6 +180,32 @@ class UserAlertEventNotificationMapperTest {
                 .hasMessage(KafkaErrorCode.KAFKA_SUB_ID_REQUIRED.getMessage());
     }
 
+    @Test
+    @DisplayName("throws common exception when subId is invalid")
+    void toNotificationWithInvalidSubId() {
+        UserAlertEvent event = new UserAlertEvent(
+                "alert-1",
+                "USAGE_THRESHOLD",
+                "PLAN_REMAINING",
+                "30",
+                null,
+                null,
+                null,
+                null,
+                Instant.parse("2026-02-23T10:15:30Z"),
+                0L,
+                null,
+                null,
+                0L,
+                30,
+                "evt-100"
+        );
+
+        assertThatThrownBy(() -> mapper.toNotification(event))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(KafkaErrorCode.KAFKA_SUB_ID_INVALID.getMessage());
+    }
+
     private UserAlertEvent event(
             String eventType,
             String alertType,
