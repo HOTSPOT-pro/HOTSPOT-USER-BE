@@ -57,6 +57,7 @@ public class NotificationEntity extends BaseEntity {
     @Builder.Default
     private Boolean isRead = false;
 
+    // 도메인 객체를 JPA 엔티티로 변환한다.
     public static NotificationEntity domainToEntity(Notification notification) {
         SubscriptionEntity subscriptionProxy = SubscriptionEntity.builder()
                 .subId(notification.getSubId())
@@ -72,6 +73,7 @@ public class NotificationEntity extends BaseEntity {
                 .build();
     }
 
+    // JPA 엔티티를 도메인 객체로 변환한다.
     public Notification entityToDomain() {
         return Notification.builder()
                 .id(this.notificationId)
@@ -80,6 +82,7 @@ public class NotificationEntity extends BaseEntity {
                 .notificationType(this.notificationType)
                 .content(this.content)
                 .isRead(this.isRead)
+                .createdTime(this.getCreatedTime())
                 .build();
     }
 }
