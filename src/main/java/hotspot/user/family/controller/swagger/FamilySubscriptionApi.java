@@ -11,6 +11,7 @@ import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
 import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
+import hotspot.user.family.controller.response.UpdateFamilyRoleResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Tag(name = "Family Subscription", description = "가족 회선 및 데이터 한도 관리 API")
 public interface FamilySubscriptionApi {
@@ -65,4 +67,29 @@ public interface FamilySubscriptionApi {
     ResponseEntity<hotspot.user.common.ApiResponse<UpdateFamilyPriorityResponse>> updateFamilyPriority(
             @Valid @RequestBody hotspot.user.family.controller.request.UpdateFamilyPriorityRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
+
+    @Operation(summary = "구성원 역할 수정",
+            description = "가족 OWNER가 특정 구성원의 역할(PARENT/CHILD)을 수정합니다. "
+                    + "본인의 역할은 수정할 수 없으며, 같은 가족 구성원만 수정 가능합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "수정 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청\n"
+                    + "- COMMON_002: 입력값 유효성 검증 실패\n"
+                    + "- FAMILY_016: 본인 역할 수정 시도\n"
+                    + "- FAMILY_017: 타인에게 OWNER 역할 부여 시도",
+                    content = @Content(schema = @Schema(implementation = hotspot.user.common.exception.ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "권한 없음\n"
+                    + "- AUTH_004: OWNER 권한이 아님\n"
+                    + "- FAMILY_003: 동일 가족 구성원이 아님",
+                    content = @Content(schema = @Schema(implementation = hotspot.user.common.exception.ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "찾을 수 없음\n"
+                    + "- FAMILY_002: 해당 회선 정보를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = hotspot.user.common.exception.ErrorResponse.class)))
+    })
+    ResponseEntity<hotspot.user.common.ApiResponse<UpdateFamilyRoleResponse>> updateFamilyRole(
+            @Parameter(description = "가족 ID", example = "100") @PathVariable Long familyId,
+            @Parameter(description = "대상 회선 ID", example = "10") @PathVariable Long subId,
+            @Valid @RequestBody hotspot.user.family.controller.request.UpdateFamilyRoleRequest request,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
+
 }

@@ -64,25 +64,22 @@ public class FamilySubscriptionController implements FamilySubscriptionApi {
     }
 
     // 구성원의 역할 (PARENT <-> CHILD) 업데이트
+    @Override
     @PatchMapping("/{familyId}/members/{subId}/role")
-    public ResponseEntity<ApiResponse<UpdateFamilyRoleResponse>> updatFamilyRole(
-            UpdateFamilyRoleRequest request,
+    public ResponseEntity<ApiResponse<UpdateFamilyRoleResponse>> updateFamilyRole(
             @PathVariable Long familyId,
             @PathVariable Long subId,
+            @Valid @RequestBody UpdateFamilyRoleRequest request,
             @AuthenticationPrincipal PrincipalDetails principal) {
 
-        Long requesterFamilyId = principal.getFamilyId();
-        FamilyRole requesterFamilyRole = principal.getRole();
-
         UpdateFamilyRoleResponse response = updateFamilyRoleService.update(
-                requesterFamilyId,
-                requesterFamilyRole,
-                familyId,
+                principal.getId(),
+                principal.getFamilyId(),
+                principal.getRole(),
                 subId,
                 request
         );
 
         return ResponseEntity.ok(ApiResponse.success(response));
-
     }
 }
