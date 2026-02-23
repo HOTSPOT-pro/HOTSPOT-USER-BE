@@ -52,7 +52,6 @@ public class FamilyApplyEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ApplyType applyType;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private FamilyRole targetFamilyRole;
 
