@@ -19,6 +19,6 @@ class PolicySubTest {
         policySub.delete();
 
         // then
-        assertThat(policySub.getIsDeleted()).isTrue();
+        assertThat(policySub.isDeleted()).isTrue();
     }
 }

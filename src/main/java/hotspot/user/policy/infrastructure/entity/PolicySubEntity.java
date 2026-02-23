@@ -54,7 +54,7 @@ public class PolicySubEntity extends BaseEntity {
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 
     public PolicySub entityToDomain() {
         return PolicySub.builder()
@@ -79,7 +79,7 @@ public class PolicySubEntity extends BaseEntity {
                 .policyId(policySub.getPolicyId())
                 .subscription(subscriptionProxy)
                 .dateSnapshot(policySub.getDateSnapshot())
-                .isDeleted(policySub.getIsDeleted())
+                .isDeleted(policySub.isDeleted())
                 .build();
     }
 }

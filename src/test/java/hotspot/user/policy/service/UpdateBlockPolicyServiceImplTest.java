@@ -98,7 +98,7 @@ class UpdateBlockPolicyServiceImplTest {
 
         // then
         assertThat(response.blockedPolicyIdList()).containsExactly(2L);
-        assertThat(existingSub.getIsDeleted()).isTrue(); // 기존 정책은 삭제됨
+        assertThat(existingSub.isDeleted()).isTrue(); // 기존 정책은 삭제됨
         verify(policySubRepository, times(1)).saveAll(anyList());
     }
 
@@ -120,7 +120,7 @@ class UpdateBlockPolicyServiceImplTest {
         updateBlockPolicyService.updateBlockPolicy(request, familyId, FamilyRole.OWNER);
 
         // then
-        assertThat(existingSub.getIsDeleted()).isTrue();
+        assertThat(existingSub.isDeleted()).isTrue();
         verify(policySubRepository, times(1)).saveAll(anyList());
     }
 

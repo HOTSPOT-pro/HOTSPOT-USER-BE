@@ -27,32 +27,32 @@ public class PolicySubRepositoryImpl implements PolicySubRepository {
     // 새로운 INSERT, 기존 isDeleted=true 분리해서 진행 (N+1 방지)
     @Override
     public List<PolicySub> saveAll(List<PolicySub> policySubList) {
-        // 1. 신규 Insert 대상 (ID가 없는 도메인)
-        List<PolicySubEntity> entitiesToInsert = policySubList.stream()
-                .filter(domain -> domain.getId() == null)
-                .map(PolicySubEntity::domainToEntity)
-                .toList();
+        List<PolicySubEntity> entitiesToInsert = new ArrayList<>();
+        List<Long> idsToUpdate = new ArrayList<>();
 
-        // 2. 비활성화 Update 대상 (ID가 있는 도메인의 ID값만 추출)
-        List<Long> idsToUpdate = policySubList.stream()
-                .filter(domain -> domain.getId() != null && domain.getIsDeleted())
-                .map(PolicySub::getId)
-                .toList();
+        // 단 한 번의 순회로 Insert 대상과 Update(Delete) 대상을 분류
+        policySubList.forEach(domain -> {
+            if (domain.getId() == null) {
+                entitiesToInsert.add(PolicySubEntity.domainToEntity(domain));
+            } else if (domain.isDeleted()) {
+                idsToUpdate.add(domain.getId());
+            }
+        });
 
         List<PolicySubEntity> savedEntities = new ArrayList<>();
 
-        // 3. Insert 실행 (em.persist만 타므로 N+1 없음) => 무조건 새로운 row 보장 (id = null)
+        // 1. 신규 Insert 실행
         if (!entitiesToInsert.isEmpty()) {
             savedEntities = policySubJpaRepository.saveAll(entitiesToInsert);
         }
 
-        // 4. Update 실행 (벌크 연산으로 쿼리 1방에 처리, id만 전달)
+        // 2. 벌크 Soft Delete 실행
         if (!idsToUpdate.isEmpty()) {
             policySubJpaRepository.bulkSoftDelete(idsToUpdate);
         }
 
-        // 서비스 로직에서 리턴값이 따로 필요 없다면 파라미터 그대로 리턴
         return savedEntities.stream()
-                .map(PolicySubEntity::entityToDomain).toList();
+                .map(PolicySubEntity::entityToDomain)
+                .toList();
     }
 }

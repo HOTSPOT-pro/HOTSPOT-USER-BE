@@ -15,7 +15,7 @@ public class PolicySub {
     private final Long policyId;
     private final Long subId;
     private final DateSnapshot dateSnapshot;
-    private Boolean isDeleted;
+    private boolean isDeleted;
 
     // 논리 삭제 메서드
     public void delete() {
