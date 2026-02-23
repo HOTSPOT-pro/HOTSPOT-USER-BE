@@ -15,17 +15,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
-import hotspot.user.family.domain.FamilySubscription;
-import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.controller.response.MemberResponse;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Member;
-import hotspot.user.member.domain.SocialAccount;
+import hotspot.user.member.domain.MemberDetailInfo;
 import hotspot.user.member.domain.Status;
 import hotspot.user.member.service.port.MemberRepository;
-import hotspot.user.member.service.port.SocialAccountRepository;
-import hotspot.user.subscription.domain.Subscription;
-import hotspot.user.subscription.service.port.SubscriptionRepository;
 
 /**
  * 회원 조회 서비스 단위 테스트
@@ -35,12 +30,6 @@ class FindMemberServiceImplTest {
 
     @Mock
     private MemberRepository memberRepository;
-    @Mock
-    private SocialAccountRepository socialAccountRepository;
-    @Mock
-    private SubscriptionRepository subscriptionRepository;
-    @Mock
-    private FamilySubscriptionRepository familySubscriptionRepository;
 
     @InjectMocks
     private FindMemberServiceImpl findMemberService;
@@ -55,26 +44,19 @@ class FindMemberServiceImplTest {
         Member member = Member.builder()
                 .id(memberId)
                 .name("홍길동")
-                .status(Status.APPROVED).build();
+                .status(Status.APPROVED)
+                .build();
 
-        SocialAccount socialAccount = SocialAccount.builder()
+        MemberDetailInfo detailInfo = MemberDetailInfo.builder()
+                .member(member)
                 .email("test@email.com")
+                .phone("010-1234-5678")
+                .subId(subId)
+                .role(FamilyRole.PARENT)
+                .familyId(100L)
                 .build();
 
-        Subscription subscription = Subscription
-                .builder()
-                .id(subId)
-                .phoneEnc("010-1234-5678")
-                .build();
-
-        FamilySubscription familySubscription = FamilySubscription.builder()
-                .familyRole(FamilyRole.PARENT)
-                .build();
-
-        given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-        given(socialAccountRepository.findByMemberId(memberId)).willReturn(Optional.of(socialAccount));
-        given(subscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(subscription));
-        given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySubscription));
+        given(memberRepository.findDetailById(memberId)).willReturn(Optional.of(detailInfo));
 
         // when
         MemberResponse response = findMemberService.findById(memberId);
@@ -84,6 +66,8 @@ class FindMemberServiceImplTest {
         assertThat(response.email()).isEqualTo("test@email.com");
         assertThat(response.phone()).isEqualTo("010-1234-5678");
         assertThat(response.familyRole()).isEqualTo(FamilyRole.PARENT);
+        assertThat(response.familyId()).isEqualTo(100L);
+        assertThat(response.subId()).isEqualTo(subId);
     }
 
     @Test
@@ -91,7 +75,7 @@ class FindMemberServiceImplTest {
     void findByIdFailMemberNotFound() {
         // given
         Long memberId = 999L;
-        given(memberRepository.findById(memberId)).willReturn(Optional.empty());
+        given(memberRepository.findDetailById(memberId)).willReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> findMemberService.findById(memberId))

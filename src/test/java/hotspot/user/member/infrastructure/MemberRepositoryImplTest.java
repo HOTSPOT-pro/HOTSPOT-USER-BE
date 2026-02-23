@@ -14,8 +14,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Member;
+import hotspot.user.member.domain.MemberDetailInfo;
 import hotspot.user.member.domain.Status;
+import hotspot.user.member.infrastructure.entity.MemberDetailInfoDto;
 import hotspot.user.member.infrastructure.entity.MemberEntity;
 
 /**
@@ -61,6 +64,51 @@ class MemberRepositoryImplTest {
         // then
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(memberId);
+    }
+
+    @Test
+    @DisplayName("멤버 상세 정보 조회 성공: JOIN 쿼리 결과를 도메인 객체로 변환한다")
+    void findDetailByIdSuccess() {
+        // given
+        Long memberId = 1L;
+        MemberEntity entity = MemberEntity.builder().id(memberId).name("홍길동").status(Status.APPROVED).build();
+        MemberDetailInfoDto dto = MemberDetailInfoDto.builder()
+                .memberEntity(entity)
+                .email("test@email.com")
+                .phone("010-1234-5678")
+                .subId(10L)
+                .role(FamilyRole.OWNER)
+                .familyId(100L)
+                .build();
+
+        given(memberJpaRepository.findDetailQueryResult(memberId)).willReturn(Optional.of(dto));
+
+        // when
+        Optional<MemberDetailInfo> result = memberRepository.findDetailById(memberId);
+
+        // then
+        assertThat(result).isPresent();
+        MemberDetailInfo info = result.get();
+        assertThat(info.getMember().getId()).isEqualTo(memberId);
+        assertThat(info.getEmail()).isEqualTo("test@email.com");
+        assertThat(info.getPhone()).isEqualTo("010-1234-5678");
+        assertThat(info.getRole()).isEqualTo(FamilyRole.OWNER);
+        assertThat(info.getFamilyId()).isEqualTo(100L);
+        assertThat(info.getSubId()).isEqualTo(10L);
+    }
+
+    @Test
+    @DisplayName("멤버 상세 정보 조회 실패: 존재하지 않는 회원")
+    void findDetailByIdNotFound() {
+        // given
+        Long memberId = 999L;
+        given(memberJpaRepository.findDetailQueryResult(memberId)).willReturn(Optional.empty());
+
+        // when
+        Optional<MemberDetailInfo> result = memberRepository.findDetailById(memberId);
+
+        // then
+        assertThat(result).isEmpty();
     }
 
     @Test
