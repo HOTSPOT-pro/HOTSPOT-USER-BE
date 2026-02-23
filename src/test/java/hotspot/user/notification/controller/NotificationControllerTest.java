@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.NotificationErrorCode;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
@@ -98,6 +101,18 @@ class NotificationControllerTest {
     }
 
     @Test
+    @DisplayName("미읽음 개수 조회 실패: 알림/회선이 없으면 404를 반환한다")
+    void getUnreadCountFailWhenNotificationNotFound() throws Exception {
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+        willThrow(new ApplicationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND))
+                .given(notificationService).findUnreadCount(1L);
+
+        mockMvc.perform(get("/api/v1/notifications/unread-count"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOTI_001"));
+    }
+
+    @Test
     @DisplayName("알림 전체 읽음 처리 성공")
     void markAllReadSuccess() throws Exception {
         setAuthentication(1L, 100L, FamilyRole.OWNER);
@@ -119,5 +134,17 @@ class NotificationControllerTest {
                 .andExpect(jsonPath("$.data").doesNotExist());
 
         then(notificationService).should().markRead(1L, 10L);
+    }
+
+    @Test
+    @DisplayName("알림 단건 읽음 처리 실패: 알림이 없으면 404를 반환한다")
+    void markReadFailWhenNotificationNotFound() throws Exception {
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+        willThrow(new ApplicationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND))
+                .given(notificationService).markRead(1L, 10L);
+
+        mockMvc.perform(patch("/api/v1/notifications/10/read"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOTI_001"));
     }
 }
