@@ -22,7 +22,8 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
 
     @Override
     public boolean existsPendingApply(Long requesterSubId, Long targetSubId, Long familyId) {
-        return familyApplyJpaRepository.existsByRequesterSubscriptionSubIdAndTargetSubscriptionSubIdAndFamilyFamilyIdAndStatus(
+        return familyApplyJpaRepository
+                .existsByRequesterSubscriptionSubIdAndTargetSubscriptionSubIdAndFamilyFamilyIdAndStatus(
                 requesterSubId, targetSubId, familyId, ApplyStatus.PENDING);
     }
 }

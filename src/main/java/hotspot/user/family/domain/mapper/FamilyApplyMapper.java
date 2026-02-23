@@ -4,7 +4,6 @@ import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
 import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
 import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.domain.FamilyApply;
-import hotspot.user.member.domain.FamilyRole;
 
 /**
  * 가족 구성원 추가 / 삭제 신청 Mapper
