@@ -118,7 +118,7 @@ class PresentDataControllerTest {
         when(findPresentReceiveService.findPresentReceive(1L))
                 .thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/presentData/receive/1"))
+        mockMvc.perform(get("/api/v1/presentData/receive"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.totalReceivedGb").value(1.5))
                 .andExpect(jsonPath("$.data.items[0].provideSubId").value(2))
@@ -149,7 +149,7 @@ class PresentDataControllerTest {
         when(findPresentProvideService.findPresentProvide(1L))
                 .thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/presentData/provide/1"))
+        mockMvc.perform(get("/api/v1/presentData/provide"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.totalReceivedGb").value(2.0))
                 .andExpect(jsonPath("$.data.items[0].provideSubId").value(3))
