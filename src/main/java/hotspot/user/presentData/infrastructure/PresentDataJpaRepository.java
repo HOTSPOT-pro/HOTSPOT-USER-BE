@@ -27,4 +27,24 @@ public interface PresentDataJpaRepository extends JpaRepository<PresentDataEntit
     List<GiftGiverRow> findGiftGivers(
             @Param("giftIds") List<Long> giftIds
     );
+
+    @Query("""
+        select p
+        from PresentDataEntity p
+            join fetch p.provideSubscription ps
+            join fetch ps.member
+        where p.targetSubscription.subId = :subId
+        order by p.createdTime desc
+    """)
+    List<PresentDataEntity> findAllByTargetSubId(@Param("subId") Long subId);
+
+    @Query("""
+        select p
+        from PresentDataEntity p
+            join fetch p.targetSubscription ts
+            join fetch ts.member
+        where p.provideSubscription.subId = :subId
+        order by p.createdTime desc
+    """)
+    List<PresentDataEntity> findAllByProviderSubId(@Param("subId") Long subId);
 }

@@ -26,6 +26,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import hotspot.user.common.util.redis.RedisPipelineExecutor;
+import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.usage.subscriptionUsage.domain.SubscriptionUsage;
 
 @Testcontainers
@@ -92,26 +93,26 @@ class SubscriptionUsageRedisRepositoryTest {
     }
 
     @Test
-    @DisplayName("개인 + 선물 사용량 정상 조회")
+    @DisplayName("MONTH 요금제 개인 + 선물 사용량 정상 조회")
     void shouldReturnSubscriptionUsageSuccessfully() {
 
         String yyyyMM = "202602";
 
-        // 개인 한도 24GB
+        // 개인 한도 24GB (KB)
         redisTemplate.opsForHash().put(
                 "limit:sub:1",
                 "plan_limit",
                 "25165824"
         );
 
-        // 개인 사용량 0
+        // 🔥 개인 사용량 (member_family_used로 변경)
         redisTemplate.opsForHash().put(
                 "usage:sub:1:" + yyyyMM,
-                "plan_used",
+                "member_family_used",
                 "0"
         );
 
-        // 선물 index (priority 순서)
+        // 선물 index
         redisTemplate.opsForZSet().add(
                 "idx:gift:1:" + yyyyMM,
                 "69395",
@@ -133,7 +134,10 @@ class SubscriptionUsageRedisRepositoryTest {
         );
 
         SubscriptionUsage usage =
-                repository.findSubscriptionUsage(1L);
+                repository.findSubscriptionUsage(
+                        1L,
+                        DataPeriod.MONTH
+                );
 
         assertEquals(24.0, usage.limitGb());
         assertEquals(1.0, usage.giftTotalLimitGb());

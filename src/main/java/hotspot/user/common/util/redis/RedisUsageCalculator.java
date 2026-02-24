@@ -10,8 +10,13 @@ public final class RedisUsageCalculator {
     private RedisUsageCalculator() {}
 
     public static double kbToGb(double kb) {
-        double safeKb = Math.max(kb, 0);
-        double gb = safeKb / KB_TO_GB;
+
+
+        if (kb < 0) {
+            return -1;
+        }
+
+        double gb = kb / KB_TO_GB;
 
         return BigDecimal.valueOf(gb)
                 .setScale(1, RoundingMode.HALF_UP)

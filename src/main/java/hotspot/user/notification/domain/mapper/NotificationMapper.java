@@ -17,6 +17,7 @@ public final class NotificationMapper {
                 .id(notification.getId())
                 .eventId(notification.getEventId())
                 .notificationType(notification.getNotificationType())
+                .title(notification.getTitle())
                 .content(notification.getContent())
                 .isRead(notification.getIsRead())
                 .createdTime(notification.getCreatedTime())

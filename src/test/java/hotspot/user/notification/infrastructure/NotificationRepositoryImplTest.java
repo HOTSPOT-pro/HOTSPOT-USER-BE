@@ -6,7 +6,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,41 +33,57 @@ class NotificationRepositoryImplTest {
     private NotificationRepositoryImpl notificationRepository;
 
     @Test
-    @DisplayName("insertIfAbsent returns true when inserted")
+    @DisplayName("insertIfAbsent returns persisted notification when inserted")
     void insertIfAbsentInserted() {
         Notification notification = Notification.builder()
                 .subId(1L)
                 .eventId("evt-1")
                 .notificationType("ALERT")
+                .title("title")
                 .content("alert")
+                .createdTime(LocalDateTime.of(2026, 2, 23, 12, 0))
+                .build();
+        NotificationEntity persisted = NotificationEntity.builder()
+                .notificationId(10L)
+                .subscription(SubscriptionEntity.builder().subId(1L).build())
+                .eventId("evt-1")
+                .notificationType("ALERT")
+                .title("title")
+                .content("alert")
+                .isRead(false)
+                .createdTime(LocalDateTime.of(2026, 2, 23, 12, 0))
                 .build();
 
         given(notificationJpaRepository.insertIgnoreConflict(
-                eq(1L), eq("evt-1"), eq("ALERT"), eq("alert"), any()))
+                eq(1L), eq("evt-1"), eq("ALERT"), eq("title"), eq("alert"), any()))
                 .willReturn(1);
+        given(notificationJpaRepository.findByEventIdAndSubscriptionSubId("evt-1", 1L))
+                .willReturn(Optional.of(persisted));
 
-        boolean inserted = notificationRepository.insertIfAbsent(notification);
+        Notification inserted = notificationRepository.insertIfAbsent(notification);
 
-        assertThat(inserted).isTrue();
+        assertThat(inserted).isNotNull();
+        assertThat(inserted.getId()).isEqualTo(10L);
     }
 
     @Test
-    @DisplayName("insertIfAbsent returns false when duplicated")
+    @DisplayName("insertIfAbsent returns null when duplicated")
     void insertIfAbsentDuplicated() {
         Notification notification = Notification.builder()
                 .subId(1L)
                 .eventId("evt-1")
                 .notificationType("ALERT")
+                .title("title")
                 .content("alert")
                 .build();
 
         given(notificationJpaRepository.insertIgnoreConflict(
-                eq(1L), eq("evt-1"), eq("ALERT"), eq("alert"), any()))
+                eq(1L), eq("evt-1"), eq("ALERT"), eq("title"), eq("alert"), any()))
                 .willReturn(0);
 
-        boolean inserted = notificationRepository.insertIfAbsent(notification);
+        Notification inserted = notificationRepository.insertIfAbsent(notification);
 
-        assertThat(inserted).isFalse();
+        assertThat(inserted).isNull();
     }
 
     @Test
@@ -76,6 +94,7 @@ class NotificationRepositoryImplTest {
                 .subscription(SubscriptionEntity.builder().subId(1L).build())
                 .eventId("evt-1")
                 .notificationType("ALERT")
+                .title("title")
                 .content("alert")
                 .isRead(false)
                 .build();

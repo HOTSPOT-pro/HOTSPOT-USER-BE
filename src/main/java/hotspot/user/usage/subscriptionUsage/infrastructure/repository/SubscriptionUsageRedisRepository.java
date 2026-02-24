@@ -17,6 +17,7 @@ import hotspot.user.common.exception.code.SubscriptionUsageErrorCode;
 import hotspot.user.common.util.redis.PipelineResultMapper;
 import hotspot.user.common.util.redis.RedisPipelineExecutor;
 import hotspot.user.common.util.redis.RedisValueParser;
+import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.usage.subscriptionUsage.domain.GiftUsage;
 import hotspot.user.usage.subscriptionUsage.domain.SubscriptionUsage;
 import hotspot.user.usage.subscriptionUsage.infrastructure.keybuilder.SubscriptionUsageRedisKeyBuilder;
@@ -35,7 +36,10 @@ public class SubscriptionUsageRedisRepository {
     private final StringRedisTemplate redisTemplate;
     private final Clock clock;
 
-    public SubscriptionUsage findSubscriptionUsage(Long subId) {
+    public SubscriptionUsage findSubscriptionUsage(
+            Long subId,
+            DataPeriod dataPeriod
+    ) {
 
         LocalDate now = LocalDate.now(clock);
 
@@ -49,7 +53,7 @@ public class SubscriptionUsageRedisRepository {
         );
 
         PipelineResult pipeline =
-                executePipeline(subId, giftIds, now);
+                executePipeline(subId, giftIds, now, dataPeriod);
 
         Map<String, Object> resultMap =
                 PipelineResultMapper.toMap(
@@ -63,7 +67,8 @@ public class SubscriptionUsageRedisRepository {
     private PipelineResult executePipeline(
             Long subId,
             List<String> giftIds,
-            LocalDate now
+            LocalDate now,
+            DataPeriod dataPeriod
     ) {
 
         List<String> requestKeys = new ArrayList<>();
@@ -71,7 +76,7 @@ public class SubscriptionUsageRedisRepository {
         List<Object> rawResults =
                 pipelineExecutor.execute((RedisCallback<Object>) connection -> {
 
-                    addPlanRequests(connection, subId, requestKeys, now);
+                    addPlanRequests(connection, subId, dataPeriod, requestKeys, now);
                     addGiftRequests(connection, subId, giftIds, requestKeys, now);
 
                     return null;
@@ -83,6 +88,7 @@ public class SubscriptionUsageRedisRepository {
     private void addPlanRequests(
             RedisConnection connection,
             Long subId,
+            DataPeriod dataPeriod,
             List<String> requestKeys,
             LocalDate now
     ) {
@@ -96,10 +102,14 @@ public class SubscriptionUsageRedisRepository {
         );
 
         requestKeys.add(K_PLAN_USED);
+
+        String usageKey =
+                (dataPeriod == DataPeriod.MONTH)
+                        ? SubscriptionUsageRedisKeyBuilder.planUsageMonth(subId, now)
+                        : SubscriptionUsageRedisKeyBuilder.planUsageDay(subId, now);
+
         connection.hGet(
-                pipelineExecutor.serialize(
-                        SubscriptionUsageRedisKeyBuilder.planUsage(subId, now)
-                ),
+                pipelineExecutor.serialize(usageKey),
                 pipelineExecutor.serialize(K_PLAN_USED)
         );
     }
@@ -179,27 +189,23 @@ public class SubscriptionUsageRedisRepository {
 
         List<GiftUsage> gifts = new ArrayList<>();
 
-        if (giftIds == null || giftIds.isEmpty()) {
-            return gifts;
-        }
-
         for (String giftIdStr : giftIds) {
 
             Long giftId = Long.parseLong(giftIdStr);
 
-            Object limitValue =
-                    resultMap.get(K_GIFT_LIMIT_PREFIX + giftId);
+            double limitKb =
+                    resultMap.get(K_GIFT_LIMIT_PREFIX + giftId) == null
+                            ? 0D
+                            : RedisValueParser.toDouble(
+                            resultMap.get(K_GIFT_LIMIT_PREFIX + giftId)
+                    );
 
-            double limitKb = limitValue == null
-                    ? 0D
-                    : RedisValueParser.toDouble(limitValue);
-
-            Object usedValue =
-                    resultMap.get(K_GIFT_USED_PREFIX + giftId);
-
-            double usedKb = usedValue == null
-                    ? 0D
-                    : RedisValueParser.toDouble(usedValue);
+            double usedKb =
+                    resultMap.get(K_GIFT_USED_PREFIX + giftId) == null
+                            ? 0D
+                            : RedisValueParser.toDouble(
+                            resultMap.get(K_GIFT_USED_PREFIX + giftId)
+                    );
 
             gifts.add(new GiftUsage(giftId, limitKb, usedKb));
         }

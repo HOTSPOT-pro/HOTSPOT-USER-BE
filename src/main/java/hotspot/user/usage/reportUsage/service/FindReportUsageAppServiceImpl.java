@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FindReportUsageAppServiceImpl
         implements FindReportUsageAppMonthService, FindReportUsageAppDayService {
 
@@ -27,7 +28,6 @@ public class FindReportUsageAppServiceImpl
     private final ReportUsageAppRepository reportUsageAppRepository;
     private final AppBlockedServiceRepository appBlockedServiceRepository;
 
-    @Transactional(readOnly = true)
     @Override
     public ReportUsageAppResponse findReportUsageAppMonth(Long memberId) {
 
@@ -58,7 +58,6 @@ public class FindReportUsageAppServiceImpl
         );
     }
 
-    @Transactional(readOnly = true)
     @Override
     public ReportUsageAppResponse findReportUsageAppDay(Long memberId) {
 

@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.usage.subscriptionUsage.domain.SubscriptionUsage;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,19 +29,31 @@ class SubscriptionUsageRepositoryImplTest {
     @DisplayName("redisRepository를 그대로 위임 호출한다")
     void shouldCallRedisRepository() {
 
+        // given
         Long subId = 1L;
+        DataPeriod dataPeriod = DataPeriod.MONTH;
 
         SubscriptionUsage expected = mock(SubscriptionUsage.class);
 
-        when(redisRepository.findSubscriptionUsage(subId))
-                .thenReturn(expected);
+        when(redisRepository.findSubscriptionUsage(
+                subId,
+                dataPeriod
+        )).thenReturn(expected);
 
+        // when
         SubscriptionUsage result =
-                repository.findSubscriptionUsage(subId);
+                repository.findSubscriptionUsage(
+                        subId,
+                        dataPeriod
+                );
 
+        // then
         assertEquals(expected, result);
 
         verify(redisRepository, times(1))
-                .findSubscriptionUsage(subId);
+                .findSubscriptionUsage(
+                        subId,
+                        dataPeriod
+                );
     }
 }

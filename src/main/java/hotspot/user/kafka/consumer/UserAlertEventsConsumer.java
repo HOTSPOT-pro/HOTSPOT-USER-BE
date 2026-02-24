@@ -14,7 +14,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.KafkaErrorCode;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.kafka.dto.UserAlertEvent;
-import hotspot.user.kafka.event.UserAlertNotificationsPersistedEvent;
+import hotspot.user.kafka.dto.UserAlertNotificationsPersistedEvent;
 import hotspot.user.kafka.mapper.UserAlertEventNotificationMapper;
 import hotspot.user.notification.domain.Notification;
 import hotspot.user.notification.service.port.NotificationRepository;
@@ -41,8 +41,9 @@ public class UserAlertEventsConsumer {
         List<Notification> persistedNotifications = new ArrayList<>();
         for (Long targetSubId : targetSubIds) {
             Notification notification = mapper.toNotification(event, targetSubId);
-            if (notificationRepository.insertIfAbsent(notification)) {
-                persistedNotifications.add(notification);
+            Notification persistedNotification = notificationRepository.insertIfAbsent(notification);
+            if (persistedNotification != null) {
+                persistedNotifications.add(persistedNotification);
             }
         }
 

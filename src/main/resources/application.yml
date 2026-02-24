@@ -3,6 +3,7 @@ project:
   version: 1.0.0
 
 server:
+  forward-headers-strategy: framework
   port: 8080
 
   # 프론트 주소

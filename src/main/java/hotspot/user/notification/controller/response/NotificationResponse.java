@@ -12,6 +12,7 @@ public class NotificationResponse {
     private Long id;
     private String eventId;
     private String notificationType;
+    private String title;
     private String content;
     private boolean isRead;
     private LocalDateTime createdTime;

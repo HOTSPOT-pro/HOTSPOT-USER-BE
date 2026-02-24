@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -48,9 +49,12 @@ class SubscriptionUsageControllerTest {
 
         setAuthentication(1L, 1L, FamilyRole.OWNER);
 
+        LocalDateTime now = LocalDateTime.now();
+
         SubscriptionUsageResponse response =
                 new SubscriptionUsageResponse(
                         1L,
+                        now,
                         24.0,
                         0.0,
                         24.0,
