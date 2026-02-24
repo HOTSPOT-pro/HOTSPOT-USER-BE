@@ -21,15 +21,23 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     // 충돌 시 무시하는 native insert 결과를 boolean으로 변환한다.
     @Override
-    public boolean insertIfAbsent(Notification notification) {
+    public Notification insertIfAbsent(Notification notification) {
         int affectedRows = notificationJpaRepository.insertIgnoreConflict(
                 notification.getSubId(),
                 notification.getEventId(),
                 notification.getNotificationType(),
+                notification.getTitle(),
                 notification.getContent(),
                 notification.getCreatedTime()
         );
-        return affectedRows > 0;
+        if (affectedRows == 0) {
+            return null;
+        }
+
+        return notificationJpaRepository
+                .findByEventIdAndSubscriptionSubId(notification.getEventId(), notification.getSubId())
+                .map(NotificationEntity::entityToDomain)
+                .orElse(null);
     }
 
     // JPA 페이지 결과를 도메인 페이지로 변환한다.
