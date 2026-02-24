@@ -57,6 +57,12 @@ public class JwtProvider {
                 ACCESS_TOKEN_TYPE);
     }
 
+    public String createOnboardingToken(Authentication authentication) {
+        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+        return createToken(authentication, principal, jwtProperties.getOnboardingExpiration(),
+                ACCESS_TOKEN_TYPE);
+    }
+
     public String createRefreshToken(Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
         return createToken(authentication, principal, jwtProperties.getRefreshExpiration(),

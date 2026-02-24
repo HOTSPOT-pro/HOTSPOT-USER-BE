@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 /**
- * 온보딩 request Dto되었습니다.
+ * 온보딩 request Dto
  */
 public record OnboardingRequest(
         @NotBlank(message = "전화번호는 필수입니다.")

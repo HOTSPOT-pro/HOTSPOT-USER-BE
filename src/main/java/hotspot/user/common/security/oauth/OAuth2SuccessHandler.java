@@ -57,7 +57,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 온보딩으로 리다이렉트 (임시 토큰 발급)
         if (principal.getStatus() == Status.PENDING) {
             log.info("신규 사용자, 온보딩 페이지로 리다이렉트: memberId={}", principal.getId());
-            String accessToken = jwtProvider.createAccessToken(authentication);
+            String accessToken = jwtProvider.createOnboardingToken(authentication);
             targetUrl = determineOnboardingUrl(principal, accessToken);
         }
 
