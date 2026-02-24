@@ -1,8 +1,8 @@
 package hotspot.user.notification.service;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,15 +27,17 @@ public class FindNotificationServiceImpl implements FindNotificationService {
     private final NotificationRepository notificationRepository;
     private final SubscriptionService subscriptionService;
 
+    // Pageable을 기본값/정렬로 보정해서 최신 알림을 Slice로 조회하고 목록 응답으로 반환한다.
     @Override
     public NotificationListResponse findNotifications(Long memberId, Pageable pageable) {
         Subscription subscription = subscriptionService.findByMemberId(memberId);
         Long subId = subscription.getId();
         Pageable normalizedPageable = normalizePageable(pageable);
-        Page<Notification> notifications = notificationRepository.findRecentBySubId(subId, normalizedPageable);
+        Slice<Notification> notifications = notificationRepository.findRecentBySubId(subId, normalizedPageable);
         return NotificationMapper.toListResponse(notifications);
     }
 
+    // 읽지 않은 알림 개수를 조회해 응답으로 반환한다.
     @Override
     public UnreadNotificationCountResponse findUnreadCount(Long memberId) {
         Subscription subscription = subscriptionService.findByMemberId(memberId);
@@ -45,6 +47,7 @@ public class FindNotificationServiceImpl implements FindNotificationService {
                 .build();
     }
 
+    // pageable이 없거나 값이 부족하면 기본 페이지/사이즈를 적용하고 createdTime 내림차순 정렬이 붙도록 Pageable을 표준화한다.
     private Pageable normalizePageable(Pageable pageable) {
         int page = pageable == null ? 0 : pageable.getPageNumber();
         int size = pageable == null ? DEFAULT_PAGE_SIZE : pageable.getPageSize();
