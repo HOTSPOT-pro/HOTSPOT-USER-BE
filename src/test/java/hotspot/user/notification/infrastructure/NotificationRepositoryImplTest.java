@@ -100,7 +100,7 @@ class NotificationRepositoryImplTest {
                 .build();
 
         given(notificationJpaRepository
-                .findBySubscriptionSubIdAndCreatedTimeGreaterThanEqualOrderByCreatedTimeDesc(
+                .findBySubscriptionSubIdAndCreatedTimeGreaterThanEqual(
                         eq(1L), any(), any()))
                 .willReturn(new SliceImpl<>(List.of(entity), PageRequest.of(0, 20), false));
 
