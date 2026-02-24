@@ -7,10 +7,10 @@ package hotspot.user.presentData.controller;
  import hotspot.user.presentData.controller.port.FindPresentProvideService;
  import hotspot.user.presentData.controller.response.FamilyDataResponse;
  import hotspot.user.presentData.controller.response.PresentDataResponse;
+ import hotspot.user.presentData.controller.swagger.PresentDataApi;
  import org.springframework.http.ResponseEntity;
  import org.springframework.security.core.annotation.AuthenticationPrincipal;
  import org.springframework.web.bind.annotation.GetMapping;
- import org.springframework.web.bind.annotation.PathVariable;
  import org.springframework.web.bind.annotation.RequestMapping;
  import org.springframework.web.bind.annotation.RestController;
 
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/presentData")
-public class PresentDataController {
+public class PresentDataController implements PresentDataApi {
 
     private final FindFamilyDataService findFamilyDataService;
     private final FindPresentReceiveService findPresentReceiveService;
@@ -32,19 +32,19 @@ public class PresentDataController {
                         details.getId(), details.getFamilyId())));
     }
 
-    @GetMapping("/receive/{memberId}")
+    @GetMapping("/receive")
     public ResponseEntity<ApiResponse<PresentDataResponse>> findPresentReceive(
-            @PathVariable Long memberId
+            @AuthenticationPrincipal PrincipalDetails details
     ) {
         return ResponseEntity.ok(ApiResponse.success(
-                findPresentReceiveService.findPresentReceive(memberId)));
+                findPresentReceiveService.findPresentReceive(details.getId())));
     }
 
-    @GetMapping("/provide/{memberId}")
+    @GetMapping("/provide")
     public ResponseEntity<ApiResponse<PresentDataResponse>> findPresentProvide(
-            @PathVariable Long memberId
+            @AuthenticationPrincipal PrincipalDetails details
     ) {
         return ResponseEntity.ok(ApiResponse.success(
-                findPresentProvideService.findPresentProvide(memberId)));
+                findPresentProvideService.findPresentProvide(details.getId())));
     }
 }
