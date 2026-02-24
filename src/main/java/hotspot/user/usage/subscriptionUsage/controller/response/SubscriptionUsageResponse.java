@@ -1,9 +1,11 @@
 package hotspot.user.usage.subscriptionUsage.controller.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record SubscriptionUsageResponse(
         Long subId,
+        LocalDateTime currentTime,
         Double subDataAmount,
         Double subDataUsageAmount,
         Double subDataRemainAmount,

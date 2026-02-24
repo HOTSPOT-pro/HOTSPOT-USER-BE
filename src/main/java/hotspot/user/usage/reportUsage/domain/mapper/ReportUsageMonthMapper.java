@@ -15,7 +15,7 @@ public final class ReportUsageMonthMapper {
 
     private ReportUsageMonthMapper() {}
 
-    public static ReportUsageMonthResponse toResponse(
+    public static ReportUsageMonthResponse toReportUsageMonthResponse(
             LocalDateTime now,
             List<YearMonth> months,
             List<FamilySubList> familySubList,

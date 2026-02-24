@@ -20,7 +20,7 @@ public class SubscriptionUsageController implements SubscriptionUsageApi {
 
     private final FindSubscriptionUsageService findSubscriptionUsageService;
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<ApiResponse<SubscriptionUsageResponse>> findSubscriptionUsage(
             @AuthenticationPrincipal PrincipalDetails details) {
         return ResponseEntity.ok(ApiResponse.success(

@@ -1,5 +1,6 @@
 package hotspot.user.usage.subscriptionUsage.domain.mapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,8 @@ public class SubscriptionUsageMapper {
 
     public static SubscriptionUsageResponse toSubscriptionUsageResponse(
             SubscriptionUsage usage,
-            Map<Long, String> giftIdToUserName
+            Map<Long, String> giftIdToUserName,
+            LocalDateTime now
     ) {
 
         List<SubscriptionUsageResponse.GiftUsageResponse> giftResponses =
@@ -37,7 +39,7 @@ public class SubscriptionUsageMapper {
 
         return new SubscriptionUsageResponse(
                 usage.subId(),
-
+                now,
                 // 개인 요금제
                 usage.limitGb(),
                 usage.usedGb(),
