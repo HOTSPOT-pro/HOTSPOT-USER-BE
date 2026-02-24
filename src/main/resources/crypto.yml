@@ -1,0 +1,4 @@
+app:
+  crypto:
+    secret-key: ${SECRET_KEY}
+    hash-key: ${HASH_KEY}

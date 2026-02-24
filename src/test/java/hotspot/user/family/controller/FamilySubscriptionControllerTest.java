@@ -30,12 +30,15 @@ import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.port.UpdateFamilyPriorityService;
+import hotspot.user.family.controller.port.UpdateFamilyRoleService;
 import hotspot.user.family.controller.request.MemberPriorityRequest;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.request.UpdateFamilyPriorityRequest;
+import hotspot.user.family.controller.request.UpdateFamilyRoleRequest;
 import hotspot.user.family.controller.response.MemberPriorityResponse;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
 import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
+import hotspot.user.family.controller.response.UpdateFamilyRoleResponse;
 import hotspot.user.family.domain.PriorityType;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
@@ -58,6 +61,9 @@ class FamilySubscriptionControllerTest {
 
     @MockBean
     private UpdateFamilyPriorityService updateFamilyPriorityService;
+
+    @MockBean
+    private UpdateFamilyRoleService updateFamilyRoleService;
 
     @MockBean
     private FamilySubscriptionRepository familySubscriptionRepository;
@@ -205,5 +211,68 @@ class FamilySubscriptionControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("FAMILY_009"));
+    }
+
+    @Test
+    @DisplayName("성공: OWNER 권한으로 구성원의 역할을 수정하면 200 OK를 반환한다")
+    void updateFamilyRoleSuccess() throws Exception {
+        // given
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+        UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.PARENT);
+        UpdateFamilyRoleResponse response = UpdateFamilyRoleResponse.builder()
+                .familyId(100L)
+                .subId(2L)
+                .familyRole(FamilyRole.PARENT)
+                .build();
+
+        given(updateFamilyRoleService.update(
+                eq(1L), eq(100L), eq(FamilyRole.OWNER), eq(2L), any(UpdateFamilyRoleRequest.class)))
+                .willReturn(response);
+
+        // when & then
+        mockMvc.perform(patch("/api/v1/families/members/2/role")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data.familyRole").value("PARENT"));
+    }
+
+    @Test
+    @DisplayName("실패: OWNER 본인의 역할을 수정하려 하면 400 에러가 발생한다")
+    void updateFamilyRoleFailBySelf() throws Exception {
+        // given
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+        UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.PARENT);
+
+        given(updateFamilyRoleService.update(
+                eq(1L), eq(100L), eq(FamilyRole.OWNER), eq(10L), any(UpdateFamilyRoleRequest.class)))
+                .willThrow(new ApplicationException(FamilyErrorCode.CANNOT_CHANGE_OWNER_ROLE));
+
+        // when & then
+        mockMvc.perform(patch("/api/v1/families/members/10/role")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("FAMILY_016"));
+    }
+
+    @Test
+    @DisplayName("실패: 타인을 OWNER로 변경하려 하면 400 에러가 발생한다")
+    void updateFamilyRoleFailToAssignOwner() throws Exception {
+        // given
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+        UpdateFamilyRoleRequest request = new UpdateFamilyRoleRequest(FamilyRole.OWNER);
+
+        given(updateFamilyRoleService.update(
+                eq(1L), eq(100L), eq(FamilyRole.OWNER), eq(2L), any(UpdateFamilyRoleRequest.class)))
+                .willThrow(new ApplicationException(FamilyErrorCode.CANNOT_ASSIGN_OWNER_ROLE));
+
+        // when & then
+        mockMvc.perform(patch("/api/v1/families/members/2/role")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("FAMILY_017"));
     }
 }

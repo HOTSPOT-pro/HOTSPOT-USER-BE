@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,10 +14,13 @@ import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.port.UpdateFamilyPriorityService;
+import hotspot.user.family.controller.port.UpdateFamilyRoleService;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.request.UpdateFamilyPriorityRequest;
+import hotspot.user.family.controller.request.UpdateFamilyRoleRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
 import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
+import hotspot.user.family.controller.response.UpdateFamilyRoleResponse;
 import hotspot.user.family.controller.swagger.FamilySubscriptionApi;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +34,7 @@ public class FamilySubscriptionController implements FamilySubscriptionApi {
 
     private final UpdateDataLimitService updateDataLimitService;
     private final UpdateFamilyPriorityService updateFamilyPriorityService;
+    private final UpdateFamilyRoleService updateFamilyRoleService; // 가족 역할 업데이트 서비스
 
     // 구성원의 가족 공유 데이터 한도 조정
     @Override
@@ -58,6 +63,25 @@ public class FamilySubscriptionController implements FamilySubscriptionApi {
                 principal.getFamilyId(),
                 principal.getRole()
         );
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // 구성원의 역할 (PARENT <-> CHILD) 업데이트
+    @Override
+    @PatchMapping("/members/{subId}/role")
+    public ResponseEntity<ApiResponse<UpdateFamilyRoleResponse>> updateFamilyRole(
+            @PathVariable Long subId,
+            @Valid @RequestBody UpdateFamilyRoleRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        UpdateFamilyRoleResponse response = updateFamilyRoleService.update(
+                principal.getId(),
+                principal.getFamilyId(),
+                principal.getRole(),
+                subId,
+                request
+        );
+
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

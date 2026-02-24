@@ -20,12 +20,12 @@ public class MemberMapper {
     }
 
     // Domain -> Response
-    public static MemberResponse toMemberResponse(MemberDetailInfo info) {
+    public static MemberResponse toMemberResponse(MemberDetailInfo info, String decryptedPhone) {
         return MemberResponse.builder()
              .id(info.getMember().getId())
              .name(info.getMember().getName())
              .email(info.getEmail())
-             .phone(info.getPhone())
+             .phone(decryptedPhone)
              .familyRole(info.getRole())
              .familyId(info.getFamilyId())
              .subId(info.getSubId())

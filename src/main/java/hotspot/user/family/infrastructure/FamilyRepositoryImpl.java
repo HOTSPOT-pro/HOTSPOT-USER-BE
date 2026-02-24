@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class FamilyRepositoryImpl implements FamilyRepository {
 
     private final FamilyJpaRepository familyJpaRepository;
+
     @Override
     public Optional<Family> findById(Long id) {
         return familyJpaRepository.findById(id)
@@ -44,7 +45,6 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         FamilyEntity familyEntity = results.get(0).familyEntity();
 
         // 3. 멤버 매핑
-        // [To-Do] 지금은 1대1이라고 생각해서 개발해서 나중에 수정 필요
         List<MemberDetailInfo> members = results.stream()
                 // LEFT JOIN 방어: 멤버가 없는(0명인) 가족일 경우 이 필터에서 걸러짐
                 .filter(dto -> dto.memberEntity() != null)

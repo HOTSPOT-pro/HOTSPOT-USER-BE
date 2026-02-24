@@ -1,4 +1,4 @@
-package hotspot.user.common.config.kafka;
+package hotspot.user.common.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -11,8 +11,7 @@ import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.ExponentialBackOff;
 
-import hotspot.user.common.config.kafka.consumer.KafkaConsumerFactorySupport;
-import hotspot.user.notification.dto.UserAlertEvent;
+import hotspot.user.kafka.dto.UserAlertEvent;
 
 @Configuration
 public class KafkaConsumerConfig {
