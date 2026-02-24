@@ -1,6 +1,5 @@
 package hotspot.user.auth.service;
 
-import hotspot.user.member.domain.Member;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +11,7 @@ import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtProvider;
+import hotspot.user.member.domain.Member;
 import hotspot.user.member.service.port.MemberRepository;
 import hotspot.user.member.service.port.SocialAccountRepository;
 import hotspot.user.subscription.domain.Subscription;
