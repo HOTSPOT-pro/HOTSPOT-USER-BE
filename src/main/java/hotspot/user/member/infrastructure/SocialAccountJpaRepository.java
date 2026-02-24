@@ -22,7 +22,6 @@ public interface SocialAccountJpaRepository extends JpaRepository<SocialAccountE
 
     // Soft Delete
     @Modifying
-    @Transactional
     @Query("UPDATE SocialAccountEntity sa SET sa.isDeleted = true WHERE sa.member.id = :memberId")
     void deleteByMemberId(@Param("memberId") Long memberId);
 }
