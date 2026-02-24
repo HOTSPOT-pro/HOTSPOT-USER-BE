@@ -17,7 +17,8 @@ public class Subscription {
     private Long id;
     private Plan plan;
     private Member member;
-    private String phone;
+    private String phoneEnc;
+    private String phoneHash;
     private Boolean isLocked;
 
     public Subscription updateMember(Member member) {
@@ -25,7 +26,8 @@ public class Subscription {
                 .id(this.id)
                 .plan(this.plan)
                 .member(member)
-                .phone(this.phone)
+                .phoneEnc(this.phoneEnc)
+                .phoneHash(this.phoneHash)
                 .isLocked(this.isLocked)
                 .build();
     }

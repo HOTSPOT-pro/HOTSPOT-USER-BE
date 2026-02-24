@@ -2,8 +2,10 @@ package hotspot.user.common.crpyto;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +26,9 @@ public class PhoneHashIndexer {
 
     public PhoneHashIndexer(@Value("${app.crypto.hash-key}") String hashKeyBase64) {
         this.hashKey = Base64.getDecoder().decode(hashKeyBase64);
-        if (this.hashKey.length != 32) throw new IllegalArgumentException("hash-key must be 32 bytes");
+        if (this.hashKey.length != 32) {
+            throw new IllegalArgumentException("hash-key must be 32 bytes");
+        }
     }
 
     public String toHash(String normalizedPhone) {

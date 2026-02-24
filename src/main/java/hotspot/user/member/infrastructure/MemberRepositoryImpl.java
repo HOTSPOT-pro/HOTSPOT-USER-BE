@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.MemberDetailInfo;
 import hotspot.user.member.infrastructure.entity.MemberEntity;
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 public class MemberRepositoryImpl implements MemberRepository {
 
     private final MemberJpaRepository memberJpaRepository;
-    private final PhoneDecryptor phoneDecryptor;
 
     @Override
     public Member save(Member member) {
@@ -38,7 +36,7 @@ public class MemberRepositoryImpl implements MemberRepository {
                 .map(dto -> MemberDetailInfo.builder()
                         .member(dto.memberEntity().entityToDomain())
                         .email(dto.email())
-                        .phone(phoneDecryptor.decrypt(dto.phone())) // 복호화 적용
+                        .phone(dto.phone())
                         .subId(dto.subId())
                         .role(dto.role())
                         .familyId(dto.familyId())

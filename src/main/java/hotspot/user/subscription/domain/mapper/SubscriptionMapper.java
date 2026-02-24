@@ -12,10 +12,10 @@ public class SubscriptionMapper {
     // request -> domain
 
     // domain -> response
-    public static SubscriptionResponse toSubscriptionResponse(Subscription subscription) {
+    public static SubscriptionResponse toSubscriptionResponse(Subscription subscription, String decryptedPhone) {
         return SubscriptionResponse.builder()
                 .id(subscription.getId())
-                .phone(subscription.getPhone())
+                .phone(decryptedPhone)
                 .plan(PlanMapper.toPlanResponse(subscription.getPlan()))
                 .isLocked(subscription.getIsLocked())
                 .build();

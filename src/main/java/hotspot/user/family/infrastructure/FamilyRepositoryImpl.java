@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilyDetailInfo;
 import hotspot.user.family.infrastructure.entity.FamilyDetailInfoDto;
@@ -19,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 public class FamilyRepositoryImpl implements FamilyRepository {
 
     private final FamilyJpaRepository familyJpaRepository;
-    private final PhoneDecryptor phoneDecryptor;
 
     @Override
     public Optional<Family> findById(Long id) {
@@ -53,7 +51,7 @@ public class FamilyRepositoryImpl implements FamilyRepository {
                 .map(dto -> MemberDetailInfo.builder()
                         .member(dto.memberEntity().entityToDomain())
                         .email(dto.email()) // LEFT JOIN이라 null일 수 있음 (소셜 연동 안한 유저)
-                        .phone(phoneDecryptor.decrypt(dto.phone())) // 복호화 적용
+                        .phone(dto.phone())
                         .subId(dto.subId())
                         .role(dto.role())
                         .familyId(familyEntity.getFamilyId())

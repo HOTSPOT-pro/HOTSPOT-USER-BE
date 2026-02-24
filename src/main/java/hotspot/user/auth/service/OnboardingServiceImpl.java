@@ -7,6 +7,7 @@ import hotspot.user.auth.controller.port.IssueTokenService;
 import hotspot.user.auth.controller.port.OnboardingService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.response.TokenResponse;
+import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
@@ -32,6 +33,7 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final SubscriptionRepository subscriptionRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final IssueTokenService issueTokenService;
+    private final PhoneHashIndexer phoneHashIndexer; // 💡 원복: 서비스에서 해싱 처리
 
     @Override
     public TokenResponse onboarding(OnboardingRequest request) {
@@ -53,7 +55,8 @@ public class OnboardingServiceImpl implements OnboardingService {
 
     // 전화번호로 회선을 조회 및 검증
     private Subscription validateAndGetSubscription(String phoneNumber) {
-        return subscriptionRepository.findByPhoneNumber(phoneNumber)
+        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
+        return subscriptionRepository.findByPhoneHash(phoneHash)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.SUBSCRIPTION_NOT_FOUND));
     }
 

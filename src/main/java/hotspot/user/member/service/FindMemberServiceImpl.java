@@ -4,6 +4,7 @@ package hotspot.user.member.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.member.controller.port.FindMemberService;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class FindMemberServiceImpl implements FindMemberService {
 
     private final MemberRepository memberRepository;
+    private final PhoneDecryptor phoneDecryptor;
 
     @Override
     public MemberResponse findByIdAndEmail(Long id, String email) {
@@ -29,8 +31,11 @@ public class FindMemberServiceImpl implements FindMemberService {
         MemberDetailInfo detailInfo = memberRepository.findDetailByIdAndEmail(id, email)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        // 2. 매퍼를 통해 응답 DTO로 변환
-        return MemberMapper.toMemberResponse(detailInfo);
+        // 2. 서비스 단에서 복호화 수행
+        String decryptedPhone = phoneDecryptor.decrypt(detailInfo.getPhone());
+
+        // 3. 매퍼를 통해 응답 DTO로 변환
+        return MemberMapper.toMemberResponse(detailInfo, decryptedPhone);
     }
 
 }

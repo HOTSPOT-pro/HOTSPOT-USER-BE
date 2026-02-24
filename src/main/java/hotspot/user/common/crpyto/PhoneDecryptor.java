@@ -3,9 +3,11 @@ package hotspot.user.common.crpyto;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +23,9 @@ public class PhoneDecryptor {
 
     public PhoneDecryptor(@Value("${app.crypto.secret-key}") String secretKeyBase64) {
         this.secretKey = Base64.getDecoder().decode(secretKeyBase64);
-        if (this.secretKey.length != 32) throw new IllegalArgumentException("secret-key must be 32 bytes");
+        if (this.secretKey.length != 32) {
+            throw new IllegalArgumentException("secret-key must be 32 bytes");
+        }
     }
 
     public String decrypt(String phoneEnc) {

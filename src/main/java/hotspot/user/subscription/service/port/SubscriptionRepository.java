@@ -10,6 +10,6 @@ import hotspot.user.subscription.domain.Subscription;
 public interface SubscriptionRepository {
     Optional<Subscription> findById(Long id);
     Optional<Subscription> findByMemberId(Long memberId);
-    Optional<Subscription> findByPhoneNumber(String phoneNumber);
+    Optional<Subscription> findByPhoneHash(String phoneHash);
     Subscription save(Subscription subscription);
 }

@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
 
-import hotspot.user.common.crpyto.PhoneHashIndexer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import hotspot.user.auth.controller.port.IssueTokenService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.response.TokenResponse;
+import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.family.domain.Family;
