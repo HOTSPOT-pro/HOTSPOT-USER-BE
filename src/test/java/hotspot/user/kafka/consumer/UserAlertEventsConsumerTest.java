@@ -26,7 +26,6 @@ import org.springframework.kafka.support.Acknowledgment;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.KafkaErrorCode;
-import hotspot.user.common.exception.code.NotificationErrorCode;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
@@ -180,7 +179,7 @@ class UserAlertEventsConsumerTest {
     }
 
     @Test
-    @DisplayName("throws notification mapping error when notification type has no category mapping")
+    @DisplayName("acks and skips when notification type has no category mapping")
     void consumeWithUnknownNotificationType() {
         UserAlertEvent event = event(101L, null, "evt-unknown-type");
         Notification unknownTypeNotification = Notification.builder()
@@ -194,13 +193,11 @@ class UserAlertEventsConsumerTest {
                 .build();
         given(mapper.toNotification(event, 101L)).willReturn(unknownTypeNotification);
 
-        assertThatThrownBy(() -> consumer.consume(event, acknowledgment))
-                .isInstanceOf(ApplicationException.class)
-                .hasMessage(NotificationErrorCode.NOTIFICATION_CATEGORY_MAPPING_NOT_FOUND.getMessage());
+        consumer.consume(event, acknowledgment);
 
         then(notificationRepository).shouldHaveNoInteractions();
         then(applicationEventPublisher).shouldHaveNoInteractions();
-        then(acknowledgment).shouldHaveNoInteractions();
+        then(acknowledgment).should().acknowledge();
     }
 
     // 테스트용 이벤트 객체를 생성한다.
