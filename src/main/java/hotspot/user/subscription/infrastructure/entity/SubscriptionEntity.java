@@ -64,25 +64,12 @@ public class SubscriptionEntity extends BaseEntity {
     @Builder.Default
     private Boolean isDeleted = false;
 
-    public static SubscriptionEntity domainToEntity(Subscription subscription) {
-        return SubscriptionEntity.builder()
-                .subId(subscription.getId())
-                .member(MemberEntity.domainToEntity(subscription.getMember()))
-                .plan(PlanEntity.domainToEntity(subscription.getPlan()))
-                .phoneEnc(subscription.getPhoneEnc())
-                .phoneHash(subscription.getPhoneHash())
-                .isLocked(subscription.getIsLocked())
-                .isDeleted(false)
-                .build();
-    }
-
-    public Subscription entityToDomain() {
+    public Subscription entityToDomain(String decryptedPhone) {
         return Subscription.builder()
                 .id(this.subId)
                 .member(this.member != null ? this.member.entityToDomain() : null)
                 .plan(this.plan != null ? this.plan.entityToDomain() : null)
-                .phoneEnc(this.phoneEnc)
-                .phoneHash(this.phoneHash)
+                .phone(decryptedPhone)
                 .isLocked(this.isLocked)
                 .build();
     }

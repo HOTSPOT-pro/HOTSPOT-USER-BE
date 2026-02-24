@@ -3,7 +3,9 @@ package hotspot.user.subscription.controller.response;
 import hotspot.user.plan.controller.response.PlanResponse;
 import hotspot.user.plan.domain.mapper.PlanMapper;
 import hotspot.user.subscription.domain.Subscription;
+import lombok.Builder;
 
+@Builder
 public record SubscriptionResponse(
         Long id,
         String phone,
@@ -13,7 +15,7 @@ public record SubscriptionResponse(
     public static SubscriptionResponse from(Subscription subscription) {
         return new SubscriptionResponse(
                 subscription.getId(),
-                subscription.getPhoneEnc(),
+                subscription.getPhone(),
                 PlanMapper.toPlanResponse(subscription.getPlan()),
                 subscription.getIsLocked()
         );
