@@ -1,12 +1,13 @@
 package hotspot.user.presentData.domain.mapper;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
 import hotspot.user.presentData.controller.response.FamilyDataResponse;
 import hotspot.user.presentData.domain.SubUsage;
 import hotspot.user.usage.familyUsage.service.schema.FamilySubList;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
 
 @Component
 public class FamilyDataMapper {

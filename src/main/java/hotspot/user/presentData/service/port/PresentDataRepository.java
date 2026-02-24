@@ -1,10 +1,10 @@
 package hotspot.user.presentData.service.port;
 
-import hotspot.user.plan.domain.DataPeriod;
-import hotspot.user.presentData.domain.SubUsage;
-
 import java.util.List;
 import java.util.Map;
+
+import hotspot.user.plan.domain.DataPeriod;
+import hotspot.user.presentData.domain.SubUsage;
 
 public interface PresentDataRepository {
 

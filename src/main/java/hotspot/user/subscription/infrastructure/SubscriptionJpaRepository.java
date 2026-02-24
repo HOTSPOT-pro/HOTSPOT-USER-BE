@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
-import org.springframework.data.jpa.repository.Query;
 
 /**
  * 실제 회선 저장하는 Repository (DB)

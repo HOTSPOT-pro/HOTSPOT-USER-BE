@@ -1,11 +1,12 @@
 package hotspot.user.presentData.infrastructure.mapper;
 
-import hotspot.user.presentData.domain.SubUsage;
-import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
+import hotspot.user.presentData.domain.SubUsage;
 
 @Component
 public class FamilySubUsageMapper {

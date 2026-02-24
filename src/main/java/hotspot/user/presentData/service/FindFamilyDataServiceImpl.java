@@ -1,6 +1,12 @@
 package hotspot.user.presentData.service;
 
-import hotspot.user.family.domain.FamilySubscription;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.presentData.controller.port.FindFamilyDataService;
@@ -14,12 +20,6 @@ import hotspot.user.subscription.service.port.SubscriptionRepository;
 import hotspot.user.usage.familyUsage.domain.mapper.FamilyUsageMapper;
 import hotspot.user.usage.familyUsage.service.schema.FamilySubList;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
