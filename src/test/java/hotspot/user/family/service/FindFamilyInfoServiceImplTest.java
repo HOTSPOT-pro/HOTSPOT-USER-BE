@@ -2,6 +2,7 @@ package hotspot.user.family.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.controller.response.FamilyInfoResponse;
@@ -29,6 +31,9 @@ class FindFamilyInfoServiceImplTest {
     @Mock
     private FamilyRepository familyRepository;
 
+    @Mock
+    private PhoneDecryptor phoneDecryptor;
+
     @InjectMocks
     private FindFamilyInfoServiceImpl findFamilyInfoService;
 
@@ -41,6 +46,7 @@ class FindFamilyInfoServiceImplTest {
         MemberDetailInfo memberInfo = MemberDetailInfo.builder()
                 .member(member)
                 .email("test@test.com")
+                .phone("enc_phone")
                 .build();
 
         FamilyDetailInfo detailInfo = FamilyDetailInfo.builder()
@@ -50,6 +56,7 @@ class FindFamilyInfoServiceImplTest {
                 .build();
 
         given(familyRepository.findInfoById(familyId)).willReturn(Optional.of(detailInfo));
+        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); //  추가
 
         // when
         FamilyInfoResponse response = findFamilyInfoService.findFamilyInfoById(familyId);
@@ -59,6 +66,7 @@ class FindFamilyInfoServiceImplTest {
         assertThat(response.familyNum()).isEqualTo(1);
         assertThat(response.memberInfoList()).hasSize(1);
         assertThat(response.memberInfoList().get(0).email()).isEqualTo("test@test.com");
+        assertThat(response.memberInfoList().get(0).phone()).isEqualTo("010-1234-5678");
     }
 
     @Test

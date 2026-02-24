@@ -71,6 +71,10 @@ dependencies {
 ========================= */
 tasks.named('test') {
 	useJUnitPlatform()
+	// Some Windows environments inject an invalid DOCKER_MACHINE_PATH
+	// (e.g. "\\\\?\\C:\\..."), which makes Testcontainers throw InvalidPathException.
+	environment "DOCKER_MACHINE_PATH", "docker-machine"
+	systemProperty "docker.machine.path", "docker-machine"
 	finalizedBy jacocoTestReport
 }
 

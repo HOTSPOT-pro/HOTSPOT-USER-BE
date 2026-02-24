@@ -38,8 +38,8 @@ public class SubscriptionRepositoryImpl implements SubscriptionRepository {
 
     @Override
     public Subscription save(Subscription subscription) {
-        return subscriptionJpaRepository.save(SubscriptionEntity.domainToEntity(subscription))
-                .entityToDomain();
+        SubscriptionEntity entity = SubscriptionEntity.domainToEntity(subscription);
+        return subscriptionJpaRepository.save(entity).entityToDomain();
     }
 
     @Override
