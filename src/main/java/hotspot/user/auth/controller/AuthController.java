@@ -19,6 +19,7 @@ import hotspot.user.auth.controller.port.WithdrawService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.request.TokenRequest;
 import hotspot.user.auth.controller.response.TokenResponse;
+import hotspot.user.auth.controller.swagger.AuthApi;
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
@@ -30,13 +31,14 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
-public class AuthController {
+public class AuthController implements AuthApi {
     private final ReissueTokenService reissueTokenService;
     private final LogoutService logoutService;
     private final OnboardingService onboardingService;
     private final WithdrawService withdrawService;
     private final JwtProperties jwtProperties;
 
+    @Override
     @PostMapping("/reissue")
     public ResponseEntity<ApiResponse<TokenResponse>> reissue(
             @CookieValue(value = "refreshToken", required = false) String refreshToken) {
@@ -57,6 +59,7 @@ public class AuthController {
                 .body(ApiResponse.success(response));
     }
 
+    @Override
     @PostMapping("/onboarding")
     public ResponseEntity<ApiResponse<TokenResponse>> onboarding(@RequestBody @Valid OnboardingRequest request) {
         TokenResponse response = onboardingService.onboarding(request);
@@ -71,6 +74,7 @@ public class AuthController {
                 .body(ApiResponse.success(response));
     }
 
+    @Override
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @AuthenticationPrincipal PrincipalDetails principal,
@@ -89,6 +93,7 @@ public class AuthController {
                 .body(ApiResponse.success());
     }
 
+    @Override
     @PostMapping("/withdraw")
     public ResponseEntity<ApiResponse<Void>> withdraw(
             @AuthenticationPrincipal PrincipalDetails principal,
