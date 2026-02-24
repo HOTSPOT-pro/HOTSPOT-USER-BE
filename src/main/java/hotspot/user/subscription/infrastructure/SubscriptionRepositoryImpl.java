@@ -1,7 +1,11 @@
 package hotspot.user.subscription.infrastructure;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import hotspot.user.plan.domain.DataPeriod;
 import org.springframework.stereotype.Repository;
 
 import hotspot.user.subscription.domain.Subscription;
@@ -36,5 +40,22 @@ public class SubscriptionRepositoryImpl implements SubscriptionRepository {
     public Subscription save(Subscription subscription) {
         return subscriptionJpaRepository.save(SubscriptionEntity.domainToEntity(subscription))
                 .entityToDomain();
+    }
+
+    @Override
+    public Map<Long, DataPeriod> findDataPeriodsBySubIds(List<Long> subIds) {
+
+        if (subIds == null || subIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return subscriptionJpaRepository
+                .findAllByIdIn(subIds)
+                .stream()
+                .map(SubscriptionEntity::entityToDomain)
+                .collect(Collectors.toMap(
+                        Subscription::getId,
+                        s -> s.getPlan().getDataPeriod()
+                ));
     }
 }
