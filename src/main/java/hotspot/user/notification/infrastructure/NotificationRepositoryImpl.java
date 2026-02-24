@@ -45,7 +45,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     public Slice<Notification> findRecentBySubId(Long subId, Pageable pageable) {
         LocalDateTime cutoffDateTime = LocalDateTime.now().minusDays(RECENT_DAYS);
         return notificationJpaRepository
-                .findBySubscriptionSubIdAndCreatedTimeGreaterThanEqualOrderByCreatedTimeDesc(
+                .findBySubscriptionSubIdAndCreatedTimeGreaterThanEqual(
                         subId,
                         cutoffDateTime,
                         pageable
