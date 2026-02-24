@@ -17,9 +17,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import hotspot.user.common.exception.ApplicationException;
@@ -70,7 +70,7 @@ class FindNotificationServiceImplTest {
                 .build();
 
         given(notificationRepository.findRecentBySubId(eq(mySubId), any(Pageable.class)))
-                .willReturn(new PageImpl<>(List.of(notification), PageRequest.of(0, 20), 1));
+                .willReturn(new SliceImpl<>(List.of(notification), PageRequest.of(0, 20), false));
 
         NotificationListResponse response = findNotificationService.findNotifications(memberId, PageRequest.of(0, 10));
         @SuppressWarnings("unchecked")
