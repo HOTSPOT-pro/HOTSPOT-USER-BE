@@ -33,7 +33,7 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final SubscriptionRepository subscriptionRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final IssueTokenService issueTokenService;
-    private final PhoneHashIndexer phoneHashIndexer; // 💡 원복: 서비스에서 해싱 처리
+    private final PhoneHashIndexer phoneHashIndexer;
 
     @Override
     public TokenResponse onboarding(OnboardingRequest request) {

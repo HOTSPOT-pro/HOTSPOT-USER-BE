@@ -35,7 +35,7 @@ class FindSubscriptionServiceImplTest {
     private SubscriptionRepository subscriptionRepository;
 
     @Mock
-    private PhoneDecryptor phoneDecryptor; // 💡 추가
+    private PhoneDecryptor phoneDecryptor;
 
     @InjectMocks
     private FindSubscriptionServiceImpl findSubscriptionService;
@@ -67,7 +67,7 @@ class FindSubscriptionServiceImplTest {
                 .build();
 
         given(subscriptionRepository.findById(subId)).willReturn(Optional.of(subscription));
-        given(phoneDecryptor.decrypt(anyString())).willReturn("010-2345-6789"); // 💡 추가
+        given(phoneDecryptor.decrypt(anyString())).willReturn("010-2345-6789"); //  추가
 
         // when
         SubscriptionResponse response = findSubscriptionService.findById(subId);
@@ -118,7 +118,7 @@ class FindSubscriptionServiceImplTest {
                 .build();
 
         given(subscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(subscription));
-        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); // 💡 추가
+        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); //  추가
 
         // when
         SubscriptionResponse response = findSubscriptionService.findByMemberId(memberId);

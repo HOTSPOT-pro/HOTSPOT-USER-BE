@@ -32,7 +32,7 @@ class FindFamilyInfoServiceImplTest {
     private FamilyRepository familyRepository;
 
     @Mock
-    private PhoneDecryptor phoneDecryptor; // 💡 추가
+    private PhoneDecryptor phoneDecryptor;
 
     @InjectMocks
     private FindFamilyInfoServiceImpl findFamilyInfoService;
@@ -56,7 +56,7 @@ class FindFamilyInfoServiceImplTest {
                 .build();
 
         given(familyRepository.findInfoById(familyId)).willReturn(Optional.of(detailInfo));
-        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); // 💡 추가
+        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); //  추가
 
         // when
         FamilyInfoResponse response = findFamilyInfoService.findFamilyInfoById(familyId);

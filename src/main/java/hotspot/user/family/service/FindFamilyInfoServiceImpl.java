@@ -35,7 +35,7 @@ public class FindFamilyInfoServiceImpl implements FindFamilyInfoService {
         FamilyDetailInfo detailInfo = familyRepository.findInfoById(id)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
 
-        // 💡 서비스 계층에서 리스트 내 각 멤버의 정보를 복호화하여 매핑
+        // 서비스 계층에서 리스트 내 각 멤버의 정보를 복호화하여 매핑
         List<MemberResponse> memberInfoList = detailInfo.getMemberDetailInfoList().stream()
                 .map(info -> {
                     String decryptedPhone = phoneDecryptor.decrypt(info.getPhone());

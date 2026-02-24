@@ -34,7 +34,7 @@ class FindMemberServiceImplTest {
     private MemberRepository memberRepository;
 
     @Mock
-    private PhoneDecryptor phoneDecryptor; // 💡 추가
+    private PhoneDecryptor phoneDecryptor;
 
     @InjectMocks
     private FindMemberServiceImpl findMemberService;
@@ -63,7 +63,7 @@ class FindMemberServiceImplTest {
                 .build();
 
         given(memberRepository.findDetailByIdAndEmail(memberId, email)).willReturn(Optional.of(detailInfo));
-        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); // 💡 추가
+        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); //  추가
 
         // when
         MemberResponse response = findMemberService.findByIdAndEmail(memberId, email);
