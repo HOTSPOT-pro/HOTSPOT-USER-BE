@@ -54,10 +54,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 사용자 상태에 따라 처리 로직 분기
         String targetUrl;
 
-        // 온보딩으로 리다이렉트 (토큰 발급 X)
+        // 온보딩으로 리다이렉트 (임시 토큰 발급)
         if (principal.getStatus() == Status.PENDING) {
-            log.info("신규 사용자, 온보딩 페이지로 리다이렉트: memberId={}, email={}", principal.getId(), principal.getEmail());
-            targetUrl = determineOnboardingUrl(principal);
+            log.info("신규 사용자, 온보딩 페이지로 리다이렉트: memberId={}", principal.getId());
+            String accessToken = jwtProvider.createAccessToken(authentication);
+            targetUrl = determineOnboardingUrl(principal, accessToken);
         }
 
         // 바로 로그인 (토큰 발급 O)
@@ -80,11 +81,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private String determineOnboardingUrl(PrincipalDetails principal) {
+    private String determineOnboardingUrl(PrincipalDetails principal, String accessToken) {
         String baseUri = redirectUri + "/" + onboardingRedirectUri;
         return UriComponentsBuilder.fromUriString(baseUri)
                 .queryParam("memberId", principal.getId())
-                .queryParam("email", principal.getEmail())
+                .queryParam("accessToken", accessToken)
                 .build().toUriString();
     }
 

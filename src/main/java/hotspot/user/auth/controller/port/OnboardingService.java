@@ -7,5 +7,5 @@ import hotspot.user.auth.controller.response.TokenResponse;
  * 온보딩 서비스
  */
 public interface OnboardingService {
-    TokenResponse onboarding(OnboardingRequest request);
+    TokenResponse onboarding(Long memberId, String email, OnboardingRequest request);
 }

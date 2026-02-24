@@ -61,8 +61,10 @@ public class AuthController implements AuthApi {
 
     @Override
     @PostMapping("/onboarding")
-    public ResponseEntity<ApiResponse<TokenResponse>> onboarding(@RequestBody @Valid OnboardingRequest request) {
-        TokenResponse response = onboardingService.onboarding(request);
+    public ResponseEntity<ApiResponse<TokenResponse>> onboarding(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @RequestBody @Valid OnboardingRequest request) {
+        TokenResponse response = onboardingService.onboarding(principal.getId(), principal.getEmail(), request);
 
         // Refresh Token 쿠키 설정
         ResponseCookie cookie = CookieUtil.createCookie("refreshToken",

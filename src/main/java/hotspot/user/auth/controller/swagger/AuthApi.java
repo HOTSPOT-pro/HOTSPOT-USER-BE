@@ -42,6 +42,7 @@ public interface AuthApi {
                 content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<hotspot.user.common.ApiResponse<TokenResponse>> onboarding(
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @Valid @RequestBody OnboardingRequest request);
 
     @Operation(summary = "로그아웃", description = "Refresh Token을 무효화하고 로그아웃 처리합니다.")
