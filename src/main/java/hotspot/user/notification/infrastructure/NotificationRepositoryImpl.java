@@ -40,7 +40,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                 .orElse(null);
     }
 
-    // JPA 페이지 결과를 도메인 페이지로 변환한다.
+    // JPA 페이지 결과를 슬라이스로 변환한다.
     @Override
     public Slice<Notification> findRecentBySubId(Long subId, Pageable pageable) {
         LocalDateTime cutoffDateTime = LocalDateTime.now().minusDays(RECENT_DAYS);
