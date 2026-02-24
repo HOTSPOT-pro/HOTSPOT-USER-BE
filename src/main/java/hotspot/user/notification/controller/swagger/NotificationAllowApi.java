@@ -32,10 +32,10 @@ public interface NotificationAllowApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "404",
-                description = "조회 대상을 찾을 수 없음\n"
-                    + "- NOTI_001: 알림 정보를 찾을 수 없습니다.",
-                content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    responseCode = "404",
+                    description = "조회 대상을 찾을 수 없음\n"
+                            + "- SUB_001: 회선 정보를 찾을 수 없습니다.",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     ResponseEntity<ApiResponse<NotificationAllowListResponse>> getNotificationAllows(
@@ -58,10 +58,10 @@ public interface NotificationAllowApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "404",
-                description = "처리 대상을 찾을 수 없음\n"
-                    + "- NOTI_001: 알림 정보를 찾을 수 없습니다.",
-                content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    responseCode = "404",
+                    description = "처리 대상을 찾을 수 없음\n"
+                            + "- SUB_001: 회선 정보를 찾을 수 없습니다.",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     ResponseEntity<ApiResponse<NotificationAllowResponse>> updateNotificationAllow(
