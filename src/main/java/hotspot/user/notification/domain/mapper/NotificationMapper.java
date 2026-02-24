@@ -24,12 +24,10 @@ public final class NotificationMapper {
                 .build();
     }
 
-    // Slice 조회 결과를 알림 리스트 + page/size + hasNext를 포함한 목록 응답으로 변환한다.
+    // Slice 조회 결과를 알림 리스트와 page/size/hasNext를 포함한 응답으로 변환한다.
     public static NotificationListResponse toListResponse(Slice<Notification> notifications) {
         return NotificationListResponse.builder()
-                .notifications(notifications.getContent().stream()
-                        .map(NotificationMapper::toResponse)
-                        .toList())
+                .notifications(notifications.map(NotificationMapper::toResponse).getContent())
                 .page(notifications.getNumber())
                 .size(notifications.getSize())
                 .hasNext(notifications.hasNext())
