@@ -3,8 +3,8 @@ package hotspot.user.notification.infrastructure;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -52,7 +52,7 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationEnt
     Optional<NotificationEntity> findByEventIdAndSubscriptionSubId(String eventId, Long subId);
 
     // created_time이 기준 시각 이상인 알림을 최신순으로 조회한다.
-    Page<NotificationEntity> findBySubscriptionSubIdAndCreatedTimeGreaterThanEqualOrderByCreatedTimeDesc(
+    Slice<NotificationEntity> findBySubscriptionSubIdAndCreatedTimeGreaterThanEqualOrderByCreatedTimeDesc(
             Long subId,
             LocalDateTime cutoffDateTime,
             Pageable pageable
