@@ -23,8 +23,10 @@ import hotspot.user.notification.domain.NotificationCategory;
 import hotspot.user.notification.service.port.NotificationAllowRepository;
 import hotspot.user.notification.service.port.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class UserAlertEventsConsumer {
 
@@ -46,7 +48,27 @@ public class UserAlertEventsConsumer {
         List<Notification> persistedNotifications = new ArrayList<>();
         for (Long targetSubId : targetSubIds) {
             Notification notification = mapper.toNotification(event, targetSubId);
-            if (!isNotificationAllowed(targetSubId, notification.getNotificationType())) {
+            NotificationCategory category;
+            try {
+                category = resolveNotificationCategory(notification.getNotificationType());
+            } catch (ApplicationException ex) {
+                log.warn(
+                        "Skip invalid notification type. subId={}, eventId={}, notificationType={}",
+                        targetSubId,
+                        resolveEventId(event),
+                        notification.getNotificationType()
+                );
+                acknowledgment.acknowledge();
+                return;
+            }
+
+            if (!isNotificationAllowed(targetSubId, category)) {
+                log.info(
+                        "Skip disallowed notification. subId={}, category={}, eventId={}",
+                        targetSubId,
+                        category,
+                        notification.getEventId()
+                );
                 continue;
             }
             Notification persistedNotification = notificationRepository.insertIfAbsent(notification);
@@ -83,8 +105,7 @@ public class UserAlertEventsConsumer {
     }
 
     // 알림 타입을 카테고리로 변환해 허용된 경우에만 저장/전송 대상으로 처리한다.
-    private boolean isNotificationAllowed(Long subId, String notificationTypeRaw) {
-        NotificationCategory category = resolveNotificationCategory(notificationTypeRaw);
+    private boolean isNotificationAllowed(Long subId, NotificationCategory category) {
         return notificationAllowRepository.findBySubIdAndCategory(subId, category)
                 .map(notificationAllow -> Boolean.TRUE.equals(notificationAllow.getNotificationAllow()))
                 .orElse(false);
@@ -96,5 +117,12 @@ public class UserAlertEventsConsumer {
         } catch (IllegalArgumentException ex) {
             throw new ApplicationException(NotificationErrorCode.NOTIFICATION_CATEGORY_MAPPING_NOT_FOUND);
         }
+    }
+
+    private String resolveEventId(UserAlertEvent event) {
+        if (event.sourceEventId() != null && !event.sourceEventId().isBlank()) {
+            return event.sourceEventId();
+        }
+        return event.alertId();
     }
 }
