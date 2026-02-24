@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
+import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilyDetailInfo;
 import hotspot.user.family.infrastructure.entity.FamilyDetailInfoDto;
@@ -18,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 public class FamilyRepositoryImpl implements FamilyRepository {
 
     private final FamilyJpaRepository familyJpaRepository;
+    private final PhoneDecryptor phoneDecryptor;
+
     @Override
     public Optional<Family> findById(Long id) {
         return familyJpaRepository.findById(id)
@@ -44,14 +47,13 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         FamilyEntity familyEntity = results.get(0).familyEntity();
 
         // 3. 멤버 매핑
-        // [To-Do] 지금은 1대1이라고 생각해서 개발해서 나중에 수정 필요
         List<MemberDetailInfo> members = results.stream()
                 // LEFT JOIN 방어: 멤버가 없는(0명인) 가족일 경우 이 필터에서 걸러짐
                 .filter(dto -> dto.memberEntity() != null)
                 .map(dto -> MemberDetailInfo.builder()
                         .member(dto.memberEntity().entityToDomain())
                         .email(dto.email()) // LEFT JOIN이라 null일 수 있음 (소셜 연동 안한 유저)
-                        .phone(dto.phone())
+                        .phone(phoneDecryptor.decrypt(dto.phone())) // 복호화 적용
                         .subId(dto.subId())
                         .role(dto.role())
                         .familyId(familyEntity.getFamilyId())
