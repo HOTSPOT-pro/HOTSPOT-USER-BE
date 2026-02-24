@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import hotspot.user.common.security.jwt.JwtFilter;
@@ -20,6 +21,16 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    // 유저 Status 상수화
+    // 로그인 & PENDING 상태인지 확인하는 로직
+    private static final String IS_PENDING_STATUS =
+            "isAuthenticated() and principal.status == T(hotspot.user.member.domain.Status).PENDING";
+
+    // 로그인 & APPROVED 상태인지 확인하는 로직
+    private static final String IS_APPROVED_STATUS =
+            "isAuthenticated() and principal.status == T(hotspot.user.member.domain.Status).APPROVED";
+
     private final JwtFilter jwtFilter;
     private final CustomOidcUserService customOidcUserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
@@ -54,10 +65,13 @@ public class SecurityConfig {
                         "/actuator/health",
                         "/api/v1/auth/reissue"
                 ).permitAll()
-                // 온보딩 API는 PENDING 상태의 유저만 접근 가능하도록 보호 (임시 토큰 필요)
-                .requestMatchers("/api/v1/auth/onboarding").hasAuthority("PENDING")
-                // 나머지 비즈니스 API는 반드시 APPROVED 상태의 유저만 접근 가능
-                .requestMatchers("/api/v1/**").hasAuthority("APPROVED")
+                // isAuthenticated() 조건 추가로 500 에러 방지
+                // 온보딩은 PENDING인 유저만 가능
+                .requestMatchers("/api/v1/auth/onboarding")
+                .access(new WebExpressionAuthorizationManager(IS_PENDING_STATUS))
+                // 나머지 비즈니스 API는 반드시 APPROVED 상태의 로그인한 유저만 접근 가능
+                .requestMatchers("/api/v1/**")
+                .access(new WebExpressionAuthorizationManager(IS_APPROVED_STATUS))
                 .anyRequest().authenticated()
         );
 
