@@ -7,9 +7,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +21,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.plan.domain.DataPeriod;
+import hotspot.user.plan.domain.Plan;
 import hotspot.user.presentData.service.port.PresentDataRepository;
 import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.SubscriptionService;
@@ -35,10 +41,23 @@ class FindSubscriptionUsageServiceImplTest {
     PresentDataRepository presentDataRepository;
 
     @Mock
+    Clock clock;
+
+    @Mock
     SubscriptionService subscriptionService;
 
     @InjectMocks
     FindSubscriptionUsageServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        when(clock.instant()).thenReturn(
+                LocalDateTime.of(2026, 2, 1, 0, 0)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+        );
+        when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+    }
 
     @Test
     @DisplayName("개인 데이터 사용량 서비스 정상 동작")
@@ -48,8 +67,13 @@ class FindSubscriptionUsageServiceImplTest {
         Long memberId = 100L;
         Long subscriptionId = 1L;
 
+        Plan plan = Plan.builder()
+                .dataPeriod(DataPeriod.MONTH)
+                .build();
+
         Subscription subscription = Subscription.builder()
                 .id(subscriptionId)
+                .plan(plan)
                 .build();
 
         SubscriptionUsage mockUsage =
@@ -69,8 +93,10 @@ class FindSubscriptionUsageServiceImplTest {
         when(subscriptionService.findByMemberId(memberId))
                 .thenReturn(subscription);
 
-        when(subscriptionUsageRepository.findSubscriptionUsage(subscriptionId))
-                .thenReturn(mockUsage);
+        when(subscriptionUsageRepository.findSubscriptionUsage(
+                eq(subscriptionId),
+                eq(DataPeriod.MONTH)
+        )).thenReturn(mockUsage);
 
         when(presentDataRepository.findGiftGiverNames(eq(List.of(69395L))))
                 .thenReturn(Map.of(69395L, "김태연"));
@@ -91,7 +117,10 @@ class FindSubscriptionUsageServiceImplTest {
                 .findByMemberId(memberId);
 
         verify(subscriptionUsageRepository)
-                .findSubscriptionUsage(subscriptionId);
+                .findSubscriptionUsage(
+                        subscriptionId,
+                        DataPeriod.MONTH
+                );
 
         verify(presentDataRepository)
                 .findGiftGiverNames(anyList());
