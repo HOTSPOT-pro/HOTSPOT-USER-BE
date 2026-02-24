@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.NotificationErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
 import hotspot.user.member.domain.Member;
 import hotspot.user.notification.controller.response.NotificationListResponse;
@@ -112,6 +111,6 @@ class FindNotificationServiceImplTest {
 
         assertThatThrownBy(() -> findNotificationService.findUnreadCount(memberId))
                 .isInstanceOf(ApplicationException.class)
-                .hasMessage(NotificationErrorCode.NOTIFICATION_NOT_FOUND.getMessage());
+                .hasMessage(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND.getMessage());
     }
 }
