@@ -21,7 +21,6 @@ public class SocialAccountRepositoryImpl implements SocialAccountRepository {
 
     @Override
     public SocialAccount save(SocialAccount socialAccount) {
-        // SocialAccountEntity 생성을 위해 MemberEntity 조회가 필요함 (JPA 연관관계 때문)
         MemberEntity memberEntity = memberJpaRepository.findById(socialAccount.getMemberId())
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
@@ -39,5 +38,18 @@ public class SocialAccountRepositoryImpl implements SocialAccountRepository {
     public Optional<SocialAccount> findByEmail(String email) {
         return socialAccountJpaRepository.findByEmail(email)
                 .map(SocialAccountEntity::entityToDomain);
+    }
+
+    @Override
+    public void delete(SocialAccount socialAccount) {
+        MemberEntity memberEntity = memberJpaRepository.findById(socialAccount.getMemberId())
+                .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        socialAccountJpaRepository.delete(SocialAccountEntity.domainToEntity(socialAccount, memberEntity));
+    }
+
+    @Override
+    public void deleteByMemberId(Long memberId) {
+        socialAccountJpaRepository.deleteByMemberId(memberId);
     }
 }

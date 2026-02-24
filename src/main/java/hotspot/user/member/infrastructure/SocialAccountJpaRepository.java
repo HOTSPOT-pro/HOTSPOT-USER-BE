@@ -17,4 +17,6 @@ public interface SocialAccountJpaRepository extends JpaRepository<SocialAccountE
     Optional<SocialAccountEntity> findByEmailWithMember(@Param("email") String email);
 
     Optional<SocialAccountEntity> findByMemberId(Long memberId);
+
+    void deleteByMemberId(Long memberId);
 }
