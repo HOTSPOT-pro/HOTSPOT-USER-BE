@@ -2,11 +2,10 @@ package hotspot.user.subscription.infrastructure;
 
 import java.util.Optional;
 
-import hotspot.user.member.infrastructure.entity.MemberEntity;
-import hotspot.user.plan.infrastructure.entity.PlanEntity;
 import org.springframework.stereotype.Repository;
 
 import hotspot.user.common.crpyto.PhoneDecryptor;
+import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
@@ -17,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 public class SubscriptionRepositoryImpl implements SubscriptionRepository {
     private final SubscriptionJpaRepository subscriptionJpaRepository;
     private final PhoneDecryptor phoneDecryptor;
+    private final PhoneHashIndexer phoneHashIndexer;
 
     @Override
     public Optional<Subscription> findById(Long id) {
@@ -31,7 +31,8 @@ public class SubscriptionRepositoryImpl implements SubscriptionRepository {
     }
 
     @Override
-    public Optional<Subscription> findByPhoneHash(String phoneHash) {
+    public Optional<Subscription> findByPhoneNumber(String phoneNumber) {
+        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
         return subscriptionJpaRepository.findByPhoneHash(phoneHash)
                 .map(this::toDomain);
     }
@@ -44,8 +45,8 @@ public class SubscriptionRepositoryImpl implements SubscriptionRepository {
 
         SubscriptionEntity entityToSave = SubscriptionEntity.builder()
                 .subId(subscription.getId())
-                .member(subscription.getMember() != null ? MemberEntity.domainToEntity(subscription.getMember()) : null)
-                .plan(subscription.getPlan() != null ? PlanEntity.domainToEntity(subscription.getPlan()) : null)
+                .member(subscription.getMember() != null ? hotspot.user.member.infrastructure.entity.MemberEntity.domainToEntity(subscription.getMember()) : null)
+                .plan(subscription.getPlan() != null ? hotspot.user.plan.infrastructure.entity.PlanEntity.domainToEntity(subscription.getPlan()) : null)
                 .phoneEnc(existingEntity.getPhoneEnc())
                 .phoneHash(existingEntity.getPhoneHash())
                 .isLocked(subscription.getIsLocked())
