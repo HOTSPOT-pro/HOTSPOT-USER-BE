@@ -21,9 +21,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import hotspot.user.auth.controller.port.IssueTokenService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.response.TokenResponse;
+import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
-import hotspot.user.common.util.PhoneUtil;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
@@ -52,6 +52,8 @@ class OnboardingServiceImplTest {
     private FamilySubscriptionRepository familySubscriptionRepository;
     @Mock
     private IssueTokenService issueTokenService;
+    @Mock
+    private PhoneHashIndexer phoneHashIndexer;
 
     @InjectMocks
     private OnboardingServiceImpl onboardingService;
@@ -63,7 +65,7 @@ class OnboardingServiceImplTest {
         Long memberId = 1L;
         Long familyId = 100L;
         String phoneNumber = "01012345678";
-        String phoneHash = PhoneUtil.hashPhoneNumber(phoneNumber);
+        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
         OnboardingRequest request = new OnboardingRequest(memberId, "test@test.com", phoneNumber, "950101");
 
         Member pendingMember = Member.builder().id(memberId).name("test").status(Status.PENDING).build();
@@ -103,7 +105,7 @@ class OnboardingServiceImplTest {
         Long existingMemberId = 2L;
         Long familyId = 100L;
         String phoneNumber = "01012345678";
-        String phoneHash = PhoneUtil.hashPhoneNumber(phoneNumber);
+        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
         OnboardingRequest request = new OnboardingRequest(pendingMemberId, "test@test.com", phoneNumber, "950101");
 
         Member pendingMember = Member.builder().id(pendingMemberId).status(Status.PENDING).build();
@@ -141,7 +143,7 @@ class OnboardingServiceImplTest {
     void onboardingFailSubscriptionNotFound() {
         // given
         String phoneNumber = "01000000000";
-        String phoneHash = PhoneUtil.hashPhoneNumber(phoneNumber);
+        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
         OnboardingRequest request = new OnboardingRequest(1L, "test@test.com", phoneNumber, "950101");
 
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.empty());
@@ -158,7 +160,7 @@ class OnboardingServiceImplTest {
         // given
         Long memberId = 1L;
         String phoneNumber = "01012345678";
-        String phoneHash = PhoneUtil.hashPhoneNumber(phoneNumber);
+        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
         OnboardingRequest request = new OnboardingRequest(memberId, "test@test.com", phoneNumber, "950101");
 
         Member pendingMember = Member.builder().id(memberId).status(Status.PENDING).build();

@@ -25,6 +25,7 @@ spring:
       - classpath:kafka.yml
       - classpath:oauth.yml
       - classpath:jwt.yml
+      - classpath:crypto.yml
 
   web:
     resources:

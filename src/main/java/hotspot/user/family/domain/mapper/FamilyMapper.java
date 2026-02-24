@@ -9,7 +9,7 @@ import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilyDetailInfo;
 import hotspot.user.family.domain.FamilySubscription;
-import hotspot.user.member.domain.mapper.MemberMapper;
+import hotspot.user.member.controller.response.MemberResponse;
 
 /**
  * request Dto -> 도메인
@@ -46,13 +46,13 @@ public class FamilyMapper {
                 .toList();
     }
 
-    public static FamilyInfoResponse toFamilyInfoResponse(FamilyDetailInfo detailInfo) {
+    public static FamilyInfoResponse toFamilyInfoResponse(
+            FamilyDetailInfo detailInfo,
+            List<MemberResponse> memberInfoList) {
         return FamilyInfoResponse.builder()
                 .familyId(detailInfo.getFamilyId())
                 .familyNum(detailInfo.getFamilyNum())
-                .memberInfoList(detailInfo.getMemberDetailInfoList().stream()
-                        .map(MemberMapper::toMemberResponse)
-                        .toList())
+                .memberInfoList(memberInfoList)
                 .build();
     }
 }
