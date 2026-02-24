@@ -20,7 +20,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Notification", description = "사용자 알림 조회 및 읽음 처리 API")
 public interface NotificationApi {
 
-    @Operation(summary = "알림 목록 조회", description = "로그인한 사용자의 최근 30일 알림을 페이지 단위로 조회합니다.")
+    @Operation(
+            summary = "알림 목록 조회",
+            description = "로그인한 사용자의 최근 30일 알림을 Slice 기반으로 조회합니다. "
+                    + "응답의 hasNext를 기준으로 무한 스크롤을 처리합니다."
+    )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -36,10 +40,10 @@ public interface NotificationApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "404",
-                description = "조회 대상을 찾을 수 없음\n"
-                    + "- NOTI_001: 알림 정보를 찾을 수 없습니다.",
-                content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    responseCode = "404",
+                    description = "조회 대상을 찾을 수 없음\n"
+                            + "- NOTI_001: 알림 정보를 찾을 수 없습니다.",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     ResponseEntity<ApiResponse<NotificationListResponse>> getNotifications(
@@ -47,7 +51,7 @@ public interface NotificationApi {
             Pageable pageable
     );
 
-    @Operation(summary = "미읽은 알림 개수 조회", description = "로그인한 사용자의 미읽은 알림 개수를 조회합니다.")
+    @Operation(summary = "미읽음 알림 개수 조회", description = "로그인한 사용자의 미읽음 알림 개수를 조회합니다.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -57,17 +61,17 @@ public interface NotificationApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "404",
-                description = "조회 대상을 찾을 수 없음\n"
-                    + "- NOTI_001: 알림 정보를 찾을 수 없습니다.",
-                content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    responseCode = "404",
+                    description = "조회 대상을 찾을 수 없음\n"
+                            + "- NOTI_001: 알림 정보를 찾을 수 없습니다.",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     ResponseEntity<ApiResponse<UnreadNotificationCountResponse>> getUnreadCount(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails details
     );
 
-    @Operation(summary = "알림 전체 읽음 처리", description = "로그인한 사용자의 알림을 전체 읽음 상태로 변경합니다.")
+    @Operation(summary = "알림 전체 읽음 처리", description = "로그인한 사용자의 모든 알림을 읽음 상태로 변경합니다.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "처리 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -77,17 +81,17 @@ public interface NotificationApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "404",
-                description = "처리 대상을 찾을 수 없음\n"
-                    + "- NOTI_001: 알림 정보를 찾을 수 없습니다.",
-                content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    responseCode = "404",
+                    description = "처리 대상을 찾을 수 없음\n"
+                            + "- NOTI_001: 알림 정보를 찾을 수 없습니다.",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     ResponseEntity<ApiResponse<Void>> markAllRead(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails details
     );
 
-    @Operation(summary = "알림 단건 읽음 처리", description = "로그인한 사용자의 특정 알림 1건을 읽음 상태로 변경합니다.")
+    @Operation(summary = "알림 단건 읽음 처리", description = "로그인한 사용자의 알림 1건을 읽음 상태로 변경합니다.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "처리 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -103,10 +107,10 @@ public interface NotificationApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "404",
-                description = "처리 대상을 찾을 수 없음\n"
-                    + "- NOTI_001: 알림 정보를 찾을 수 없습니다.",
-                content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    responseCode = "404",
+                    description = "처리 대상을 찾을 수 없음\n"
+                            + "- NOTI_001: 알림 정보를 찾을 수 없습니다.",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     ResponseEntity<ApiResponse<Void>> markRead(

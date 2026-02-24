@@ -1,6 +1,6 @@
 package hotspot.user.notification.domain.mapper;
 
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 
 import hotspot.user.notification.controller.response.NotificationListResponse;
 import hotspot.user.notification.controller.response.NotificationResponse;
@@ -11,7 +11,7 @@ public final class NotificationMapper {
     private NotificationMapper() {
     }
 
-    // Converts notification domain to response DTO.
+    // Notification 도메인 객체 1건을 API 응답 DTO로 변환한다.
     public static NotificationResponse toResponse(Notification notification) {
         return NotificationResponse.builder()
                 .id(notification.getId())
@@ -24,16 +24,12 @@ public final class NotificationMapper {
                 .build();
     }
 
-    // Converts paged notifications to list response DTO.
-    public static NotificationListResponse toListResponse(Page<Notification> notifications) {
+    // Slice 조회 결과를 알림 리스트와 page/size/hasNext를 포함한 응답으로 변환한다.
+    public static NotificationListResponse toListResponse(Slice<Notification> notifications) {
         return NotificationListResponse.builder()
-                .notifications(notifications.getContent().stream()
-                        .map(NotificationMapper::toResponse)
-                        .toList())
+                .notifications(notifications.map(NotificationMapper::toResponse).getContent())
                 .page(notifications.getNumber())
                 .size(notifications.getSize())
-                .totalPages(notifications.getTotalPages())
-                .totalElements(notifications.getTotalElements())
                 .hasNext(notifications.hasNext())
                 .build();
     }

@@ -12,7 +12,5 @@ public class NotificationListResponse {
     private List<NotificationResponse> notifications;
     private int page;
     private int size;
-    private int totalPages;
-    private long totalElements;
     private boolean hasNext;
 }
