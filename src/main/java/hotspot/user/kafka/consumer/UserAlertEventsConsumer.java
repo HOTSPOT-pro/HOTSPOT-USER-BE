@@ -12,11 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.KafkaErrorCode;
+import hotspot.user.common.exception.code.NotificationErrorCode;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.kafka.domain.NotificationType;
 import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.kafka.dto.UserAlertNotificationsPersistedEvent;
 import hotspot.user.kafka.mapper.UserAlertEventNotificationMapper;
 import hotspot.user.notification.domain.Notification;
+import hotspot.user.notification.domain.NotificationCategory;
+import hotspot.user.notification.service.port.NotificationAllowRepository;
 import hotspot.user.notification.service.port.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +30,7 @@ public class UserAlertEventsConsumer {
 
     private final UserAlertEventNotificationMapper mapper;
     private final NotificationRepository notificationRepository;
+    private final NotificationAllowRepository notificationAllowRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -41,6 +46,9 @@ public class UserAlertEventsConsumer {
         List<Notification> persistedNotifications = new ArrayList<>();
         for (Long targetSubId : targetSubIds) {
             Notification notification = mapper.toNotification(event, targetSubId);
+            if (!isNotificationAllowed(targetSubId, notification.getNotificationType())) {
+                continue;
+            }
             Notification persistedNotification = notificationRepository.insertIfAbsent(notification);
             if (persistedNotification != null) {
                 persistedNotifications.add(persistedNotification);
@@ -72,5 +80,21 @@ public class UserAlertEventsConsumer {
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
+    }
+
+    // 알림 타입을 카테고리로 변환해 허용된 경우에만 저장/전송 대상으로 처리한다.
+    private boolean isNotificationAllowed(Long subId, String notificationTypeRaw) {
+        NotificationCategory category = resolveNotificationCategory(notificationTypeRaw);
+        return notificationAllowRepository.findBySubIdAndCategory(subId, category)
+                .map(notificationAllow -> Boolean.TRUE.equals(notificationAllow.getNotificationAllow()))
+                .orElse(false);
+    }
+
+    private NotificationCategory resolveNotificationCategory(String notificationTypeRaw) {
+        try {
+            return NotificationType.valueOf(notificationTypeRaw).category();
+        } catch (IllegalArgumentException ex) {
+            throw new ApplicationException(NotificationErrorCode.NOTIFICATION_CATEGORY_MAPPING_NOT_FOUND);
+        }
     }
 }
