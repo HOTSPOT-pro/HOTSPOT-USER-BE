@@ -5,9 +5,9 @@ import java.util.List;
 public record FamilyDataResponse(
         Long selfSubId,
         Double selfDataRemainAmount,
-        List<subUsageResponse> subUsages
+        List<SubUsageResponse> subUsages
 ) {
-    public record subUsageResponse(
+    public record SubUsageResponse(
             Long subId,
             String subName,
             Double subDataLimitAmount,

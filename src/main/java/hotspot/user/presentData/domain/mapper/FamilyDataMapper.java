@@ -19,7 +19,7 @@ public class FamilyDataMapper {
             Map<Long, SubUsage> usageMap
     ) {
 
-        List<FamilyDataResponse.subUsageResponse> subResponses =
+        List<FamilyDataResponse.SubUsageResponse> subResponses =
                 familySubList.stream()
                         .filter(sub -> !sub.subId().equals(selfSubId))
                         .map(sub -> {
@@ -30,7 +30,7 @@ public class FamilyDataMapper {
                                             new SubUsage(0, 0)
                                     );
 
-                            return new FamilyDataResponse.subUsageResponse(
+                            return new FamilyDataResponse.SubUsageResponse(
                                     sub.subId(),
                                     sub.subName(),
                                     usage.limitGb(),

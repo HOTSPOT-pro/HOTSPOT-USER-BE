@@ -32,7 +32,9 @@ public class FamilySubUsageMapper {
     }
 
     private double toKb(Object value) {
-        if (value == null) return 0;
+        if (value == null) {
+            return 0;
+        }
 
         if (value instanceof byte[] bytes) {
             return Double.parseDouble(new String(bytes));
