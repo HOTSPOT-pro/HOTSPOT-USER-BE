@@ -52,7 +52,7 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationEnt
     Optional<NotificationEntity> findByEventIdAndSubscriptionSubId(String eventId, Long subId);
 
     // created_time이 기준 시각 이상인 알림을 최신순으로 조회한다.
-    Slice<NotificationEntity> findBySubscriptionSubIdAndCreatedTimeGreaterThanEqualOrderByCreatedTimeDesc(
+    Slice<NotificationEntity> findBySubscriptionSubIdAndCreatedTimeGreaterThanEqual(
             Long subId,
             LocalDateTime cutoffDateTime,
             Pageable pageable
