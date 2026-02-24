@@ -2,6 +2,7 @@ package hotspot.user.common.crpyto;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.regex.Pattern;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -13,15 +14,10 @@ import org.springframework.stereotype.Component;
  * 전화번호로 검색 (해시 검색)
  * - 사용 키: hash_key
  * - 대상 컬럼: phone_hash
- * - Python과 동일하게 HMAC-SHA256 -> Base64로 생성해야 함
- * - 사용
- * String input = "010-1234-5678"; // 저장 포맷과 동일하게 정규화
- * String phoneHash = phoneHashIndexer.toHash(input);
- * Subscription s = subscriptionRepository.findByPhoneHash(phoneHash).orElse(null);
  */
-
 @Component
 public class PhoneHashIndexer {
+    private static final Pattern MOBILE_PATTERN = Pattern.compile("^01\\d{8,9}$");
     private final byte[] hashKey;
 
     public PhoneHashIndexer(@Value("${app.crypto.hash-key}") String hashKeyBase64) {
@@ -31,8 +27,9 @@ public class PhoneHashIndexer {
         }
     }
 
-    public String toHash(String normalizedPhone) {
+    public String toHash(String rawPhoneNumber) {
         try {
+            String normalizedPhone = normalizePhone(rawPhoneNumber);
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(hashKey, "HmacSHA256"));
             byte[] digest = mac.doFinal(normalizedPhone.getBytes(StandardCharsets.UTF_8));
@@ -40,5 +37,25 @@ public class PhoneHashIndexer {
         } catch (Exception e) {
             throw new IllegalStateException("hash failed", e);
         }
+    }
+
+    /**
+     * 전화번호 정규화 (01012345678 -> 010-1234-5678)
+     */
+    public String normalizePhone(String rawPhoneNumber) {
+        if (rawPhoneNumber == null || rawPhoneNumber.isBlank()) {
+            throw new IllegalArgumentException("Phone number is blank.");
+        }
+
+        String digits = rawPhoneNumber.replaceAll("\\D", "");
+        if (!MOBILE_PATTERN.matcher(digits).matches()) {
+            throw new IllegalArgumentException("Phone number format is invalid.");
+        }
+
+        if (digits.length() == 11) {
+            return digits.substring(0, 3) + "-" + digits.substring(3, 7) + "-" + digits.substring(7);
+        }
+
+        return digits.substring(0, 3) + "-" + digits.substring(3, 6) + "-" + digits.substring(6);
     }
 }
