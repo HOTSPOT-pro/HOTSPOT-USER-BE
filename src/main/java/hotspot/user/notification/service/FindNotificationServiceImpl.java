@@ -7,9 +7,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.NotificationErrorCode;
-import hotspot.user.common.exception.code.SubscriptionErrorCode;
 import hotspot.user.notification.controller.port.FindNotificationService;
 import hotspot.user.notification.controller.response.NotificationListResponse;
 import hotspot.user.notification.controller.response.UnreadNotificationCountResponse;
@@ -32,7 +29,8 @@ public class FindNotificationServiceImpl implements FindNotificationService {
 
     @Override
     public NotificationListResponse findNotifications(Long memberId, Pageable pageable) {
-        Long subId = resolveSubIdByMemberId(memberId);
+        Subscription subscription = subscriptionService.findByMemberId(memberId);
+        Long subId = subscription.getId();
         Pageable normalizedPageable = normalizePageable(pageable);
         Page<Notification> notifications = notificationRepository.findRecentBySubId(subId, normalizedPageable);
         return NotificationMapper.toListResponse(notifications);
@@ -40,22 +38,11 @@ public class FindNotificationServiceImpl implements FindNotificationService {
 
     @Override
     public UnreadNotificationCountResponse findUnreadCount(Long memberId) {
-        Long subId = resolveSubIdByMemberId(memberId);
+        Subscription subscription = subscriptionService.findByMemberId(memberId);
+        Long subId = subscription.getId();
         return UnreadNotificationCountResponse.builder()
                 .unreadCount(notificationRepository.countUnreadBySubId(subId))
                 .build();
-    }
-
-    private Long resolveSubIdByMemberId(Long memberId) {
-        try {
-            Subscription subscription = subscriptionService.findByMemberId(memberId);
-            return subscription.getId();
-        } catch (ApplicationException e) {
-            if (e.getCode() == SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND) {
-                throw new ApplicationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
-            }
-            throw e;
-        }
     }
 
     private Pageable normalizePageable(Pageable pageable) {
