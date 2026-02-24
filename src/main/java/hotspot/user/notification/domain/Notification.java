@@ -14,6 +14,7 @@ public class Notification {
     private Long subId;
     private String eventId;
     private String notificationType;
+    private String title;
     private String content;
     private Boolean isRead;
     private LocalDateTime createdTime;
