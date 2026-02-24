@@ -58,10 +58,12 @@ public class SecurityConfig {
                 // isAuthenticated() 조건 추가로 500 에러 방지
                 // 온보딩은 PENDING인 유저만 가능
                 .requestMatchers("/api/v1/auth/onboarding")
-                .access(new WebExpressionAuthorizationManager("isAuthenticated() and principal.status.name() == 'PENDING'"))
+                .access(new WebExpressionAuthorizationManager(
+                        "isAuthenticated() and principal.status.name() == 'PENDING'"))
                 // 나머지 비즈니스 API는 반드시 APPROVED 상태의 로그인한 유저만 접근 가능
                 .requestMatchers("/api/v1/**")
-                .access(new WebExpressionAuthorizationManager("isAuthenticated() and principal.status.name() == 'APPROVED'"))
+                .access(new WebExpressionAuthorizationManager(
+                        "isAuthenticated() and principal.status.name() == 'APPROVED'"))
                 .anyRequest().authenticated()
         );
 
