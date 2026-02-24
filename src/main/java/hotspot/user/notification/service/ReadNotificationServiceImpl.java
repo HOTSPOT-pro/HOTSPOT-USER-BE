@@ -5,7 +5,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.NotificationErrorCode;
-import hotspot.user.common.exception.code.SubscriptionErrorCode;
 import hotspot.user.notification.controller.port.ReadNotificationService;
 import hotspot.user.notification.service.port.NotificationRepository;
 import hotspot.user.subscription.domain.Subscription;
@@ -20,32 +19,24 @@ public class ReadNotificationServiceImpl implements ReadNotificationService {
     private final NotificationRepository notificationRepository;
     private final SubscriptionService subscriptionService;
 
+    // 해당 subId의 모든 알림을 "읽음 처리"로 일괄 업데이트한다.
     @Override
     @Transactional
     public void markAllRead(Long memberId) {
-        Long subId = resolveSubIdByMemberId(memberId);
+        Subscription subscription = subscriptionService.findByMemberId(memberId);
+        Long subId = subscription.getId();
         notificationRepository.markAllReadBySubId(subId);
     }
 
+    // 해당 subId의 특정 알림 1건을 "읽음 처리"로 업데이트한다.
     @Override
     @Transactional
     public void markRead(Long memberId, Long notificationId) {
-        Long subId = resolveSubIdByMemberId(memberId);
+        Subscription subscription = subscriptionService.findByMemberId(memberId);
+        Long subId = subscription.getId();
         int updatedCount = notificationRepository.markReadById(notificationId, subId);
         if (updatedCount == 0) {
             throw new ApplicationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
-        }
-    }
-
-    private Long resolveSubIdByMemberId(Long memberId) {
-        try {
-            Subscription subscription = subscriptionService.findByMemberId(memberId);
-            return subscription.getId();
-        } catch (ApplicationException e) {
-            if (e.getCode() == SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND) {
-                throw new ApplicationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
-            }
-            throw e;
         }
     }
 }
