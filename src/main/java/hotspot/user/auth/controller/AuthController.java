@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,12 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 import hotspot.user.auth.controller.port.LogoutService;
 import hotspot.user.auth.controller.port.OnboardingService;
 import hotspot.user.auth.controller.port.ReissueTokenService;
+import hotspot.user.auth.controller.port.WithdrawService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.request.TokenRequest;
 import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
+import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtProperties;
 import hotspot.user.common.util.CookieUtil;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +34,7 @@ public class AuthController {
     private final ReissueTokenService reissueTokenService;
     private final LogoutService logoutService;
     private final OnboardingService onboardingService;
+    private final WithdrawService withdrawService; // 회원 탈퇴
     private final JwtProperties jwtProperties;
 
     @PostMapping("/reissue")
@@ -77,6 +81,24 @@ public class AuthController {
 
         TokenRequest request = new TokenRequest(refreshToken);
         logoutService.logout(request);
+        ResponseCookie cookie = CookieUtil.deleteCookie("refreshToken");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.success());
+    }
+
+    // 회원 탈퇴
+    @PostMapping("/withdraw")
+    public ResponseEntity<ApiResponse<Void>> withdraw(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
+
+        if (refreshToken == null) {
+            throw new ApplicationException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
+        }
+
+        withdrawService.withdraw(principal.getId());
         ResponseCookie cookie = CookieUtil.deleteCookie("refreshToken");
 
         return ResponseEntity.ok()
