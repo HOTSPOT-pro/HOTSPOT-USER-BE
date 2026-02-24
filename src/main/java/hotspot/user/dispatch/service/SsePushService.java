@@ -36,7 +36,7 @@ public class SsePushService {
                     .notificationType(notification.getNotificationType())
                     .title(notification.getTitle())
                     .content(notification.getContent())
-                    .createdAt(notification.getCreatedTime())
+                    .createdTime(notification.getCreatedTime())
                     .unreadCount(unreadCount)
                     .build();
 

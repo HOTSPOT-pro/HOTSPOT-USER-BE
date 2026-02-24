@@ -13,6 +13,6 @@ public class SsePayload {
     private String notificationType;
     private String title;
     private String content;
-    private LocalDateTime createdAt;
+    private LocalDateTime createdTime;
     private Long unreadCount;
 }
