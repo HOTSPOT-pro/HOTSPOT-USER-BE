@@ -60,7 +60,7 @@ public class NotificationAllowEntity extends BaseEntity {
                 .subscription(subscriptionProxy)
                 .notificationCategory(notificationAllow.getNotificationCategory())
                 .notificationAllow(notificationAllow.getNotificationAllow())
-                .isDeleted(notificationAllow.getIsDeleted() == null ? false : notificationAllow.getIsDeleted())
+                .isDeleted(notificationAllow.getIsDeleted())
                 .build();
     }
 
