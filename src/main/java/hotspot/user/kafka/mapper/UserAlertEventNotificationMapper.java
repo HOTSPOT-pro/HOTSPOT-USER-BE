@@ -46,6 +46,7 @@ public class UserAlertEventNotificationMapper {
                 .subId(requireSubId(targetSubId))
                 .eventId(resolveEventId(event))
                 .notificationType(mapping.notificationType().name())
+                .title(mapping.content().title())
                 .content(mapping.content().body())
                 .isRead(false)
                 .createdTime(resolveCreatedTime(event))
