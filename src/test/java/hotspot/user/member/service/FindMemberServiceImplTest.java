@@ -2,6 +2,7 @@ package hotspot.user.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 import java.util.Optional;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.member.controller.response.MemberResponse;
@@ -30,6 +32,9 @@ class FindMemberServiceImplTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private PhoneDecryptor phoneDecryptor; // 💡 추가
 
     @InjectMocks
     private FindMemberServiceImpl findMemberService;
@@ -51,13 +56,14 @@ class FindMemberServiceImplTest {
         MemberDetailInfo detailInfo = MemberDetailInfo.builder()
                 .member(member)
                 .email(email)
-                .phone("010-1234-5678")
+                .phone("enc_phone")
                 .subId(subId)
                 .role(FamilyRole.PARENT)
                 .familyId(100L)
                 .build();
 
         given(memberRepository.findDetailByIdAndEmail(memberId, email)).willReturn(Optional.of(detailInfo));
+        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); // 💡 추가
 
         // when
         MemberResponse response = findMemberService.findByIdAndEmail(memberId, email);

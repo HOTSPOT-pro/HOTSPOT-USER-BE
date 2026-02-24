@@ -2,6 +2,7 @@ package hotspot.user.subscription.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 import java.util.Optional;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
 import hotspot.user.member.domain.Member;
@@ -31,6 +33,9 @@ class FindSubscriptionServiceImplTest {
 
     @Mock
     private SubscriptionRepository subscriptionRepository;
+
+    @Mock
+    private PhoneDecryptor phoneDecryptor; // 💡 추가
 
     @InjectMocks
     private FindSubscriptionServiceImpl findSubscriptionService;
@@ -57,17 +62,19 @@ class FindSubscriptionServiceImplTest {
                 .id(subId)
                 .plan(plan)
                 .member(member)
-                .phoneEnc("010-2345-6789")
+                .phoneEnc("enc_phone")
                 .isLocked(false)
                 .build();
 
         given(subscriptionRepository.findById(subId)).willReturn(Optional.of(subscription));
+        given(phoneDecryptor.decrypt(anyString())).willReturn("010-2345-6789"); // 💡 추가
 
         // when
         SubscriptionResponse response = findSubscriptionService.findById(subId);
 
         // then
         assertThat(response.id()).isEqualTo(subId);
+        assertThat(response.phone()).isEqualTo("010-2345-6789");
         assertThat(response.plan().name()).isEqualTo("베이직");
         assertThat(response.isLocked()).isFalse();
     }
@@ -106,17 +113,19 @@ class FindSubscriptionServiceImplTest {
                 .id(1L)
                 .plan(plan)
                 .member(member)
-                .phoneEnc("alksjdfkhsjkdfskldfkl")
+                .phoneEnc("enc_phone")
                 .isLocked(false)
                 .build();
 
         given(subscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(subscription));
+        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); // 💡 추가
 
         // when
         SubscriptionResponse response = findSubscriptionService.findByMemberId(memberId);
 
         // then
         assertThat(response.id()).isEqualTo(1L);
+        assertThat(response.phone()).isEqualTo("010-1234-5678");
         assertThat(response.plan().name()).isEqualTo("베이직");
     }
 
