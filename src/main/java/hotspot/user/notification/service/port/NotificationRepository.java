@@ -8,7 +8,7 @@ import hotspot.user.notification.domain.Notification;
 public interface NotificationRepository {
 
     // (eventId, subId)가 없을 때만 저장하고, 중복이면 저장하지 않는다.
-    boolean insertIfAbsent(Notification notification);
+    Notification insertIfAbsent(Notification notification);
 
     // 특정 회선의 최근 알림을 페이지 단위로 조회한다.
     Page<Notification> findRecentBySubId(Long subId, Pageable pageable);
