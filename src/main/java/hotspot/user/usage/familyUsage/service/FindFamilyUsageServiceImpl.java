@@ -1,5 +1,8 @@
 package hotspot.user.usage.familyUsage.service;
 
+import java.sql.Time;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -17,9 +20,10 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class FindFamilyUsageServiceImpl implements FindFamilyUsageService {
+
     private final FamilyUsageRepository findFamilyUsageRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
-
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     @Override
@@ -32,6 +36,8 @@ public class FindFamilyUsageServiceImpl implements FindFamilyUsageService {
 
         FamilyUsage familyUsage = findFamilyUsageRepository.findFamilyUsage(familyId, familySubList);
 
-        return FamilyUsageMapper.toFamilyUsageResponse(familyUsage, familySubList);
+        LocalDateTime now = LocalDateTime.now(clock);
+
+        return FamilyUsageMapper.toFamilyUsageResponse(familyUsage, familySubList, now);
     }
 }
