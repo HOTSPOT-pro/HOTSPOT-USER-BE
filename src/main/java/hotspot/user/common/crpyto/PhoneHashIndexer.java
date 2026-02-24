@@ -12,6 +12,10 @@ import org.springframework.stereotype.Component;
  * - 사용 키: hash_key
  * - 대상 컬럼: phone_hash
  * - Python과 동일하게 HMAC-SHA256 -> Base64로 생성해야 함
+ * - 사용
+ * String input = "010-1234-5678"; // 저장 포맷과 동일하게 정규화
+ * String phoneHash = phoneHashIndexer.toHash(input);
+ * Subscription s = subscriptionRepository.findByPhoneHash(phoneHash).orElse(null);
  */
 
 @Component

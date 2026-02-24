@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
  * 유저 조회 후 전화번호 표시 (복호화)
  * - 사용 키: secret_key
  * - 대상 컬럼: phone_enc
+ * - 사용 : String phone = phoneDecryptor.decrypt(subscription.getPhoneEnc());
  */
 @Component
 public class PhoneDecryptor {
