@@ -2,6 +2,7 @@ package hotspot.user.auth.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
@@ -123,10 +124,11 @@ class AuthControllerTest {
     @Test
     @DisplayName("온보딩(onboarding) 성공 시 AccessToken과 RefreshToken 쿠키를 반환한다")
     void onboardingSuccess() throws Exception {
-        OnboardingRequest request = new OnboardingRequest(MEMBER_ID, "test@email.com", "01012345678", "900101");
+        OnboardingRequest request = new OnboardingRequest("01012345678", "900101");
         TokenResponse mockResponse = new TokenResponse(ACCESS_TOKEN, REFRESH_TOKEN);
 
-        given(onboardingService.onboarding(any(OnboardingRequest.class))).willReturn(mockResponse);
+        given(onboardingService.onboarding(anyLong(), anyString(), any(OnboardingRequest.class)))
+                .willReturn(mockResponse);
 
         mockMvc.perform(post("/api/v1/auth/onboarding")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -143,7 +145,7 @@ class AuthControllerTest {
     @DisplayName("로그아웃(logout) 성공 시 RefreshToken 쿠키를 삭제(Max-Age=0)해야 한다")
     void logoutSuccess() throws Exception {
         Cookie requestCookie = new Cookie("refreshToken", REFRESH_TOKEN);
-        doNothing().when(logoutService).logout(anyLong(), any(TokenRequest.class)); //  시그니처 수정
+        doNothing().when(logoutService).logout(anyLong(), any(TokenRequest.class));
 
         mockMvc.perform(post("/api/v1/auth/logout")
                         .cookie(requestCookie))

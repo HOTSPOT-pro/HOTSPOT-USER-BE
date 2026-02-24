@@ -55,6 +55,9 @@ class WithdrawServiceImplTest {
         String refreshToken = "valid-token";
         TokenRequest request = new TokenRequest(refreshToken);
 
+        Member member = Member.builder().id(memberId).build();
+        given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+
         PrincipalDetails principal = new PrincipalDetails(
                 memberId, "test@test.com", 100L, FamilyRole.PARENT, Status.APPROVED);
         Authentication authentication = Mockito.mock(Authentication.class);
@@ -65,9 +68,6 @@ class WithdrawServiceImplTest {
 
         Subscription subscription = Subscription.builder().id(10L).build();
         given(subscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(subscription));
-
-        Member member = Member.builder().id(memberId).build();
-        given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 
         // when
         withdrawService.withdraw(memberId, request);
@@ -87,6 +87,9 @@ class WithdrawServiceImplTest {
         Long ownerId = 2L;
         String refreshToken = "others-token";
         TokenRequest request = new TokenRequest(refreshToken);
+
+        Member requester = Member.builder().id(requesterId).build();
+        given(memberRepository.findById(requesterId)).willReturn(Optional.of(requester));
 
         PrincipalDetails principal = new PrincipalDetails(
                 ownerId, "other@test.com", 100L, FamilyRole.CHILD, Status.APPROVED);
