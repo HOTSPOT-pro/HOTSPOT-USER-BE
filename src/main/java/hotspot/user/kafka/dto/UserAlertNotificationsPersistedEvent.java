@@ -1,8 +1,7 @@
-package hotspot.user.kafka.event;
+package hotspot.user.kafka.dto;
 
 import java.util.List;
 
-import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.notification.domain.Notification;
 
 public record UserAlertNotificationsPersistedEvent(
