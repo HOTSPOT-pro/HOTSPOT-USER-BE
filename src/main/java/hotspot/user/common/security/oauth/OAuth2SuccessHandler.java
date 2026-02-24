@@ -58,7 +58,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         if (principal.getStatus() == Status.PENDING) {
             log.info("신규 사용자, 온보딩 페이지로 리다이렉트: memberId={}", principal.getId());
             String accessToken = jwtProvider.createOnboardingToken(authentication);
-            targetUrl = determineOnboardingUrl(principal, accessToken);
+            targetUrl = determineOnboardingUrl(accessToken);
         }
 
         // 바로 로그인 (토큰 발급 O)
@@ -81,10 +81,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private String determineOnboardingUrl(PrincipalDetails principal, String accessToken) {
+    private String determineOnboardingUrl(String accessToken) {
         String baseUri = redirectUri + "/" + onboardingRedirectUri;
         return UriComponentsBuilder.fromUriString(baseUri)
-                .queryParam("memberId", principal.getId())
                 .queryParam("accessToken", accessToken)
                 .build().toUriString();
     }
