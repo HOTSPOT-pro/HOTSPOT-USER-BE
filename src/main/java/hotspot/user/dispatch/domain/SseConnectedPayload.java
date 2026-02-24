@@ -11,5 +11,5 @@ import lombok.Builder;
 public class SseConnectedPayload {
     private Long subId;
     private String lastEventId;
-    private LocalDateTime connectedAt;
+    private LocalDateTime connectedTime;
 }

@@ -45,7 +45,7 @@ public class SubscribeSseServiceImpl implements SubscribeSseService {
                         .data(SseConnectedPayload.builder()
                                 .subId(subId)
                                 .lastEventId(lastEventId)
-                                .connectedAt(LocalDateTime.now())
+                                .connectedTime(LocalDateTime.now())
                                 .build())
         );
 
