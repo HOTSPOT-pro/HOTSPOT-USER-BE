@@ -33,11 +33,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "social_account")
-@SQLDelete(sql = "UPDATE social_account SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE social_account SET is_deleted = true WHERE social_account_id = ?")
 @Where(clause = "is_deleted = false")
 public class SocialAccountEntity extends BaseEntity {
 
     @Id
+    @Column(name = "social_account_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

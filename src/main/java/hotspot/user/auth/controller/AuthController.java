@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,12 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 import hotspot.user.auth.controller.port.LogoutService;
 import hotspot.user.auth.controller.port.OnboardingService;
 import hotspot.user.auth.controller.port.ReissueTokenService;
+import hotspot.user.auth.controller.port.WithdrawService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.request.TokenRequest;
 import hotspot.user.auth.controller.response.TokenResponse;
+import hotspot.user.auth.controller.swagger.AuthApi;
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
+import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtProperties;
 import hotspot.user.common.util.CookieUtil;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +31,14 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
-public class AuthController {
+public class AuthController implements AuthApi {
     private final ReissueTokenService reissueTokenService;
     private final LogoutService logoutService;
     private final OnboardingService onboardingService;
+    private final WithdrawService withdrawService;
     private final JwtProperties jwtProperties;
 
+    @Override
     @PostMapping("/reissue")
     public ResponseEntity<ApiResponse<TokenResponse>> reissue(
             @CookieValue(value = "refreshToken", required = false) String refreshToken) {
@@ -53,9 +59,12 @@ public class AuthController {
                 .body(ApiResponse.success(response));
     }
 
+    @Override
     @PostMapping("/onboarding")
-    public ResponseEntity<ApiResponse<TokenResponse>> onboarding(@RequestBody @Valid OnboardingRequest request) {
-        TokenResponse response = onboardingService.onboarding(request);
+    public ResponseEntity<ApiResponse<TokenResponse>> onboarding(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @RequestBody @Valid OnboardingRequest request) {
+        TokenResponse response = onboardingService.onboarding(principal.getId(), principal.getEmail(), request);
 
         // Refresh Token 쿠키 설정
         ResponseCookie cookie = CookieUtil.createCookie("refreshToken",
@@ -67,8 +76,10 @@ public class AuthController {
                 .body(ApiResponse.success(response));
     }
 
+    @Override
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
+            @AuthenticationPrincipal PrincipalDetails principal,
             @CookieValue(value = "refreshToken", required = false) String refreshToken) {
 
         if (refreshToken == null) {
@@ -76,7 +87,26 @@ public class AuthController {
         }
 
         TokenRequest request = new TokenRequest(refreshToken);
-        logoutService.logout(request);
+        logoutService.logout(principal.getId(), request); //  memberId 전달
+        ResponseCookie cookie = CookieUtil.deleteCookie("refreshToken");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.success());
+    }
+
+    @Override
+    @PostMapping("/withdraw")
+    public ResponseEntity<ApiResponse<Void>> withdraw(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
+
+        if (refreshToken == null) {
+            throw new ApplicationException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
+        }
+
+        TokenRequest request = new TokenRequest(refreshToken);
+        withdrawService.withdraw(principal.getId(), request); //  memberId 전달
         ResponseCookie cookie = CookieUtil.deleteCookie("refreshToken");
 
         return ResponseEntity.ok()

@@ -36,10 +36,10 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final PhoneHashIndexer phoneHashIndexer;
 
     @Override
-    public TokenResponse onboarding(OnboardingRequest request) {
+    public TokenResponse onboarding(Long memberId, String email, OnboardingRequest request) {
         // 1. 데이터 조회 및 회선 검증
         Subscription subscription = validateAndGetSubscription(request.phoneNumber());
-        Member pendingMember = findPendingMember(request.memberId());
+        Member pendingMember = findPendingMember(memberId);
         SocialAccount socialAccount = findSocialAccount(pendingMember.getId());
 
         // 2. 신규 승인 또는 기존 회원 통합 처리
@@ -49,7 +49,7 @@ public class OnboardingServiceImpl implements OnboardingService {
         FamilySubscription familySub = getFamilySubscription(subscription.getId());
 
         // 4. 토큰 발급 (가족 ID 포함)
-        return issueTokenService.issue(finalMember, socialAccount.getEmail(),
+        return issueTokenService.issue(finalMember, email,
                 familySub.getFamilyRole(), familySub.getFamily().getId());
     }
 

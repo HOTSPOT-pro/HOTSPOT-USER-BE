@@ -31,11 +31,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "member")
-@SQLDelete(sql = "UPDATE member SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE member SET is_deleted = true WHERE member_id = ?")
 @Where(clause = "is_deleted = false")
 public class MemberEntity extends BaseEntity {
 
     @Id
+    @Column(name = "member_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

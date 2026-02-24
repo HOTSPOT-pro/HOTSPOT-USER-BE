@@ -8,4 +8,6 @@ public interface SocialAccountRepository {
     SocialAccount save(SocialAccount socialAccount);
     Optional<SocialAccount> findByMemberId(Long memberId);
     Optional<SocialAccount> findByEmail(String email);
+    void delete(SocialAccount socialAccount);
+    void deleteByMemberId(Long memberId);
 }

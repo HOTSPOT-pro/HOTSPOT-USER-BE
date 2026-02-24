@@ -64,12 +64,13 @@ class OnboardingServiceImplTest {
         // given
         Long memberId = 1L;
         Long familyId = 100L;
+        String email = "test@test.com";
         String phoneNumber = "01012345678";
         String phoneHash = phoneHashIndexer.toHash(phoneNumber);
-        OnboardingRequest request = new OnboardingRequest(memberId, "test@test.com", phoneNumber, "950101");
+        OnboardingRequest request = new OnboardingRequest(phoneNumber, "950101");
 
         Member pendingMember = Member.builder().id(memberId).name("test").status(Status.PENDING).build();
-        SocialAccount socialAccount = SocialAccount.builder().memberId(memberId).email("test@test.com").build();
+        SocialAccount socialAccount = SocialAccount.builder().memberId(memberId).email(email).build();
         Subscription subscription = Subscription.builder().id(100L).phoneHash(phoneHash).build();
         Family family = Family.builder().id(familyId).build();
         FamilySubscription familySubscription = FamilySubscription.builder()
@@ -84,11 +85,11 @@ class OnboardingServiceImplTest {
         given(subscriptionRepository.save(any(Subscription.class))).willAnswer(invocation -> invocation.getArgument(0));
 
         TokenResponse expectedResponse = new TokenResponse("at", "rt");
-        given(issueTokenService.issue(any(Member.class), eq("test@test.com"), eq(FamilyRole.CHILD), eq(familyId)))
+        given(issueTokenService.issue(any(Member.class), eq(email), eq(FamilyRole.CHILD), eq(familyId)))
                 .willReturn(expectedResponse);
 
         // when
-        TokenResponse response = onboardingService.onboarding(request);
+        TokenResponse response = onboardingService.onboarding(memberId, email, request);
 
         // then
         assertThat(response.accessToken()).isEqualTo("at");
@@ -104,13 +105,14 @@ class OnboardingServiceImplTest {
         Long pendingMemberId = 1L;
         Long existingMemberId = 2L;
         Long familyId = 100L;
+        String email = "test@test.com";
         String phoneNumber = "01012345678";
         String phoneHash = phoneHashIndexer.toHash(phoneNumber);
-        OnboardingRequest request = new OnboardingRequest(pendingMemberId, "test@test.com", phoneNumber, "950101");
+        OnboardingRequest request = new OnboardingRequest(phoneNumber, "950101");
 
         Member pendingMember = Member.builder().id(pendingMemberId).status(Status.PENDING).build();
         Member existingMember = Member.builder().id(existingMemberId).status(Status.APPROVED).build();
-        SocialAccount socialAccount = SocialAccount.builder().memberId(pendingMemberId).email("test@test.com").build();
+        SocialAccount socialAccount = SocialAccount.builder().memberId(pendingMemberId).email(email).build();
         Subscription subscription = Subscription.builder().id(100L).member(existingMember).phoneHash(phoneHash).build();
         Family family = Family.builder().id(familyId).build();
         FamilySubscription familySubscription = FamilySubscription.builder()
@@ -125,11 +127,11 @@ class OnboardingServiceImplTest {
                 .willAnswer(invocation -> invocation.getArgument(0));
 
         TokenResponse expectedResponse = new TokenResponse("at", "rt");
-        given(issueTokenService.issue(any(Member.class), eq("test@test.com"), eq(FamilyRole.PARENT), eq(familyId)))
+        given(issueTokenService.issue(any(Member.class), eq(email), eq(FamilyRole.PARENT), eq(familyId)))
                 .willReturn(expectedResponse);
 
         // when
-        TokenResponse response = onboardingService.onboarding(request);
+        TokenResponse response = onboardingService.onboarding(pendingMemberId, email, request);
 
         // then
         assertThat(response.accessToken()).isEqualTo("at");
@@ -144,12 +146,12 @@ class OnboardingServiceImplTest {
         // given
         String phoneNumber = "01000000000";
         String phoneHash = phoneHashIndexer.toHash(phoneNumber);
-        OnboardingRequest request = new OnboardingRequest(1L, "test@test.com", phoneNumber, "950101");
+        OnboardingRequest request = new OnboardingRequest(phoneNumber, "950101");
 
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> onboardingService.onboarding(request))
+        assertThatThrownBy(() -> onboardingService.onboarding(1L, "test@test.com", request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(MemberErrorCode.SUBSCRIPTION_NOT_FOUND.getMessage());
     }
@@ -159,9 +161,10 @@ class OnboardingServiceImplTest {
     void onboardingFailFamilySubscriptionNotFound() {
         // given
         Long memberId = 1L;
+        String email = "test@test.com";
         String phoneNumber = "01012345678";
         String phoneHash = phoneHashIndexer.toHash(phoneNumber);
-        OnboardingRequest request = new OnboardingRequest(memberId, "test@test.com", phoneNumber, "950101");
+        OnboardingRequest request = new OnboardingRequest(phoneNumber, "950101");
 
         Member pendingMember = Member.builder().id(memberId).status(Status.PENDING).build();
         Subscription subscription = Subscription.builder().id(100L).phoneHash(phoneHash).build();
@@ -173,7 +176,7 @@ class OnboardingServiceImplTest {
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> onboardingService.onboarding(request))
+        assertThatThrownBy(() -> onboardingService.onboarding(memberId, email, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(MemberErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND.getMessage());
     }

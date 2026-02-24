@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.user.auth.controller.port.LogoutService;
 import hotspot.user.auth.controller.request.TokenRequest;
 import hotspot.user.auth.service.port.TokenRepository;
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -15,18 +17,27 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class LogoutServiceImpl implements LogoutService {
 
-    private final JwtProvider jwtProvider;
     private final TokenRepository tokenRepository;
+    private final JwtProvider jwtProvider;
 
     @Override
-    public void logout(TokenRequest request) {
+    public void logout(Long memberId, TokenRequest request) {
         String refreshToken = request.refreshToken();
 
-        if (jwtProvider.validateToken(refreshToken)) {
-            // Refresh Token용 메서드를 사용하여 안전하게 사용자 정보 추출
-            PrincipalDetails principal = (PrincipalDetails) jwtProvider.getAuthenticationFromRefreshToken(refreshToken)
-                    .getPrincipal();
-            tokenRepository.deleteByMemberId(principal.getId());
+        // 1. 토큰 유효성 검증
+        if (!jwtProvider.validateToken(refreshToken)) {
+            throw new ApplicationException(AuthErrorCode.INVALID_TOKEN);
         }
+
+        // 2. 토큰에서 사용자 정보 추출 및 소유권 검증
+        PrincipalDetails principal = (PrincipalDetails) jwtProvider.getAuthenticationFromRefreshToken(refreshToken)
+                .getPrincipal();
+
+        if (!memberId.equals(principal.getId())) {
+            throw new ApplicationException(AuthErrorCode.INVALID_TOKEN);
+        }
+
+        // 3. 토큰 삭제 (무효화)
+        tokenRepository.deleteByMemberId(memberId);
     }
 }

@@ -50,10 +50,14 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/", "/health", "/login/**", "/oauth2/**", "/oauth/**",
-                        "/swagger-ui/**", "/v3/api-docs/**", "/actuator/health",
-                        "/api/v1/auth/onboarding",
-                        "/api/v1/**" // 테스트 위해서 모든 API 열어둠 [To-Do] 삭제 필요
+                        "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
+                        "/actuator/health",
+                        "/api/v1/auth/reissue"
                 ).permitAll()
+                // 온보딩 API는 PENDING 상태의 유저만 접근 가능하도록 보호 (임시 토큰 필요)
+                .requestMatchers("/api/v1/auth/onboarding").hasAuthority("PENDING")
+                // 나머지 비즈니스 API는 반드시 APPROVED 상태의 유저만 접근 가능
+                .requestMatchers("/api/v1/**").hasAuthority("APPROVED")
                 .anyRequest().authenticated()
         );
 
