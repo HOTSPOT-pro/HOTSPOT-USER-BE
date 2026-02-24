@@ -38,6 +38,7 @@ import lombok.NoArgsConstructor;
 public class SocialAccountEntity extends BaseEntity {
 
     @Id
+    @Column(name = "social_account_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

@@ -36,6 +36,7 @@ import lombok.NoArgsConstructor;
 public class MemberEntity extends BaseEntity {
 
     @Id
+    @Column(name = "member_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
