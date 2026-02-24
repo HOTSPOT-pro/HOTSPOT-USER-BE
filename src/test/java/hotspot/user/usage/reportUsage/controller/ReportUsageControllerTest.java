@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 
+import hotspot.user.usage.reportUsage.controller.port.*;
+import hotspot.user.usage.reportUsage.controller.response.ReportFamilyResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +25,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.usage.reportUsage.controller.port.FindReportUsageAppDayService;
-import hotspot.user.usage.reportUsage.controller.port.FindReportUsageAppMonthService;
-import hotspot.user.usage.reportUsage.controller.port.FindReportUsageDayService;
-import hotspot.user.usage.reportUsage.controller.port.FindReportUsageMonthService;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageAppResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageDayResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageMonthResponse;
@@ -37,6 +35,9 @@ class ReportUsageControllerTest {
 
     @Autowired
     MockMvc mockMvc;
+
+    @MockBean
+    FindReportFamilyService findReportFamilyService;
 
     @MockBean
     FindReportUsageAppMonthService findReportUsageAppMonthService;
@@ -58,6 +59,29 @@ class ReportUsageControllerTest {
 
     @MockBean
     JpaMetamodelMappingContext jpaMetamodelMappingContext;
+
+    @Test
+    @DisplayName("가족 리포트 조회 성공")
+    void shouldReturnFamilyReportSuccessfully() throws Exception {
+
+        setAuthentication(1L, 1L, FamilyRole.OWNER);
+
+        List<ReportFamilyResponse> response =
+                List.of(
+                        new ReportFamilyResponse(
+                                1L,
+                                "홍길동"
+                        )
+                );
+
+        when(findReportFamilyService.findReportFamily(1L))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/reportUsage/family"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].subId").value(1L))
+                .andExpect(jsonPath("$.data[0].subName").value("홍길동"));
+    }
 
     @Test
     @DisplayName("앱별 월 데이터 사용량 조회 성공")
