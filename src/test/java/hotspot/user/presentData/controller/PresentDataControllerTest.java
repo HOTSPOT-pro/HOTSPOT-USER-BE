@@ -21,7 +21,10 @@ import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.presentData.controller.port.FindFamilyDataService;
+import hotspot.user.presentData.controller.port.FindPresentProvideService;
+import hotspot.user.presentData.controller.port.FindPresentReceiveService;
 import hotspot.user.presentData.controller.response.FamilyDataResponse;
+import hotspot.user.presentData.controller.response.PresentDataResponse;
 
 @WebMvcTest(controllers = PresentDataController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -32,6 +35,12 @@ class PresentDataControllerTest {
 
     @MockBean
     FindFamilyDataService findFamilyDataService;
+
+    @MockBean
+    FindPresentReceiveService findPresentReceiveService;
+
+    @MockBean
+    FindPresentProvideService findPresentProvideService;
 
     @MockBean
     JwtFilter jwtFilter;
@@ -84,5 +93,67 @@ class PresentDataControllerTest {
                 .andExpect(jsonPath("$.data.subUsages[0].subId").value(2))
                 .andExpect(jsonPath("$.data.subUsages[0].subDataLimitAmount").value(-1.0))
                 .andExpect(jsonPath("$.data.subUsages[1].dataUsagePercent").value(13));
+    }
+
+    @Test
+    @DisplayName("선물 받은 데이터 조회 성공")
+    void shouldReturnPresentReceiveSuccessfully() throws Exception {
+
+        setAuthentication(1L, 10L, FamilyRole.OWNER);
+
+        PresentDataResponse.PresentItemResponse item1 =
+                new PresentDataResponse.PresentItemResponse(
+                        2L,
+                        "신진훈",
+                        1.5,
+                        java.time.LocalDateTime.now()
+                );
+
+        PresentDataResponse response =
+                new PresentDataResponse(
+                        1.5,
+                        List.of(item1)
+                );
+
+        when(findPresentReceiveService.findPresentReceive(1L))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/presentData/receive/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalReceivedGb").value(1.5))
+                .andExpect(jsonPath("$.data.items[0].provideSubId").value(2))
+                .andExpect(jsonPath("$.data.items[0].subName").value("신진훈"))
+                .andExpect(jsonPath("$.data.items[0].amountGb").value(1.5));
+    }
+
+    @Test
+    @DisplayName("선물 제공 데이터 조회 성공")
+    void shouldReturnPresentProvideSuccessfully() throws Exception {
+
+        setAuthentication(1L, 10L, FamilyRole.OWNER);
+
+        PresentDataResponse.PresentItemResponse item1 =
+                new PresentDataResponse.PresentItemResponse(
+                        3L,
+                        "김태연",
+                        2.0,
+                        java.time.LocalDateTime.now()
+                );
+
+        PresentDataResponse response =
+                new PresentDataResponse(
+                        2.0,
+                        List.of(item1)
+                );
+
+        when(findPresentProvideService.findPresentProvide(1L))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/presentData/provide/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalReceivedGb").value(2.0))
+                .andExpect(jsonPath("$.data.items[0].provideSubId").value(3))
+                .andExpect(jsonPath("$.data.items[0].subName").value("김태연"))
+                .andExpect(jsonPath("$.data.items[0].amountGb").value(2.0));
     }
 }
