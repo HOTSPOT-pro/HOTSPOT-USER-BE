@@ -52,7 +52,7 @@ public class SecurityConfig {
                         "/", "/health", "/login/**", "/oauth2/**", "/oauth/**",
                         "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                         "/actuator/health",
-                        "/api/v1/auth/onboarding", "/api/v1/auth/reissue"
+                        "/api/v1/auth/reissue"
                 ).permitAll()
                 .anyRequest().authenticated()
         );
