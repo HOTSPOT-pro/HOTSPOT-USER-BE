@@ -34,7 +34,7 @@ public class AuthController {
     private final ReissueTokenService reissueTokenService;
     private final LogoutService logoutService;
     private final OnboardingService onboardingService;
-    private final WithdrawService withdrawService; // 회원 탈퇴
+    private final WithdrawService withdrawService;
     private final JwtProperties jwtProperties;
 
     @PostMapping("/reissue")
@@ -73,6 +73,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
+            @AuthenticationPrincipal PrincipalDetails principal,
             @CookieValue(value = "refreshToken", required = false) String refreshToken) {
 
         if (refreshToken == null) {
@@ -80,7 +81,7 @@ public class AuthController {
         }
 
         TokenRequest request = new TokenRequest(refreshToken);
-        logoutService.logout(request);
+        logoutService.logout(principal.getId(), request); // 💡 memberId 전달
         ResponseCookie cookie = CookieUtil.deleteCookie("refreshToken");
 
         return ResponseEntity.ok()
@@ -88,7 +89,6 @@ public class AuthController {
                 .body(ApiResponse.success());
     }
 
-    // 회원 탈퇴
     @PostMapping("/withdraw")
     public ResponseEntity<ApiResponse<Void>> withdraw(
             @AuthenticationPrincipal PrincipalDetails principal,
@@ -98,7 +98,8 @@ public class AuthController {
             throw new ApplicationException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
 
-        withdrawService.withdraw(principal.getId());
+        TokenRequest request = new TokenRequest(refreshToken);
+        withdrawService.withdraw(principal.getId(), request); // 💡 memberId 전달
         ResponseCookie cookie = CookieUtil.deleteCookie("refreshToken");
 
         return ResponseEntity.ok()
