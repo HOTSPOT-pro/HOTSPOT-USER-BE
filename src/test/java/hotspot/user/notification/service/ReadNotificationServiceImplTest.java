@@ -84,6 +84,6 @@ class ReadNotificationServiceImplTest {
 
         assertThatThrownBy(() -> readNotificationService.markAllRead(memberId))
                 .isInstanceOf(ApplicationException.class)
-                .hasMessage(NotificationErrorCode.NOTIFICATION_NOT_FOUND.getMessage());
+                .hasMessage(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND.getMessage());
     }
 }
