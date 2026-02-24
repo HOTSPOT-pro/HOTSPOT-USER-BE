@@ -16,8 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.SliceImpl;
 
 import hotspot.user.notification.domain.Notification;
 import hotspot.user.notification.infrastructure.entity.NotificationEntity;
@@ -102,7 +102,7 @@ class NotificationRepositoryImplTest {
         given(notificationJpaRepository
                 .findBySubscriptionSubIdAndCreatedTimeGreaterThanEqualOrderByCreatedTimeDesc(
                         eq(1L), any(), any()))
-                .willReturn(new PageImpl<>(List.of(entity), PageRequest.of(0, 20), 1));
+                .willReturn(new SliceImpl<>(List.of(entity), PageRequest.of(0, 20), false));
 
         var result = notificationRepository.findRecentBySubId(1L, PageRequest.of(0, 20));
 
