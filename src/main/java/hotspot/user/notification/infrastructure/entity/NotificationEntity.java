@@ -56,6 +56,9 @@ public class NotificationEntity {
     @Column(name = "notification_type", length = 50, nullable = false)
     private String notificationType;
 
+    @Column(name = "notification_title", length = 120)
+    private String title;
+
     @Column(name = "notification_content", length = 255, nullable = false)
     private String content;
 
@@ -78,6 +81,7 @@ public class NotificationEntity {
                 .subscription(subscriptionProxy)
                 .eventId(notification.getEventId())
                 .notificationType(notification.getNotificationType())
+                .title(notification.getTitle())
                 .content(notification.getContent())
                 .isRead(notification.getIsRead())
                 .createdTime(notification.getCreatedTime())
@@ -91,6 +95,7 @@ public class NotificationEntity {
                 .subId(this.subscription != null ? this.subscription.getSubId() : null)
                 .eventId(this.eventId)
                 .notificationType(this.notificationType)
+                .title(this.title)
                 .content(this.content)
                 .isRead(this.isRead)
                 .createdTime(this.createdTime)
