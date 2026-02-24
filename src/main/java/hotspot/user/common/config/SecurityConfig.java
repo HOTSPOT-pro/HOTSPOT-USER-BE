@@ -50,9 +50,9 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/", "/health", "/login/**", "/oauth2/**", "/oauth/**",
-                        "/swagger-ui/**", "/v3/api-docs/**", "/actuator/health",
-                        "/api/v1/auth/onboarding",
-                        "/api/v1/**" // 테스트 위해서 모든 API 열어둠 [To-Do] 삭제 필요
+                        "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
+                        "/actuator/health",
+                        "/api/v1/auth/onboarding", "/api/v1/auth/reissue"
                 ).permitAll()
                 .anyRequest().authenticated()
         );
