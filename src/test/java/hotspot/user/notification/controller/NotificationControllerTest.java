@@ -74,8 +74,6 @@ class NotificationControllerTest {
                         .build()))
                 .page(0)
                 .size(20)
-                .totalPages(1)
-                .totalElements(1)
                 .hasNext(false)
                 .build();
 
@@ -89,7 +87,7 @@ class NotificationControllerTest {
                 .andExpect(jsonPath("$.data.notifications[0].id").value(10L))
                 .andExpect(jsonPath("$.data.notifications[0].eventId").value("evt-1"))
                 .andExpect(jsonPath("$.data.notifications[0].title").value("Data alert"))
-                .andExpect(jsonPath("$.data.totalElements").value(1));
+                .andExpect(jsonPath("$.data.hasNext").value(false));
 
         then(findNotificationService).should().findNotifications(eq(1L), isA(Pageable.class));
     }
