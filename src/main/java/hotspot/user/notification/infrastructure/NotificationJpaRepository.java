@@ -1,6 +1,7 @@
 package hotspot.user.notification.infrastructure;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationEnt
                         sub_id,
                         event_id,
                         notification_type,
+                        notification_title,
                         notification_content,
                         is_read,
                         created_time
@@ -28,6 +30,7 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationEnt
                         :subId,
                         :eventId,
                         :notificationType,
+                        :title,
                         :content,
                         false,
                         :createdTime
@@ -41,9 +44,12 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationEnt
             @Param("subId") Long subId,
             @Param("eventId") String eventId,
             @Param("notificationType") String notificationType,
+            @Param("title") String title,
             @Param("content") String content,
             @Param("createdTime") LocalDateTime createdTime
     );
+
+    Optional<NotificationEntity> findByEventIdAndSubscriptionSubId(String eventId, Long subId);
 
     // created_time이 기준 시각 이상인 알림을 최신순으로 조회한다.
     Page<NotificationEntity> findBySubscriptionSubIdAndCreatedTimeGreaterThanEqualOrderByCreatedTimeDesc(
