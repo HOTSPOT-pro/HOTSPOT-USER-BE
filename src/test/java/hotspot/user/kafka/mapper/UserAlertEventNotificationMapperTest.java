@@ -126,6 +126,7 @@ class UserAlertEventNotificationMapperTest {
         assertThat(notification.getSubId()).isEqualTo(101L);
         assertThat(notification.getEventId()).isEqualTo("evt-100");
         assertThat(notification.getNotificationType()).isEqualTo("SINGLE_USAGE_THRESHOLD_30");
+        assertThat(notification.getTitle()).isNotBlank();
         assertThat(notification.getContent()).contains("30%");
         assertThat(notification.getIsRead()).isFalse();
         assertThat(notification.getCreatedTime()).isEqualTo(LocalDateTime.of(2026, 2, 23, 10, 15, 30));
