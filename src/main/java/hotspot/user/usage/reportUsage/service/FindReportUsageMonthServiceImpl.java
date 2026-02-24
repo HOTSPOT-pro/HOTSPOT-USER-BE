@@ -82,7 +82,7 @@ public class FindReportUsageMonthServiceImpl
                         months
                 );
 
-        return ReportUsageMonthMapper.toResponse(
+        return ReportUsageMonthMapper.toReportUsageMonthResponse(
                 LocalDateTime.now(clock),
                 months,
                 familySubList,
