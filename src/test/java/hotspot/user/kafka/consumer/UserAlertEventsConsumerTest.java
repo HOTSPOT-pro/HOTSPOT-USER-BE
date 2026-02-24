@@ -25,7 +25,7 @@ import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.kafka.dto.UserAlertEvent;
-import hotspot.user.kafka.event.UserAlertNotificationsPersistedEvent;
+import hotspot.user.kafka.dto.UserAlertNotificationsPersistedEvent;
 import hotspot.user.kafka.mapper.UserAlertEventNotificationMapper;
 import hotspot.user.notification.domain.Notification;
 import hotspot.user.notification.service.port.NotificationRepository;
@@ -58,8 +58,9 @@ class UserAlertEventsConsumerTest {
     void consumeWithSubIdTarget() {
         UserAlertEvent event = event(101L, null, "evt-sub");
         Notification notification = notification(101L, "evt-sub");
+        Notification persisted = persistedNotification(1L, notification);
         given(mapper.toNotification(event, 101L)).willReturn(notification);
-        given(notificationRepository.insertIfAbsent(notification)).willReturn(true);
+        given(notificationRepository.insertIfAbsent(notification)).willReturn(persisted);
 
         consumer.consume(event, acknowledgment);
 
@@ -70,7 +71,7 @@ class UserAlertEventsConsumerTest {
                 ArgumentCaptor.forClass(UserAlertNotificationsPersistedEvent.class);
         then(applicationEventPublisher).should().publishEvent(eventCaptor.capture());
         assertThat(eventCaptor.getValue().sourceEvent()).isEqualTo(event);
-        assertThat(eventCaptor.getValue().persistedNotifications()).containsExactly(notification);
+        assertThat(eventCaptor.getValue().persistedNotifications()).containsExactly(persisted);
 
         then(acknowledgment).should().acknowledge();
     }
@@ -88,10 +89,11 @@ class UserAlertEventsConsumerTest {
 
         Notification first = notification(11L, "evt-family");
         Notification second = notification(22L, "evt-family");
+        Notification persistedFirst = persistedNotification(10L, first);
         given(mapper.toNotification(event, 11L)).willReturn(first);
         given(mapper.toNotification(event, 22L)).willReturn(second);
-        given(notificationRepository.insertIfAbsent(first)).willReturn(true);
-        given(notificationRepository.insertIfAbsent(second)).willReturn(false);
+        given(notificationRepository.insertIfAbsent(first)).willReturn(persistedFirst);
+        given(notificationRepository.insertIfAbsent(second)).willReturn(null);
 
         consumer.consume(event, acknowledgment);
 
@@ -104,7 +106,7 @@ class UserAlertEventsConsumerTest {
         ArgumentCaptor<UserAlertNotificationsPersistedEvent> eventCaptor =
                 ArgumentCaptor.forClass(UserAlertNotificationsPersistedEvent.class);
         then(applicationEventPublisher).should().publishEvent(eventCaptor.capture());
-        assertThat(eventCaptor.getValue().persistedNotifications()).containsExactly(first);
+        assertThat(eventCaptor.getValue().persistedNotifications()).containsExactly(persistedFirst);
 
         then(acknowledgment).should().acknowledge();
     }
@@ -116,7 +118,7 @@ class UserAlertEventsConsumerTest {
         UserAlertEvent event = event(303L, null, "evt-dup");
         Notification notification = notification(303L, "evt-dup");
         given(mapper.toNotification(event, 303L)).willReturn(notification);
-        given(notificationRepository.insertIfAbsent(notification)).willReturn(false);
+        given(notificationRepository.insertIfAbsent(notification)).willReturn(null);
 
         consumer.consume(event, acknowledgment);
 
@@ -167,9 +169,23 @@ class UserAlertEventsConsumerTest {
                 .subId(subId)
                 .eventId(eventId)
                 .notificationType("SINGLE_USAGE_THRESHOLD_30")
+                .title("Data alert")
                 .content("test")
                 .isRead(false)
                 .createdTime(LocalDateTime.of(2026, 2, 23, 10, 15, 30))
+                .build();
+    }
+
+    private Notification persistedNotification(Long id, Notification notification) {
+        return Notification.builder()
+                .id(id)
+                .subId(notification.getSubId())
+                .eventId(notification.getEventId())
+                .notificationType(notification.getNotificationType())
+                .title(notification.getTitle())
+                .content(notification.getContent())
+                .isRead(notification.getIsRead())
+                .createdTime(notification.getCreatedTime())
                 .build();
     }
 

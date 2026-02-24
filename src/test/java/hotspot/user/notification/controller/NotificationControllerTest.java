@@ -67,6 +67,7 @@ class NotificationControllerTest {
                         .id(10L)
                         .eventId("evt-1")
                         .notificationType("ALERT")
+                        .title("Data alert")
                         .content("80% used")
                         .isRead(false)
                         .createdTime(LocalDateTime.of(2026, 2, 23, 12, 0))
@@ -87,6 +88,7 @@ class NotificationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.notifications[0].id").value(10L))
                 .andExpect(jsonPath("$.data.notifications[0].eventId").value("evt-1"))
+                .andExpect(jsonPath("$.data.notifications[0].title").value("Data alert"))
                 .andExpect(jsonPath("$.data.totalElements").value(1));
 
         then(findNotificationService).should().findNotifications(eq(1L), isA(Pageable.class));

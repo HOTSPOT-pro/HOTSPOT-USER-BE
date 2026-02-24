@@ -1,4 +1,4 @@
-package hotspot.user.notification.controller.response;
+package hotspot.user.dispatch.domain;
 
 import java.time.LocalDateTime;
 
@@ -8,12 +8,11 @@ import lombok.Builder;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @Builder
-public class NotificationResponse {
-    private Long id;
-    private String eventId;
+public class SsePayload {
+    private Long notificationId;
     private String notificationType;
     private String title;
     private String content;
-    private boolean isRead;
     private LocalDateTime createdTime;
+    private Long unreadCount;
 }
