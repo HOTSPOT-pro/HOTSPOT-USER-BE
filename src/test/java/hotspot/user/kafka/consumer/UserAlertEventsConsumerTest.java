@@ -2,13 +2,18 @@ package hotspot.user.kafka.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.lenient;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +26,7 @@ import org.springframework.kafka.support.Acknowledgment;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.KafkaErrorCode;
+import hotspot.user.common.exception.code.NotificationErrorCode;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
@@ -28,6 +34,9 @@ import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.kafka.dto.UserAlertNotificationsPersistedEvent;
 import hotspot.user.kafka.mapper.UserAlertEventNotificationMapper;
 import hotspot.user.notification.domain.Notification;
+import hotspot.user.notification.domain.NotificationAllow;
+import hotspot.user.notification.domain.NotificationCategory;
+import hotspot.user.notification.service.port.NotificationAllowRepository;
 import hotspot.user.notification.service.port.NotificationRepository;
 import hotspot.user.subscription.domain.Subscription;
 
@@ -41,6 +50,9 @@ class UserAlertEventsConsumerTest {
     private NotificationRepository notificationRepository;
 
     @Mock
+    private NotificationAllowRepository notificationAllowRepository;
+
+    @Mock
     private FamilySubscriptionRepository familySubscriptionRepository;
 
     @Mock
@@ -51,6 +63,14 @@ class UserAlertEventsConsumerTest {
 
     @InjectMocks
     private UserAlertEventsConsumer consumer;
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(notificationAllowRepository.findBySubIdAndCategory(anyLong(), any(NotificationCategory.class)))
+                .thenReturn(Optional.of(NotificationAllow.builder()
+                        .notificationAllow(true)
+                        .build()));
+    }
 
     @Test
     @DisplayName("subId target: persist and publish only inserted notifications, then ack")
@@ -73,6 +93,23 @@ class UserAlertEventsConsumerTest {
         assertThat(eventCaptor.getValue().sourceEvent()).isEqualTo(event);
         assertThat(eventCaptor.getValue().persistedNotifications()).containsExactly(persisted);
 
+        then(acknowledgment).should().acknowledge();
+    }
+
+    @Test
+    @DisplayName("does not persist or publish when category is not allowed")
+    // category 허용 설정이 없거나 false면 저장/발행 없이 ack만 수행하는지 검증한다.
+    void consumeSkipsWhenNotificationCategoryDisallowed() {
+        UserAlertEvent event = event(101L, null, "evt-disallowed");
+        Notification notification = notification(101L, "evt-disallowed");
+        given(mapper.toNotification(event, 101L)).willReturn(notification);
+        given(notificationAllowRepository.findBySubIdAndCategory(101L, NotificationCategory.DATA))
+                .willReturn(Optional.empty());
+
+        consumer.consume(event, acknowledgment);
+
+        then(notificationRepository).shouldHaveNoInteractions();
+        then(applicationEventPublisher).shouldHaveNoInteractions();
         then(acknowledgment).should().acknowledge();
     }
 
@@ -140,6 +177,30 @@ class UserAlertEventsConsumerTest {
         then(applicationEventPublisher).shouldHaveNoInteractions();
         then(notificationRepository).shouldHaveNoInteractions();
         then(mapper).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("throws notification mapping error when notification type has no category mapping")
+    void consumeWithUnknownNotificationType() {
+        UserAlertEvent event = event(101L, null, "evt-unknown-type");
+        Notification unknownTypeNotification = Notification.builder()
+                .subId(101L)
+                .eventId("evt-unknown-type")
+                .notificationType("UNKNOWN_TYPE")
+                .title("unknown")
+                .content("unknown")
+                .isRead(false)
+                .createdTime(LocalDateTime.of(2026, 2, 23, 10, 15, 30))
+                .build();
+        given(mapper.toNotification(event, 101L)).willReturn(unknownTypeNotification);
+
+        assertThatThrownBy(() -> consumer.consume(event, acknowledgment))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(NotificationErrorCode.NOTIFICATION_CATEGORY_MAPPING_NOT_FOUND.getMessage());
+
+        then(notificationRepository).shouldHaveNoInteractions();
+        then(applicationEventPublisher).shouldHaveNoInteractions();
+        then(acknowledgment).shouldHaveNoInteractions();
     }
 
     // 테스트용 이벤트 객체를 생성한다.
