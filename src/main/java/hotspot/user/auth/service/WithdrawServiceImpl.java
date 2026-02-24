@@ -4,9 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.auth.controller.port.WithdrawService;
-
 import hotspot.user.auth.service.port.TokenRepository;
-
 import hotspot.user.member.service.port.MemberRepository;
 import hotspot.user.member.service.port.SocialAccountRepository;
 import hotspot.user.subscription.domain.Subscription;
@@ -41,13 +39,13 @@ public class WithdrawServiceImpl implements WithdrawService {
 
         // 3. 소셜 계정 정보 삭제 (SocialAccount)
         socialAccountRepository.findByMemberId(memberId).ifPresent(socialAccount -> {
-            socialAccountRepository.delete(socialAccount);
+            socialAccountRepository.deleteByMemberId(socialAccount.getMemberId());
             log.debug("소셜 계정 정보 삭제 완료: memberId={}", memberId);
         });
 
         // 4. 회원 정보 최종 삭제 (Member)
         memberRepository.findById(memberId).ifPresent(member -> {
-            memberRepository.delete(member);
+            memberRepository.deleteById(member.getId());
             log.info("회원 데이터 최종 삭제 완료: memberId={}", memberId);
         });
 
