@@ -2,6 +2,7 @@ package hotspot.user.usage.subscriptionUsage.infrastructure.repository;
 
 import org.springframework.stereotype.Repository;
 
+import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.usage.subscriptionUsage.domain.SubscriptionUsage;
 import hotspot.user.usage.subscriptionUsage.service.port.SubscriptionUsageRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,9 @@ public class SubscriptionUsageRepositoryImpl
     private final SubscriptionUsageRedisRepository redisRepository;
 
     @Override
-    public SubscriptionUsage findSubscriptionUsage(Long subId) {
-        return redisRepository.findSubscriptionUsage(subId);
+    public SubscriptionUsage findSubscriptionUsage(
+            Long subId,
+            DataPeriod dataPeriod) {
+        return redisRepository.findSubscriptionUsage(subId, dataPeriod);
     }
 }
