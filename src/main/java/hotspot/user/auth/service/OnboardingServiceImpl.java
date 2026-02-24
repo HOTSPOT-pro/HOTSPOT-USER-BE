@@ -1,5 +1,7 @@
 package hotspot.user.auth.service;
 
+import hotspot.user.common.crpyto.PhoneDecryptor;
+import hotspot.user.common.crpyto.PhoneHashIndexer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,7 +11,6 @@ import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
-import hotspot.user.common.util.PhoneUtil;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.Member;
@@ -33,6 +34,7 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final SubscriptionRepository subscriptionRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final IssueTokenService issueTokenService;
+    private final PhoneHashIndexer phoneHashIndexer;
 
     @Override
     public TokenResponse onboarding(OnboardingRequest request) {
@@ -54,7 +56,7 @@ public class OnboardingServiceImpl implements OnboardingService {
 
     // 전화번호로 회선을 조회 및 검증
     private Subscription validateAndGetSubscription(String phoneNumber) {
-        String phoneHash = PhoneUtil.hashPhoneNumber(phoneNumber);
+        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
         return subscriptionRepository.findByPhoneHash(phoneHash)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.SUBSCRIPTION_NOT_FOUND));
     }
