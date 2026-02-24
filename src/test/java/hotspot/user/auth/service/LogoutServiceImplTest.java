@@ -53,7 +53,7 @@ class LogoutServiceImplTest {
         given(jwtProvider.getAuthenticationFromRefreshToken(refreshToken)).willReturn(authentication);
 
         // when
-        logoutService.logout(memberId, request); // 💡 memberId 추가
+        logoutService.logout(memberId, request);
 
         // then
         verify(tokenRepository).deleteByMemberId(memberId);
