@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import jakarta.transaction.Transactional;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,15 +26,19 @@ public class NotificationOutboxEventAppender {
 
     // 단일 outbox 이벤트 레코드를 outbox_event 테이블에 저장한다.
     public void append(String aggregateType, String aggregateId, String type, Object payload) {
-        outboxEventJpaRepository.save(
-                NotificationOutboxEventEntity.builder()
-                        .id(UUID.randomUUID())
-                        .aggregateType(aggregateType)
-                        .aggregateId(aggregateId)
-                        .type(type)
-                        .payload(toJson(payload))
-                        .build()
-        );
+        try {
+            outboxEventJpaRepository.save(
+                    NotificationOutboxEventEntity.builder()
+                            .id(UUID.randomUUID())
+                            .aggregateType(aggregateType)
+                            .aggregateId(aggregateId)
+                            .type(type)
+                            .payload(toJson(payload))
+                            .build()
+            );
+        } catch (DataAccessException ex) {
+            throw new ApplicationException(OutboxErrorCode.OUTBOX_EVENT_SAVE_FAILED, ex);
+        }
     }
 
     // payload 객체를 JSON 문자열로 직렬화한다.
