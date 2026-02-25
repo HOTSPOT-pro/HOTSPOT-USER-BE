@@ -43,6 +43,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
 
+    @Value("${jwt.access-expiration}")
+    private long accessExpiration;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
@@ -71,8 +74,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             TokenRequest tokenRequest = new TokenRequest(refreshToken);
             saveTokenService.saveToken(principal.getId(), tokenRequest);
 
-            // Refresh Token을 HttpOnly Cookie에 저장
+            // Access, Refresh Token을 HttpOnly Cookie에 저장
+            ResponseCookie accessCookie = CookieUtil.createCookie("accessToken", accessToken, accessExpiration);
             ResponseCookie refreshCookie = CookieUtil.createCookie("refreshToken", refreshToken, refreshExpiration);
+
+            response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
             targetUrl = determineMainUrl(accessToken);
@@ -84,13 +90,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private String determineOnboardingUrl(String accessToken) {
         String baseUri = redirectUri + "/" + onboardingRedirectUri;
         return UriComponentsBuilder.fromUriString(baseUri)
-                .queryParam("accessToken", accessToken)
                 .build().toUriString();
     }
 
     private String determineMainUrl(String accessToken) {
         return UriComponentsBuilder.fromUriString(redirectUri)
-                .queryParam("accessToken", accessToken)
                 .build().toUriString();
     }
 }
