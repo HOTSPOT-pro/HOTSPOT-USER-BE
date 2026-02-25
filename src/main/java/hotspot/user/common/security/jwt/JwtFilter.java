@@ -2,8 +2,6 @@ package hotspot.user.common.security.jwt;
 
 import java.io.IOException;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +14,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import hotspot.user.common.exception.code.AuthErrorCode;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,8 +50,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 Authentication authentication = jwtProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-
-        } catch(ExpiredJwtException e) { // 만료된 토큰
+        } catch (ExpiredJwtException e) { // 만료된 토큰
             request.setAttribute("exception", AuthErrorCode.TOKEN_EXPIRED);
         } catch (JwtException | IllegalArgumentException e) { // 이상한 토큰
             request.setAttribute("exception", AuthErrorCode.INVALID_TOKEN);

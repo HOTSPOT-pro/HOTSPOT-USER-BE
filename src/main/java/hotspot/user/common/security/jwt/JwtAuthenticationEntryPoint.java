@@ -31,9 +31,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
-        
+
         log.error("인증 예외 발생: {}, ExceptionAdvice로 위임합니다.", authException.getMessage());
-        
+
         // ExceptionAdvice(@RestControllerAdvice)에서 처리할 수 있도록 위임
         resolver.resolveException(request, response, null, authException);
     }
