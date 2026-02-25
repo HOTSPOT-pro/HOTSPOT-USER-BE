@@ -11,17 +11,17 @@ public enum OutboxErrorCode implements BaseErrorCode {
     OUTBOX_PAYLOAD_SERIALIZATION_FAILED(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "OUTBOX_001",
-            "Outbox payload serialization failed."
+            "Outbox payload의 직렬화를 실패하였습니다."
     ),
     OUTBOX_EVENT_SAVE_FAILED(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "OUTBOX_002",
-            "Outbox event save failed."
+            "Outbox event 저장을 실패하였습니다."
     ),
     OUTBOX_EVENT_PUBLISH_FAILED(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "OUTBOX_003",
-            "Outbox event publish failed."
+            "Outbox event 발행을 실패하였습니다."
     ),
     ;
 
