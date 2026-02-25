@@ -31,7 +31,7 @@ import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.kafka.dto.UserAlertNotificationsPersistedEvent;
-import hotspot.user.kafka.mapper.UserAlertEventNotificationMapper;
+import hotspot.user.kafka.mapper.orchestrator.UserAlertEventNotificationMapper;
 import hotspot.user.notification.domain.Notification;
 import hotspot.user.notification.domain.NotificationAllow;
 import hotspot.user.notification.domain.NotificationCategory;
