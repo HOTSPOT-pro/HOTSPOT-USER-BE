@@ -28,8 +28,9 @@ public class FindReportUsageAppServiceImpl
     private final ReportUsageAppRepository reportUsageAppRepository;
     private final AppBlockedServiceRepository appBlockedServiceRepository;
 
+    @Transactional(readOnly = true)
     @Override
-    public ReportUsageAppResponse findReportUsageAppMonth(Long memberId) {
+    public ReportUsageAppResponse findReportUsageAppMonth(Long memberId, Long targetSubId) {
 
         Subscription subscription =
                 subscriptionService.findByMemberId(memberId);
@@ -37,7 +38,7 @@ public class FindReportUsageAppServiceImpl
         // Redis 조회
         List<AppUsage> appUsages =
                 reportUsageAppRepository
-                        .findMonthlyAppUsage(subscription.getId());
+                        .findMonthlyAppUsage(targetSubId);
 
         // appId 목록 추출
         List<Long> appIds =
@@ -58,15 +59,16 @@ public class FindReportUsageAppServiceImpl
         );
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public ReportUsageAppResponse findReportUsageAppDay(Long memberId) {
+    public ReportUsageAppResponse findReportUsageAppDay(Long memberId, Long targetSubId) {
 
         Subscription subscription =
                 subscriptionService.findByMemberId(memberId);
 
         List<AppUsage> appUsages =
                 reportUsageAppRepository
-                        .findDailyAppUsage(subscription.getId());
+                        .findDailyAppUsage(targetSubId);
 
         List<Long> appIds =
                 appUsages.stream()

@@ -5,7 +5,6 @@ import hotspot.user.usage.reportUsage.controller.response.ReportUsageMonthRespon
 public interface FindReportUsageMonthService {
 
     ReportUsageMonthResponse findReportUsageMonth(
-            Long memberId,
             Long familyId,
             Long targetSubId
     );
