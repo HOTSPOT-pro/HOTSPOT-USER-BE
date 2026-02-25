@@ -24,6 +24,7 @@ import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
 import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
@@ -46,6 +47,9 @@ class UpdateBlockPolicyServiceImplTest {
 
     @Mock
     private BlockPolicyRepository blockPolicyRepository;
+
+    @Mock
+    private NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
 
     @Test
     @DisplayName("성공: 유효한 요청일 경우 구성원에게 적용된 정책이 업데이트된다")
@@ -137,7 +141,7 @@ class UpdateBlockPolicyServiceImplTest {
     }
 
     @Test
-    @DisplayName("실패: 요청한 정책 중 일부가 존재하지 않으면 예외가 발생한다")
+    @DisplayName("?ㅽ뙣: ?붿껌???뺤콉 以??쇰?媛 議댁옱?섏? ?딆쑝硫??덉쇅媛 諛쒖깮?쒕떎")
     void updateBlockPolicyFailByPolicyNotFound() {
         // given
         UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L, 2L));
