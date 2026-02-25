@@ -1,5 +1,7 @@
 package hotspot.user.auth.controller;
 
+import hotspot.user.auth.controller.port.*;
+import hotspot.user.auth.controller.response.OnboardingResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpHeaders;
@@ -12,13 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import hotspot.user.auth.controller.port.LogoutService;
-import hotspot.user.auth.controller.port.OnboardingService;
-import hotspot.user.auth.controller.port.ReissueTokenService;
-import hotspot.user.auth.controller.port.WithdrawService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.request.TokenRequest;
-import hotspot.user.auth.controller.response.OnboardingResponse;
 import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.auth.controller.swagger.AuthApi;
 import hotspot.user.common.ApiResponse;
@@ -34,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/auth")
 public class AuthController implements AuthApi {
     private final ReissueTokenService reissueTokenService;
+    private final IssueTokenService issueTokenService;
     private final LogoutService logoutService;
     private final OnboardingService onboardingService;
     private final WithdrawService withdrawService;

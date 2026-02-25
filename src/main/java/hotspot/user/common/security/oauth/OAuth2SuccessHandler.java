@@ -61,6 +61,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         if (principal.getStatus() == Status.PENDING) {
             log.info("신규 사용자, 온보딩 페이지로 리다이렉트: memberId={}", principal.getId());
             String accessToken = jwtProvider.createOnboardingToken(authentication);
+
+            ResponseCookie accessCookie = CookieUtil.createCookie("accessToken", accessToken, accessExpiration);
+            response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+
             targetUrl = determineOnboardingUrl(accessToken);
         }
 
