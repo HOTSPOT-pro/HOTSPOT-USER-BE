@@ -3,8 +3,6 @@ package hotspot.user.auth.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -20,7 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.auth.controller.port.IssueTokenService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
+import hotspot.user.auth.controller.response.OnboardingResponse;
 import hotspot.user.auth.controller.response.TokenResponse;
+import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
@@ -54,6 +54,8 @@ class OnboardingServiceImplTest {
     private IssueTokenService issueTokenService;
     @Mock
     private PhoneHashIndexer phoneHashIndexer;
+    @Mock
+    private PhoneDecryptor phoneDecryptor;
 
     @InjectMocks
     private OnboardingServiceImpl onboardingService;
@@ -66,36 +68,39 @@ class OnboardingServiceImplTest {
         Long familyId = 100L;
         String email = "test@test.com";
         String phoneNumber = "01012345678";
-        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
+        String phoneHash = "hashed-phone";
         OnboardingRequest request = new OnboardingRequest(phoneNumber, "950101");
 
         Member pendingMember = Member.builder().id(memberId).name("test").status(Status.PENDING).build();
         SocialAccount socialAccount = SocialAccount.builder().memberId(memberId).email(email).build();
-        Subscription subscription = Subscription.builder().id(100L).phoneHash(phoneHash).build();
+        Subscription subscription = Subscription.builder().id(100L).phoneEnc("enc-phone").phoneHash(phoneHash).build();
         Family family = Family.builder().id(familyId).build();
         FamilySubscription familySubscription = FamilySubscription.builder()
                 .family(family).familyRole(FamilyRole.CHILD).build();
 
+        given(phoneHashIndexer.toHash(phoneNumber)).willReturn(phoneHash);
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.of(subscription));
         given(memberRepository.findById(memberId)).willReturn(Optional.of(pendingMember));
         given(socialAccountRepository.findByMemberId(memberId)).willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySubscription));
+        given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
 
         given(memberRepository.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
         given(subscriptionRepository.save(any(Subscription.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-        TokenResponse expectedResponse = new TokenResponse("at", "rt");
+        TokenResponse expectedTokenResponse = new TokenResponse("at", "rt");
         given(issueTokenService.issue(any(Member.class), eq(email), eq(FamilyRole.CHILD), eq(familyId)))
-                .willReturn(expectedResponse);
+                .willReturn(expectedTokenResponse);
 
         // when
-        TokenResponse response = onboardingService.onboarding(memberId, email, request);
+        OnboardingResponse response = onboardingService.onboarding(memberId, email, request);
 
         // then
-        assertThat(response.accessToken()).isEqualTo("at");
+        assertThat(response.tokenResponse().accessToken()).isEqualTo("at");
+        assertThat(response.familyId()).isEqualTo(familyId);
+        assertThat(response.familyRole()).isEqualTo(FamilyRole.CHILD);
         verify(memberRepository).save(any(Member.class));
         verify(subscriptionRepository).save(any(Subscription.class));
-        verify(issueTokenService).issue(any(Member.class), anyString(), any(FamilyRole.class), anyLong());
     }
 
     @Test
@@ -107,37 +112,39 @@ class OnboardingServiceImplTest {
         Long familyId = 100L;
         String email = "test@test.com";
         String phoneNumber = "01012345678";
-        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
+        String phoneHash = "hashed-phone";
         OnboardingRequest request = new OnboardingRequest(phoneNumber, "950101");
 
         Member pendingMember = Member.builder().id(pendingMemberId).status(Status.PENDING).build();
         Member existingMember = Member.builder().id(existingMemberId).status(Status.APPROVED).build();
         SocialAccount socialAccount = SocialAccount.builder().memberId(pendingMemberId).email(email).build();
-        Subscription subscription = Subscription.builder().id(100L).member(existingMember).phoneHash(phoneHash).build();
+        Subscription subscription = Subscription.builder()
+                .id(100L).member(existingMember).phoneEnc("enc-phone").phoneHash(phoneHash).build();
         Family family = Family.builder().id(familyId).build();
         FamilySubscription familySubscription = FamilySubscription.builder()
                 .family(family).familyRole(FamilyRole.PARENT).build();
 
+        given(phoneHashIndexer.toHash(phoneNumber)).willReturn(phoneHash);
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.of(subscription));
         given(memberRepository.findById(pendingMemberId)).willReturn(Optional.of(pendingMember));
         given(socialAccountRepository.findByMemberId(pendingMemberId)).willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySubscription));
+        given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
 
         given(socialAccountRepository.save(any(SocialAccount.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
 
-        TokenResponse expectedResponse = new TokenResponse("at", "rt");
+        TokenResponse expectedTokenResponse = new TokenResponse("at", "rt");
         given(issueTokenService.issue(any(Member.class), eq(email), eq(FamilyRole.PARENT), eq(familyId)))
-                .willReturn(expectedResponse);
+                .willReturn(expectedTokenResponse);
 
         // when
-        TokenResponse response = onboardingService.onboarding(pendingMemberId, email, request);
+        OnboardingResponse response = onboardingService.onboarding(pendingMemberId, email, request);
 
         // then
-        assertThat(response.accessToken()).isEqualTo("at");
+        assertThat(response.tokenResponse().accessToken()).isEqualTo("at");
         verify(socialAccountRepository).save(any(SocialAccount.class));
         verify(memberRepository).delete(pendingMember);
-        verify(issueTokenService).issue(any(Member.class), anyString(), any(FamilyRole.class), anyLong());
     }
 
     @Test
@@ -145,9 +152,10 @@ class OnboardingServiceImplTest {
     void onboardingFailSubscriptionNotFound() {
         // given
         String phoneNumber = "01000000000";
-        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
+        String phoneHash = "hashed-phone";
         OnboardingRequest request = new OnboardingRequest(phoneNumber, "950101");
 
+        given(phoneHashIndexer.toHash(phoneNumber)).willReturn(phoneHash);
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.empty());
 
         // when & then
@@ -157,27 +165,39 @@ class OnboardingServiceImplTest {
     }
 
     @Test
-    @DisplayName("온보딩 실패: 회선은 존재하지만 가족 결합 정보가 없는 경우")
-    void onboardingFailFamilySubscriptionNotFound() {
+    @DisplayName("온보딩 성공: 회선은 존재하지만 가족 결합 정보가 없는 경우 (Role.NONE 반환)")
+    void onboardingSuccessNoFamilySubscription() {
         // given
         Long memberId = 1L;
         String email = "test@test.com";
         String phoneNumber = "01012345678";
-        String phoneHash = phoneHashIndexer.toHash(phoneNumber);
+        String phoneHash = "hashed-phone";
         OnboardingRequest request = new OnboardingRequest(phoneNumber, "950101");
 
         Member pendingMember = Member.builder().id(memberId).status(Status.PENDING).build();
-        Subscription subscription = Subscription.builder().id(100L).phoneHash(phoneHash).build();
-        SocialAccount socialAccount = SocialAccount.builder().memberId(memberId).build();
+        Subscription subscription = Subscription.builder().id(100L).phoneEnc("enc-phone").phoneHash(phoneHash).build();
+        SocialAccount socialAccount = SocialAccount.builder().memberId(memberId).email(email).build();
 
+        given(phoneHashIndexer.toHash(phoneNumber)).willReturn(phoneHash);
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.of(subscription));
         given(memberRepository.findById(memberId)).willReturn(Optional.of(pendingMember));
         given(socialAccountRepository.findByMemberId(memberId)).willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.empty());
+        given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
 
-        // when & then
-        assertThatThrownBy(() -> onboardingService.onboarding(memberId, email, request))
-                .isInstanceOf(ApplicationException.class)
-                .hasMessage(MemberErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND.getMessage());
+        given(memberRepository.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
+        given(subscriptionRepository.save(any(Subscription.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        TokenResponse expectedTokenResponse = new TokenResponse("at", "rt");
+        given(issueTokenService.issue(any(Member.class), eq(email), eq(FamilyRole.NONE), eq(null)))
+                .willReturn(expectedTokenResponse);
+
+        // when
+        OnboardingResponse response = onboardingService.onboarding(memberId, email, request);
+
+        // then
+        assertThat(response.familyId()).isNull();
+        assertThat(response.familyRole()).isEqualTo(FamilyRole.NONE);
+        assertThat(response.tokenResponse().accessToken()).isEqualTo("at");
     }
 }
