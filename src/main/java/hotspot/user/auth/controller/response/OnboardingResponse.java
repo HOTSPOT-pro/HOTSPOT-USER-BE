@@ -4,7 +4,7 @@ import hotspot.user.member.domain.FamilyRole;
 import lombok.Builder;
 
 /**
- * 온보딩 겱과 dto
+ * 온보딩 결과 dto
  * @param subId
  * @param familyId
  * @param name

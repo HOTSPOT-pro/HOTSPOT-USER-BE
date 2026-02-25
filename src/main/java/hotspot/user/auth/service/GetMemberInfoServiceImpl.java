@@ -1,18 +1,16 @@
 package hotspot.user.auth.service;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.auth.controller.port.GetMemberInfoService;
 import hotspot.user.auth.controller.response.MemberInfoResponse;
+import hotspot.user.auth.domain.mapper.MemberInfoMapper;
 import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.SocialAccount;
 import hotspot.user.member.service.port.MemberRepository;
@@ -58,16 +56,9 @@ public class GetMemberInfoServiceImpl implements GetMemberInfoService {
         // 5. 전화번호 복호화
         String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc());
 
-        // 6. 응답 조립 (요구하신 null 및 NONE 처리 반영)
-        return MemberInfoResponse.builder()
-                .subId(subscription.getId())
-                .familyId(Optional.ofNullable(familySub).map(fs -> fs.getFamily().getId()).orElse(null)) // null 리턴
-                .name(member.getName())
-                .email(socialAccount.getEmail())
-                .phone(decryptedPhone)
-                .familyRole(Optional.ofNullable(familySub)
-                        .map(FamilySubscription::getFamilyRole)
-                        .orElse(FamilyRole.NONE)) // None 추가 (가족 아닌 상태)
-                .build();
+        // 6. 매퍼를 통해 응답 조립
+        return MemberInfoMapper.toMemberInfoResponse(
+                member, socialAccount, subscription, familySub, decryptedPhone
+        );
     }
 }

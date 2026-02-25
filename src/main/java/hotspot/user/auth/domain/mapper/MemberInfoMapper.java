@@ -1,28 +1,37 @@
 package hotspot.user.auth.domain.mapper;
 
+import java.util.Optional;
+
 import hotspot.user.auth.controller.response.MemberInfoResponse;
+import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.member.domain.Member;
+import hotspot.user.member.domain.SocialAccount;
+import hotspot.user.subscription.domain.Subscription;
 
 /**
- * MemberInfo request, response dto 매핑
+ * MemberInfo 응답 변환 매퍼
  */
 public class MemberInfoMapper {
 
-    // domain -> response
     public static MemberInfoResponse toMemberInfoResponse(
-            Long subId,
-            Long familyId,
-            String name,
-            String email,
-            String decryptedPhone,
-            FamilyRole familyRole) {
+            Member member,
+            SocialAccount socialAccount,
+            Subscription subscription,
+            FamilySubscription familySub,
+            String decryptedPhone
+    ) {
         return MemberInfoResponse.builder()
-                .subId(subId)
-                .familyId(familyId)
-                .name(name)
-                .email(email)
+                .subId(subscription.getId())
+                .familyId(Optional.ofNullable(familySub)
+                        .map(fs -> fs.getFamily().getId())
+                        .orElse(null))
+                .name(member.getName())
+                .email(socialAccount.getEmail())
                 .phone(decryptedPhone)
-                .familyRole(familyRole)
+                .familyRole(Optional.ofNullable(familySub)
+                        .map(FamilySubscription::getFamilyRole)
+                        .orElse(FamilyRole.NONE))
                 .build();
     }
 }
