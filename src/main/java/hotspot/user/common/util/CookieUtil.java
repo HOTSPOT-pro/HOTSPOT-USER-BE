@@ -10,14 +10,15 @@ import org.springframework.stereotype.Component;
 public class CookieUtil {
 
     public static ResponseCookie createCookie(String name, String value, long maxAge) {
-        return ResponseCookie.from(name, value)
-                .path("/")
-                .sameSite("None")
-                .httpOnly(true)
-                .secure(true)
-                .maxAge(maxAge / 1000)
-                .build();
-    }
+    return ResponseCookie.from(name, value)
+            .domain(".hotspot.pics")
+            .path("/")
+            .sameSite("None")
+            .httpOnly(true)
+            .secure(true)
+            .maxAge(maxAge / 1000)
+            .build();
+}
 
     public static ResponseCookie deleteCookie(String name) {
         return ResponseCookie.from(name, "")
