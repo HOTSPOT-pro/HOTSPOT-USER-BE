@@ -1,6 +1,7 @@
 package hotspot.user.auth.controller;
 
 import hotspot.user.auth.controller.port.*;
+import hotspot.user.auth.controller.response.MemberInfoResponse;
 import hotspot.user.auth.controller.response.OnboardingResponse;
 import jakarta.validation.Valid;
 
@@ -8,11 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.request.TokenRequest;
@@ -35,6 +32,7 @@ public class AuthController implements AuthApi {
     private final LogoutService logoutService;
     private final OnboardingService onboardingService;
     private final WithdrawService withdrawService;
+    private final GetMemberInfoService getMemberInfoService;
     private final JwtProperties jwtProperties;
 
     @Override
@@ -123,5 +121,15 @@ public class AuthController implements AuthApi {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.success());
+    }
+
+    // 소셜 로그인 이후 내 정보 조회하는 API
+    @Override
+    @GetMapping("/info")
+    public ResponseEntity<ApiResponse<MemberInfoResponse>> getInfo(
+            @AuthenticationPrincipal PrincipalDetails principal) {
+        MemberInfoResponse response = getMemberInfoService.getMemberInfo(principal.getId(), principal.getEmail());
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

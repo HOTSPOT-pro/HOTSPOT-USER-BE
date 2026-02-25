@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import hotspot.user.auth.controller.request.OnboardingRequest;
+import hotspot.user.auth.controller.response.MemberInfoResponse;
 import hotspot.user.auth.controller.response.OnboardingResponse;
 import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.common.exception.ErrorResponse;
@@ -69,4 +70,15 @@ public interface AuthApi {
     ResponseEntity<hotspot.user.common.ApiResponse<Void>> withdraw(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @Parameter(description = "Refresh Token (Cookie)", in = ParameterIn.COOKIE) String refreshToken);
+
+    @Operation(summary = "내 정보 조회 (로그인용)", description = "로그인 성공 후 사용자의 상세 정보를 조회합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "조회 성공"),
+        @ApiResponse(responseCode = "401", description = "인증 실패",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "회원 정보를 찾을 수 없음",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    ResponseEntity<hotspot.user.common.ApiResponse<MemberInfoResponse>> getInfo(
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
 }
