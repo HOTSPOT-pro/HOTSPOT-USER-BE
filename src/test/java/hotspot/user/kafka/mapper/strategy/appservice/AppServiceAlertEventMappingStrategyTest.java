@@ -18,10 +18,10 @@ class AppServiceAlertEventMappingStrategyTest {
     private final AppServiceAlertEventMappingStrategy strategy = new AppServiceAlertEventMappingStrategy();
 
     @Test
-    @DisplayName("maps blocked and unblocked service events")
+    @DisplayName("maps applied and released service events")
     void mapsServiceAccessEvents() {
-        UserAlertEvent blocked = event("BLOCKED", "YouTube");
-        UserAlertEvent unblocked = event("UNBLOCKED", "YouTube");
+        UserAlertEvent blocked = event("APPLIED", "YouTube");
+        UserAlertEvent unblocked = event("RELEASED", "YouTube");
 
         assertThat(strategy.map(blocked).notificationType()).isEqualTo(NotificationType.SERVICE_ACCESS_BLOCKED);
         assertThat(strategy.map(blocked).content().body()).contains("YouTube");
