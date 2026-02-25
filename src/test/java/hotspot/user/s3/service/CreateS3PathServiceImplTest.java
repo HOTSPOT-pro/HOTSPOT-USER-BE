@@ -23,7 +23,7 @@ class CreateS3PathServiceImplTest {
 
     @Test
     @DisplayName("Presigned URL 생성 성공")
-    void createS3Path_success() throws Exception {
+    void createS3PathSuccess() throws Exception {
 
         S3Presigner presigner = Mockito.mock(S3Presigner.class);
 
@@ -54,7 +54,7 @@ class CreateS3PathServiceImplTest {
 
     @Test
     @DisplayName("PNG 아닌 경우 예외 발생")
-    void createS3Path_fail_invalidType() {
+    void createS3PathFailInvalidType() {
 
         S3Presigner presigner = Mockito.mock(S3Presigner.class);
 

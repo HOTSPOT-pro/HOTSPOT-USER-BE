@@ -23,7 +23,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.usage.reportUsage.controller.port.*;
+import hotspot.user.usage.reportUsage.controller.port.FindReportFamilyService;
+import hotspot.user.usage.reportUsage.controller.port.FindReportUsageAppDayService;
+import hotspot.user.usage.reportUsage.controller.port.FindReportUsageAppMonthService;
+import hotspot.user.usage.reportUsage.controller.port.FindReportUsageDayService;
+import hotspot.user.usage.reportUsage.controller.port.FindReportUsageMonthService;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageAppResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageDayResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageMonthResponse;
@@ -35,11 +39,15 @@ class ReportUsageControllerTest {
     @Autowired
     MockMvc mockMvc;
 
-    @MockBean FindReportFamilyService findReportFamilyService;
+    @MockBean
+    FindReportFamilyService findReportFamilyService;
     @MockBean FindReportUsageAppMonthService findReportUsageAppMonthService;
-    @MockBean FindReportUsageAppDayService findReportUsageAppDayService;
-    @MockBean FindReportUsageDayService findReportUsageDayService;
-    @MockBean FindReportUsageMonthService findReportUsageMonthService;
+    @MockBean
+    FindReportUsageAppDayService findReportUsageAppDayService;
+    @MockBean
+    FindReportUsageDayService findReportUsageDayService;
+    @MockBean
+    FindReportUsageMonthService findReportUsageMonthService;
     @MockBean JwtFilter jwtFilter;
     @MockBean JwtProvider jwtProvider;
     @MockBean JpaMetamodelMappingContext jpaMetamodelMappingContext;
