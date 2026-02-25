@@ -141,7 +141,7 @@ class UpdateBlockPolicyServiceImplTest {
     }
 
     @Test
-    @DisplayName("?ㅽ뙣: ?붿껌???뺤콉 以??쇰?媛 議댁옱?섏? ?딆쑝硫??덉쇅媛 諛쒖깮?쒕떎")
+    @DisplayName("실패: 요청한 정책 중 일부가 존재하지 않으면 예외가 발생한다")
     void updateBlockPolicyFailByPolicyNotFound() {
         // given
         UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L, 2L));
