@@ -1,18 +1,28 @@
 package hotspot.user.auth.controller;
 
-import hotspot.user.auth.controller.port.*;
-import hotspot.user.auth.controller.response.MemberInfoResponse;
-import hotspot.user.auth.controller.response.OnboardingResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import hotspot.user.auth.controller.port.GetMemberInfoService;
+import hotspot.user.auth.controller.port.IssueTokenService;
+import hotspot.user.auth.controller.port.LogoutService;
+import hotspot.user.auth.controller.port.OnboardingService;
+import hotspot.user.auth.controller.port.ReissueTokenService;
+import hotspot.user.auth.controller.port.WithdrawService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.request.TokenRequest;
+import hotspot.user.auth.controller.response.MemberInfoResponse;
+import hotspot.user.auth.controller.response.OnboardingResponse;
 import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.auth.controller.swagger.AuthApi;
 import hotspot.user.common.ApiResponse;

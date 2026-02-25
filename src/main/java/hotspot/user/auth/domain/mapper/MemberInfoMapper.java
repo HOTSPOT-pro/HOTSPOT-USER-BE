@@ -1,8 +1,6 @@
 package hotspot.user.auth.domain.mapper;
 
 import hotspot.user.auth.controller.response.MemberInfoResponse;
-import hotspot.user.auth.controller.response.OnboardingResponse;
-import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.member.domain.FamilyRole;
 
 /**

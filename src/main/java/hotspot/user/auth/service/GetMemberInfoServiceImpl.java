@@ -1,5 +1,10 @@
 package hotspot.user.auth.service;
 
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import hotspot.user.auth.controller.port.GetMemberInfoService;
 import hotspot.user.auth.controller.response.MemberInfoResponse;
 import hotspot.user.common.crpyto.PhoneDecryptor;
@@ -16,10 +21,6 @@ import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 /**
  * 로그인 이후 내 정보 조회하는 서비스
@@ -64,7 +65,9 @@ public class GetMemberInfoServiceImpl implements GetMemberInfoService {
                 .name(member.getName())
                 .email(socialAccount.getEmail())
                 .phone(decryptedPhone)
-                .familyRole(Optional.ofNullable(familySub).map(FamilySubscription::getFamilyRole).orElse(FamilyRole.NONE)) // None 추가 (가족 아닌 상태)
+                .familyRole(Optional.ofNullable(familySub)
+                        .map(FamilySubscription::getFamilyRole)
+                        .orElse(FamilyRole.NONE)) // None 추가 (가족 아닌 상태)
                 .build();
     }
 }

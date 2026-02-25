@@ -1,13 +1,14 @@
 package hotspot.user.auth.service;
 
-import hotspot.user.auth.controller.response.OnboardingResponse;
-import hotspot.user.member.domain.FamilyRole;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.auth.controller.port.IssueTokenService;
 import hotspot.user.auth.controller.port.OnboardingService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
+import hotspot.user.auth.controller.response.OnboardingResponse;
 import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.auth.domain.mapper.OnboardingMapper;
 import hotspot.user.common.crpyto.PhoneDecryptor;
@@ -16,6 +17,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.SocialAccount;
 import hotspot.user.member.domain.Status;
@@ -23,7 +25,6 @@ import hotspot.user.member.service.port.MemberRepository;
 import hotspot.user.member.service.port.SocialAccountRepository;
 import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
