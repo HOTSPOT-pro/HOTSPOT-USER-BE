@@ -1,7 +1,10 @@
 package hotspot.user.policy.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -12,17 +15,19 @@ import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.policy.controller.port.UpdateAppBlockedServiceService;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
+import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.domain.mapper.AppBlockedServiceMapper;
 import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 구성원별 차단 앱 서비스 업데이트 서비스 코드 구현체
+ * 회선의 앱 차단 서비스 목록을 갱신한다.
  */
 @Service
 @RequiredArgsConstructor
@@ -32,6 +37,7 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
     private final BlockedServiceSubRepository blockedServiceSubRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final AppBlockedServiceRepository appBlockedServiceRepository;
+    private final NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
 
     @Override
     public UpdateAppBlockedServiceResponse updateAppBlockedService(
@@ -39,14 +45,14 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
             Long requesterFamilyId,
             FamilyRole requesterRole) {
 
-        // 1. OWNER 권한 체크
+        // 차단 서비스 변경은 OWNER만 가능하다.
         if (requesterRole != FamilyRole.OWNER) {
             throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
         }
 
         Long subId = request.subId();
 
-        // 2. 수정 대상 회선이 존재하는지 & 요청자와 같은 가족인지 확인
+        // 대상 회선과 가족 소속을 검증한다.
         FamilySubscription familySub = familySubscriptionRepository.findBySubId(subId)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
 
@@ -54,7 +60,7 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
             throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
         }
 
-        // 3. 요청된 앱 ID들이 모두 유효한지 확인 (마스터 데이터 존재 여부)
+        // 요청된 서비스 ID가 모두 유효한지 검증한다.
         Set<Long> targetIds = new HashSet<>(request.blockedServiceIdList());
         if (!targetIds.isEmpty()) {
             long validCount = appBlockedServiceRepository.countByIdIn(targetIds);
@@ -63,32 +69,66 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
             }
         }
 
-        // 4. 기존 DB 상태 조회 (현재 차단된 ID들만 직접 조회하여 NPE 방지)
+        // 현재 활성 차단 서비스 ID 목록을 조회한다.
         Set<Long> existingIds = new HashSet<>(blockedServiceSubRepository.findActiveServiceIdsBySubId(subId));
 
-        // 5. 차집합 계산
-        // (1) 새로 추가해야 할 ID들 (목표 리스트 - 기존 리스트)
+        // 변경분 계산: 추가/해제 대상 서비스 ID.
         Set<Long> toAddIds = new HashSet<>(targetIds);
         toAddIds.removeAll(existingIds);
 
-        // (2) 차단 해제해야 할 ID들 (기존 리스트 - 목표 리스트)
         Set<Long> toRemoveIds = new HashSet<>(existingIds);
         toRemoveIds.removeAll(targetIds);
 
-        // 6. 벌크 연산 수행 (쿼리 최소화)
         if (!toAddIds.isEmpty()) {
             blockedServiceSubRepository.saveAll(subId, toAddIds);
         }
         if (!toRemoveIds.isEmpty()) {
             blockedServiceSubRepository.deleteAll(subId, toRemoveIds);
         }
+        publishServiceAccessAlerts(subId, familySub.getFamily().getId(), toAddIds, toRemoveIds);
 
-        // 7. 최종 동기화 결과 재조회 및 반환 (ID 리스트만 직접 조회)
         List<Long> finalBlockedIdList = blockedServiceSubRepository.findActiveServiceIdsBySubId(subId);
 
         return AppBlockedServiceMapper.toUpdateAppBlockedServiceResponse(
                 familySub.getFamily().getId(),
                 subId,
                 finalBlockedIdList);
+    }
+
+    // 변경된 서비스 ID 기준으로 차단/해제 알림 outbox 이벤트를 발행한다.
+    private void publishServiceAccessAlerts(
+            Long subId,
+            Long familyId,
+            Set<Long> addedServiceIds,
+            Set<Long> removedServiceIds
+    ) {
+        Set<Long> changedServiceIds = new HashSet<>(addedServiceIds);
+        changedServiceIds.addAll(removedServiceIds);
+        if (changedServiceIds.isEmpty()) {
+            return;
+        }
+
+        Map<Long, String> serviceNameById = new HashMap<>();
+        List<AppBlockedService> services = appBlockedServiceRepository.findAllByAppBlockedServiceIds(
+                new ArrayList<>(changedServiceIds)
+        );
+        for (AppBlockedService service : services) {
+            serviceNameById.put(service.getId(), service.getName());
+        }
+
+        for (Long serviceId : addedServiceIds) {
+            userAlertOutboxPublisher.publishServiceAccessApplied(
+                    subId,
+                    familyId,
+                    serviceNameById.getOrDefault(serviceId, "service")
+            );
+        }
+        for (Long serviceId : removedServiceIds) {
+            userAlertOutboxPublisher.publishServiceAccessReleased(
+                    subId,
+                    familyId,
+                    serviceNameById.getOrDefault(serviceId, "service")
+            );
+        }
     }
 }
