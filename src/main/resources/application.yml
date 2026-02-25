@@ -27,6 +27,7 @@ spring:
       - classpath:oauth.yml
       - classpath:jwt.yml
       - classpath:crypto.yml
+      - classpath:s3.yml
 
   web:
     resources:
