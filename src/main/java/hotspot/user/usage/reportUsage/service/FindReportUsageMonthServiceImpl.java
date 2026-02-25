@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.ReportUsageErrorCode;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.subscription.service.SubscriptionService;
 import hotspot.user.usage.familyUsage.domain.mapper.FamilyUsageMapper;
 import hotspot.user.usage.familyUsage.service.schema.FamilySubList;
 import hotspot.user.usage.reportUsage.controller.port.FindReportUsageMonthService;

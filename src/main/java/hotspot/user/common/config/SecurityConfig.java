@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/", "/health", "/login/**", "/oauth2/**", "/oauth/**",
                         "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                        "/actuator/health",
+                        "/actuator/health", "/api/v1/image/presigned-url",
                         "/api/v1/auth/reissue"
                 ).permitAll()
                 // 온보딩 API는 PENDING 상태의 유저만 접근 가능하도록 보호 (임시 토큰 필요)

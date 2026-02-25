@@ -4,8 +4,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.S3ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +13,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.S3ErrorCode;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.s3.controller.port.CreateS3PathService;

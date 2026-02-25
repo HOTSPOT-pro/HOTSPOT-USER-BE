@@ -13,7 +13,6 @@ import hotspot.user.usage.reportUsage.controller.response.ReportFamilyResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageAppResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageDayResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageMonthResponse;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

@@ -1,11 +1,12 @@
 package hotspot.user.s3.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import hotspot.user.common.ApiResponse;
 import hotspot.user.s3.controller.port.CreateS3PathService;
 import hotspot.user.s3.controller.response.S3PathResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor

@@ -1,20 +1,19 @@
 package hotspot.user.usage.reportUsage.controller;
 
-import hotspot.user.usage.reportUsage.controller.port.*;
-import hotspot.user.usage.reportUsage.controller.response.ReportFamilyResponse;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.usage.reportUsage.controller.port.*;
+import hotspot.user.usage.reportUsage.controller.response.ReportFamilyResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageAppResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageDayResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageMonthResponse;
-import hotspot.user.usage.reportUsage.controller.swagger.ReportUsageApi;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

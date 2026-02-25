@@ -11,7 +11,6 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
-import hotspot.user.member.domain.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +21,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.Member;
+import hotspot.user.member.domain.Status;
 import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageMonthResponse;
 import hotspot.user.usage.reportUsage.service.port.ReportUsageRepository;

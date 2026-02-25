@@ -1,8 +1,8 @@
 package hotspot.user.usage.reportUsage.controller.port;
 
-import hotspot.user.usage.reportUsage.controller.response.ReportFamilyResponse;
-
 import java.util.List;
+
+import hotspot.user.usage.reportUsage.controller.response.ReportFamilyResponse;
 
 public interface FindReportFamilyService {
 
