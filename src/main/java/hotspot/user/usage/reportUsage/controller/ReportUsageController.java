@@ -2,6 +2,7 @@ package hotspot.user.usage.reportUsage.controller;
 
 import java.util.List;
 
+import hotspot.user.usage.reportUsage.controller.swagger.ReportUsageApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reportUsage")
-public class ReportUsageController {
+public class ReportUsageController implements ReportUsageApi {
 
     private final FindReportUsageAppMonthService findReportUsageAppMonthService;
     private final FindReportUsageAppDayService findReportUsageAppDayService;

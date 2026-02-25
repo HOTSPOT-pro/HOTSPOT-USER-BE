@@ -40,23 +40,48 @@ public interface ReportUsageApi {
             @AuthenticationPrincipal PrincipalDetails details
     );
 
+
     @Operation(
             summary = "앱 월별 사용량 조회",
-            description = "현재 로그인한 사용자의 앱 월별 사용량을 조회합니다."
+            description = "현재 로그인한 사용자의 특정 회선 앱 월별 사용량을 조회합니다."
     )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "해당 회선을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
     ResponseEntity<ApiResponse<ReportUsageAppResponse>> findReportUsageAppMonth(
             @Parameter(hidden = true)
-            @AuthenticationPrincipal PrincipalDetails details
+            @AuthenticationPrincipal PrincipalDetails details,
+
+            @Parameter(description = "조회 대상 회선 ID", example = "10")
+            @RequestParam Long targetSubId
     );
+
 
     @Operation(
             summary = "앱 일별 사용량 조회",
-            description = "현재 로그인한 사용자의 앱 일별 사용량을 조회합니다."
+            description = "현재 로그인한 사용자의 특정 회선 앱 일별 사용량을 조회합니다."
     )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "해당 회선을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
     ResponseEntity<ApiResponse<ReportUsageAppResponse>> findReportUsageAppDay(
             @Parameter(hidden = true)
-            @AuthenticationPrincipal PrincipalDetails details
+            @AuthenticationPrincipal PrincipalDetails details,
+
+            @Parameter(description = "조회 대상 회선 ID", example = "10")
+            @RequestParam Long targetSubId
     );
+
 
     @Operation(
             summary = "가족 일별 사용량 리포트 조회",
@@ -78,6 +103,7 @@ public interface ReportUsageApi {
             @Parameter(description = "조회 대상 회선 ID (전체 선택 시 NULL)", example = "10")
             @RequestParam(required = false) Long targetSubId
     );
+
 
     @Operation(
             summary = "가족 월별 사용량 리포트 조회",
