@@ -24,7 +24,7 @@ import hotspot.user.usage.familyUsage.controller.port.FindFamilyUsageService;
 import hotspot.user.usage.familyUsage.controller.response.FamilyUsageResponse;
 
 @WebMvcTest(controllers = FamilyUsageController.class)
-@AutoConfigureMockMvc(addFilters = false)   // 🔥 필터 끄고 직접 세팅
+@AutoConfigureMockMvc(addFilters = false)
 class FamilyUsageControllerTest {
 
     @Autowired
@@ -50,6 +50,7 @@ class FamilyUsageControllerTest {
 
         FamilyUsageResponse response =
                 new FamilyUsageResponse(
+                        java.time.LocalDateTime.of(2026, 2, 24, 17, 30),
                         20.0,
                         5.0,
                         15.0,
@@ -62,7 +63,10 @@ class FamilyUsageControllerTest {
 
         mockMvc.perform(get("/api/v1/familyUsage"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.familyDataAmount")
-                        .value(20.0));
+                .andExpect(jsonPath("$.data.familyDataAmount").value(20.0))
+                .andExpect(jsonPath("$.data.familyDataUsageAmount").value(5.0))
+                .andExpect(jsonPath("$.data.familyDataRemainAmount").value(15.0))
+                .andExpect(jsonPath("$.data.dataUsagePercent").value(25))
+                .andExpect(jsonPath("$.data.currentTime").exists());
     }
 }

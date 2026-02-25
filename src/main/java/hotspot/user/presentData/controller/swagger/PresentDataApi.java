@@ -32,13 +32,8 @@ public interface PresentDataApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "403",
-                    description = "접근 권한 없음",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "404",
-                    description = "가족 정보를 찾을 수 없음",
+                    description = "조회 실패\n- SUB_001: 회선 정보를 찾을 수 없습니다.",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })

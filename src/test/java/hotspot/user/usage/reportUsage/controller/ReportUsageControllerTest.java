@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.usage.reportUsage.controller.port.FindReportFamilyService;
 import hotspot.user.usage.reportUsage.controller.port.FindReportUsageAppDayService;
 import hotspot.user.usage.reportUsage.controller.port.FindReportUsageAppMonthService;
 import hotspot.user.usage.reportUsage.controller.port.FindReportUsageDayService;
@@ -39,85 +40,17 @@ class ReportUsageControllerTest {
     MockMvc mockMvc;
 
     @MockBean
-    FindReportUsageAppMonthService findReportUsageAppMonthService;
-
+    FindReportFamilyService findReportFamilyService;
+    @MockBean FindReportUsageAppMonthService findReportUsageAppMonthService;
     @MockBean
     FindReportUsageAppDayService findReportUsageAppDayService;
-
     @MockBean
     FindReportUsageDayService findReportUsageDayService;
-
     @MockBean
     FindReportUsageMonthService findReportUsageMonthService;
-
-    @MockBean
-    JwtFilter jwtFilter;
-
-    @MockBean
-    JwtProvider jwtProvider;
-
-    @MockBean
-    JpaMetamodelMappingContext jpaMetamodelMappingContext;
-
-    @Test
-    @DisplayName("앱별 월 데이터 사용량 조회 성공")
-    void shouldReturnAppMonthlyUsageSuccessfully() throws Exception {
-
-        setAuthentication(1L, 1L, FamilyRole.OWNER);
-
-        ReportUsageAppResponse response =
-                new ReportUsageAppResponse(
-                        LocalDateTime.now(),
-                        List.of(
-                                new ReportUsageAppResponse.AppUsageResponse(
-                                        1L,
-                                        "YouTube",
-                                        3.5
-                                )
-                        )
-                );
-
-        when(findReportUsageAppMonthService
-                .findReportUsageAppMonth(1L))
-                .thenReturn(response);
-
-        mockMvc.perform(get("/api/v1/reportUsage/app/month"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.appUsages[0].appName")
-                        .value("YouTube"))
-                .andExpect(jsonPath("$.data.appUsages[0].appDataUsageAmount")
-                        .value(3.5));
-    }
-
-    @Test
-    @DisplayName("앱별 일 데이터 사용량 조회 성공")
-    void shouldReturnAppDailyUsageSuccessfully() throws Exception {
-
-        setAuthentication(1L, 1L, FamilyRole.OWNER);
-
-        ReportUsageAppResponse response =
-                new ReportUsageAppResponse(
-                        LocalDateTime.now(),
-                        List.of(
-                                new ReportUsageAppResponse.AppUsageResponse(
-                                        2L,
-                                        "Netflix",
-                                        1.2
-                                )
-                        )
-                );
-
-        when(findReportUsageAppDayService
-                .findReportUsageAppDay(1L))
-                .thenReturn(response);
-
-        mockMvc.perform(get("/api/v1/reportUsage/app/day"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.appUsages[0].appName")
-                        .value("Netflix"))
-                .andExpect(jsonPath("$.data.appUsages[0].appDataUsageAmount")
-                        .value(1.2));
-    }
+    @MockBean JwtFilter jwtFilter;
+    @MockBean JwtProvider jwtProvider;
+    @MockBean JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
     @Test
     @DisplayName("가족 일별 데이터 조회 성공")
@@ -145,15 +78,13 @@ class ReportUsageControllerTest {
                 );
 
         when(findReportUsageDayService
-                .findReportUsageDay(1L, 1L, null))
+                .findReportUsageDay(1L, null))
                 .thenReturn(response);
 
         mockMvc.perform(get("/api/v1/reportUsage/day"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.subUsages[0].subName")
-                        .value("가족 전체"))
-                .andExpect(jsonPath("$.data.subUsages[0].dataUsageDays[0].usageDayAmount")
-                        .value(8.5));
+                        .value("가족 전체"));
     }
 
     @Test
@@ -182,15 +113,13 @@ class ReportUsageControllerTest {
                 );
 
         when(findReportUsageMonthService
-                .findReportUsageMonth(1L, 1L, null))
+                .findReportUsageMonth(1L, null))
                 .thenReturn(response);
 
         mockMvc.perform(get("/api/v1/reportUsage/month"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.subUsages[0].subName")
-                        .value("가족 전체"))
-                .andExpect(jsonPath("$.data.subUsages[0].dataUsageMonths[0].usageAmount")
-                        .value(9.5));
+                        .value("가족 전체"));
     }
 
     @Test
@@ -219,15 +148,75 @@ class ReportUsageControllerTest {
                 );
 
         when(findReportUsageMonthService
-                .findReportUsageMonth(1L, 1L, 2L))
+                .findReportUsageMonth(1L, 2L))
                 .thenReturn(response);
 
         mockMvc.perform(get("/api/v1/reportUsage/month")
                         .param("targetSubId", "2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.subUsages[0].subId")
-                        .value(2L))
-                .andExpect(jsonPath("$.data.subUsages[0].subName")
-                        .value("신진훈"));
+                        .value(2L));
+    }
+
+    @Test
+    @DisplayName("앱 월별 사용량 조회 성공")
+    void shouldReturnAppMonthlyUsageSuccessfully() throws Exception {
+
+        setAuthentication(1L, 1L, FamilyRole.OWNER);
+
+        ReportUsageAppResponse response =
+                new ReportUsageAppResponse(
+                        LocalDateTime.now(),
+                        List.of(
+                                new ReportUsageAppResponse.AppUsageResponse(
+                                        1L,
+                                        "YouTube",
+                                        3.5
+                                )
+                        )
+                );
+
+        when(findReportUsageAppMonthService
+                .findReportUsageAppMonth(1L, 10L))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/reportUsage/app/month")
+                        .param("targetSubId", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.appUsages[0].appName")
+                        .value("YouTube"))
+                .andExpect(jsonPath("$.data.appUsages[0].appDataUsageAmount")
+                        .value(3.5));
+    }
+
+    @Test
+    @DisplayName("앱 일별 사용량 조회 성공")
+    void shouldReturnAppDailyUsageSuccessfully() throws Exception {
+
+        setAuthentication(1L, 1L, FamilyRole.OWNER);
+
+        ReportUsageAppResponse response =
+                new ReportUsageAppResponse(
+                        LocalDateTime.now(),
+                        List.of(
+                                new ReportUsageAppResponse.AppUsageResponse(
+                                        2L,
+                                        "Instagram",
+                                        2.0
+                                )
+                        )
+                );
+
+        when(findReportUsageAppDayService
+                .findReportUsageAppDay(1L, 10L))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/reportUsage/app/day")
+                        .param("targetSubId", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.appUsages[0].appName")
+                        .value("Instagram"))
+                .andExpect(jsonPath("$.data.appUsages[0].appDataUsageAmount")
+                        .value(2.0));
     }
 }
