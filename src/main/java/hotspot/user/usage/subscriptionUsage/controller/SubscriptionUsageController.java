@@ -20,6 +20,7 @@ public class SubscriptionUsageController implements SubscriptionUsageApi {
 
     private final FindSubscriptionUsageService findSubscriptionUsageService;
 
+    @Override
     @GetMapping
     public ResponseEntity<ApiResponse<SubscriptionUsageResponse>> findSubscriptionUsage(
             @AuthenticationPrincipal PrincipalDetails details) {
