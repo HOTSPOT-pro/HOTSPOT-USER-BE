@@ -1,5 +1,7 @@
 package hotspot.user.common.config;
 
+import hotspot.user.common.security.jwt.JwtAccessDeniedHandler;
+import hotspot.user.common.security.jwt.JwtAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,6 +38,8 @@ public class SecurityConfig {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final OAuth2FailureHandler oAuth2FailureHandler;
     private final CorsConfig corsConfig;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
 
     @Bean
@@ -48,6 +52,12 @@ public class SecurityConfig {
                 .formLogin(FormLoginConfigurer::disable) // 기본 로그인 비활성화
                 // Basic 인증 비활성화 : Basic 인증은 사용자 이름 & 비밀번호를 Base64로 인코딩하여 인증값으로 활용
                 .httpBasic(AbstractHttpConfigurer::disable);
+
+        // Filter에서 에러 핸들링 대신 커스텀 에러 핸들링 추가
+        http.exceptionHandling(exception -> exception
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 401 처리
+                .accessDeniedHandler(jwtAccessDeniedHandler)         // 403 처리
+        );
 
         // UsernamePasswordAuthenticationFilter : 이 클래스에서 폼 로그인 인증을 처리
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

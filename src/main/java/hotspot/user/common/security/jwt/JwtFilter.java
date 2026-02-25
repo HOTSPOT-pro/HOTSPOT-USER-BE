@@ -2,6 +2,8 @@ package hotspot.user.common.security.jwt;
 
 import java.io.IOException;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import hotspot.user.common.exception.code.AuthErrorCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,23 +37,27 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         // Request Header에서 토큰 추출
-        String token = jwtProvider.resolveToken(request);
         String requestURI = request.getRequestURI();
 
-        // 토큰 유효성 검사
-        if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
-            // 3. 유효한 토큰일 경우 인증 객체 생성 및 Context 저장
-            Authentication authentication = jwtProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            String token = jwtProvider.resolveToken(request);
 
-                        log.debug("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}",
+            if (StringUtils.hasText(token)) {
+                // 토큰 검증 - 실패 시 예외 발생
+                jwtProvider.validateToken(token);
 
-                                authentication.getName(), requestURI);
-        } else {
-            log.debug("유효한 JWT 토큰이 없습니다, uri: {}", requestURI);
+                // 검증 성공 시 인증 객체 저장
+                Authentication authentication = jwtProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+
+        } catch(ExpiredJwtException e) { // 만료된 토큰
+            request.setAttribute("exception", AuthErrorCode.TOKEN_EXPIRED);
+        } catch (JwtException | IllegalArgumentException e) { // 이상한 토큰
+            request.setAttribute("exception", AuthErrorCode.INVALID_TOKEN);
         }
 
-        // 4. 다음 필터로 진행
+        // 다음 필터 진행
         filterChain.doFilter(request, response);
     }
 }
