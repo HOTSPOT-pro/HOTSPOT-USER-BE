@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import hotspot.user.common.ApiResponse;
 import hotspot.user.policy.controller.port.FindBlockPolicyService;
 import hotspot.user.policy.controller.response.BlockPolicyResponse;
+import hotspot.user.policy.controller.swagger.BlockPolicyApi;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -18,10 +19,11 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/policies")
-public class BlockPolicyController {
+public class BlockPolicyController implements BlockPolicyApi {
 
     private final FindBlockPolicyService findBlockPolicyService;
 
+    @Override
     @GetMapping
     public ResponseEntity<ApiResponse<List<BlockPolicyResponse>>> getAllPolicies() {
         List<BlockPolicyResponse> policiesList = findBlockPolicyService.findAll();
