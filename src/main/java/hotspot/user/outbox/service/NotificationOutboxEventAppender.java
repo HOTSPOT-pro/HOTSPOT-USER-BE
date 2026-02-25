@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.GlobalErrorCode;
+import hotspot.user.common.exception.code.OutboxErrorCode;
 import hotspot.user.outbox.infrastructure.NotificationOutboxEventJpaRepository;
 import hotspot.user.outbox.infrastructure.entity.NotificationOutboxEventEntity;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class NotificationOutboxEventAppender {
         try {
             return objectMapper.writeValueAsString(payload);
         } catch (JsonProcessingException ex) {
-            throw new ApplicationException(GlobalErrorCode.INTERNAL_SERVER_ERROR);
+            throw new ApplicationException(OutboxErrorCode.OUTBOX_PAYLOAD_SERIALIZATION_FAILED, ex);
         }
     }
 }
