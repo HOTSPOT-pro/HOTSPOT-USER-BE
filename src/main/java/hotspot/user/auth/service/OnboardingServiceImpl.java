@@ -1,17 +1,23 @@
 package hotspot.user.auth.service;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.auth.controller.port.IssueTokenService;
 import hotspot.user.auth.controller.port.OnboardingService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
+import hotspot.user.auth.controller.response.OnboardingResponse;
 import hotspot.user.auth.controller.response.TokenResponse;
+import hotspot.user.auth.domain.mapper.OnboardingMapper;
+import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.SocialAccount;
 import hotspot.user.member.domain.Status;
@@ -34,9 +40,10 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final IssueTokenService issueTokenService;
     private final PhoneHashIndexer phoneHashIndexer;
+    private final PhoneDecryptor phoneDecryptor;
 
     @Override
-    public TokenResponse onboarding(Long memberId, String email, OnboardingRequest request) {
+    public OnboardingResponse onboarding(Long memberId, String email, OnboardingRequest request) {
         // 1. 데이터 조회 및 회선 검증
         Subscription subscription = validateAndGetSubscription(request.phoneNumber());
         Member pendingMember = findPendingMember(memberId);
@@ -49,8 +56,21 @@ public class OnboardingServiceImpl implements OnboardingService {
         FamilySubscription familySub = getFamilySubscription(subscription.getId());
 
         // 4. 토큰 발급 (가족 ID 포함)
-        return issueTokenService.issue(finalMember, email,
-                familySub.getFamilyRole(), familySub.getFamily().getId());
+        TokenResponse tokenResponse = issueTokenService.issue(finalMember, email,
+                Optional.ofNullable(familySub).map(FamilySubscription::getFamilyRole).orElse(FamilyRole.NONE),
+                Optional.ofNullable(familySub).map(fs -> fs.getFamily().getId()).orElse(null));
+
+        String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc());
+
+        return OnboardingMapper.toOnboardingResponse(
+                subscription.getId(),
+                Optional.ofNullable(familySub).map(fs -> fs.getFamily().getId()).orElse(null),
+                finalMember.getName(),
+                socialAccount.getEmail(),
+                decryptedPhone,
+                Optional.ofNullable(familySub).map(FamilySubscription::getFamilyRole).orElse(FamilyRole.NONE),
+                tokenResponse
+        );
     }
 
     // 전화번호로 회선을 조회 및 검증
@@ -117,6 +137,6 @@ public class OnboardingServiceImpl implements OnboardingService {
     // 가족-회선 매핑 정보 조회
     private FamilySubscription getFamilySubscription(Long subId) {
         return familySubscriptionRepository.findBySubId(subId)
-                .orElseThrow(() -> new ApplicationException(MemberErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
+                .orElse(null);
     }
 }
