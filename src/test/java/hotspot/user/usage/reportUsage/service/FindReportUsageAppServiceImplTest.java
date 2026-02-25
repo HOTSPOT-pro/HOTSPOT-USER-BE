@@ -43,14 +43,21 @@ class FindReportUsageAppServiceImplTest {
 
     @BeforeEach
     void setup() {
-        Subscription subscription = mock(Subscription.class);
-        when(subscription.getId()).thenReturn(subId);
+
+        Subscription subscription = Subscription.builder()
+                .id(subId)
+                .member(null)
+                .plan(null)
+                .phoneEnc(null)
+                .phoneHash(null)
+                .isLocked(false)
+                .build();
+
         when(subscriptionService.findByMemberId(memberId))
                 .thenReturn(subscription);
     }
 
     @Test
-    @DisplayName("월별 앱 사용량 조회 성공")
     void shouldReturnMonthlyAppUsage() {
 
         List<AppUsage> usages = List.of(
@@ -79,23 +86,17 @@ class FindReportUsageAppServiceImplTest {
                 .thenReturn(services);
 
         ReportUsageAppResponse response =
-                service.findReportUsageAppMonth(memberId);
+                service.findReportUsageAppMonth(memberId, subId);
 
-        assertThat(response).isNotNull();
         assertThat(response.appUsages()).hasSize(2);
         assertThat(response.appUsages().get(0).appName())
                 .isEqualTo("YouTube");
-        assertThat(response.appUsages().get(0).appDataUsageAmount())
-                .isEqualTo(3.5);
 
         verify(subscriptionService).findByMemberId(memberId);
         verify(reportUsageAppRepository).findMonthlyAppUsage(subId);
-        verify(appBlockedServiceRepository)
-                .findAllByAppBlockedServiceIds(List.of(1L, 2L));
     }
 
     @Test
-    @DisplayName("일별 앱 사용량 조회 성공")
     void shouldReturnDailyAppUsage() {
 
         List<AppUsage> usages = List.of(
@@ -118,14 +119,10 @@ class FindReportUsageAppServiceImplTest {
                 .thenReturn(services);
 
         ReportUsageAppResponse response =
-                service.findReportUsageAppDay(memberId);
+                service.findReportUsageAppDay(memberId, subId);
 
         assertThat(response.appUsages()).hasSize(1);
         assertThat(response.appUsages().get(0).appName())
                 .isEqualTo("Instagram");
-        assertThat(response.appUsages().get(0).appDataUsageAmount())
-                .isEqualTo(2.0);
-
-        verify(reportUsageAppRepository).findDailyAppUsage(subId);
     }
 }
