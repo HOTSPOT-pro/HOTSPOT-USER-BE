@@ -18,6 +18,7 @@ import hotspot.user.auth.controller.port.ReissueTokenService;
 import hotspot.user.auth.controller.port.WithdrawService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
 import hotspot.user.auth.controller.request.TokenRequest;
+import hotspot.user.auth.controller.response.OnboardingResponse;
 import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.auth.controller.swagger.AuthApi;
 import hotspot.user.common.ApiResponse;
@@ -49,30 +50,42 @@ public class AuthController implements AuthApi {
         TokenRequest request = new TokenRequest(refreshToken);
         TokenResponse response = reissueTokenService.reissue(request);
 
+        // 신규 Access Token 쿠키 설정
+        ResponseCookie accessCookie = CookieUtil.createCookie("accessToken",
+                response.accessToken(),
+                jwtProperties.getAccessExpiration());
+
         // 신규 Refresh Token 쿠키 설정
-        ResponseCookie cookie = CookieUtil.createCookie("refreshToken",
+        ResponseCookie refreshCookie = CookieUtil.createCookie("refreshToken",
                 response.refreshToken(),
                 jwtProperties.getRefreshExpiration());
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body(ApiResponse.success(response));
     }
 
     @Override
     @PostMapping("/onboarding")
-    public ResponseEntity<ApiResponse<TokenResponse>> onboarding(
+    public ResponseEntity<ApiResponse<OnboardingResponse>> onboarding(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody @Valid OnboardingRequest request) {
-        TokenResponse response = onboardingService.onboarding(principal.getId(), principal.getEmail(), request);
+        OnboardingResponse response = onboardingService.onboarding(principal.getId(), principal.getEmail(), request);
+
+        // AccessToken 쿠키 설정
+        ResponseCookie accessCookie = CookieUtil.createCookie("accessToken",
+                response.tokenResponse().accessToken(),
+                jwtProperties.getAccessExpiration());
 
         // Refresh Token 쿠키 설정
-        ResponseCookie cookie = CookieUtil.createCookie("refreshToken",
-                response.refreshToken(),
+        ResponseCookie refreshCookie = CookieUtil.createCookie("refreshToken",
+                response.tokenResponse().refreshToken(),
                 jwtProperties.getRefreshExpiration());
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body(ApiResponse.success(response));
     }
 

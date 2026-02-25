@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import hotspot.user.auth.controller.request.OnboardingRequest;
+import hotspot.user.auth.controller.response.OnboardingResponse;
 import hotspot.user.auth.controller.response.TokenResponse;
 import hotspot.user.common.exception.ErrorResponse;
 import hotspot.user.common.security.PrincipalDetails;
@@ -41,7 +42,7 @@ public interface AuthApi {
         @ApiResponse(responseCode = "404", description = "회선 정보를 찾을 수 없음",
                 content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<hotspot.user.common.ApiResponse<TokenResponse>> onboarding(
+    ResponseEntity<hotspot.user.common.ApiResponse<OnboardingResponse>> onboarding(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @Valid @RequestBody OnboardingRequest request);
 

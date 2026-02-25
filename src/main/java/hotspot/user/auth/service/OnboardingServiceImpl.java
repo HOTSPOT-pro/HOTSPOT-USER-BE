@@ -6,7 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.user.auth.controller.port.IssueTokenService;
 import hotspot.user.auth.controller.port.OnboardingService;
 import hotspot.user.auth.controller.request.OnboardingRequest;
+import hotspot.user.auth.controller.response.OnboardingResponse;
 import hotspot.user.auth.controller.response.TokenResponse;
+import hotspot.user.auth.domain.mapper.OnboardingMapper;
+import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
@@ -34,9 +37,10 @@ public class OnboardingServiceImpl implements OnboardingService {
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final IssueTokenService issueTokenService;
     private final PhoneHashIndexer phoneHashIndexer;
+    private final PhoneDecryptor phoneDecryptor;
 
     @Override
-    public TokenResponse onboarding(Long memberId, String email, OnboardingRequest request) {
+    public OnboardingResponse onboarding(Long memberId, String email, OnboardingRequest request) {
         // 1. 데이터 조회 및 회선 검증
         Subscription subscription = validateAndGetSubscription(request.phoneNumber());
         Member pendingMember = findPendingMember(memberId);
@@ -49,8 +53,16 @@ public class OnboardingServiceImpl implements OnboardingService {
         FamilySubscription familySub = getFamilySubscription(subscription.getId());
 
         // 4. 토큰 발급 (가족 ID 포함)
-        return issueTokenService.issue(finalMember, email,
+        TokenResponse tokenResponse = issueTokenService.issue(finalMember, email,
                 familySub.getFamilyRole(), familySub.getFamily().getId());
+
+        String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc());
+
+        return OnboardingMapper.toOnboardingResponse(finalMember,
+                familySub,
+                socialAccount,
+                decryptedPhone,
+                tokenResponse);
     }
 
     // 전화번호로 회선을 조회 및 검증
