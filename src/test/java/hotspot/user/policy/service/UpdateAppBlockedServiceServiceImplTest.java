@@ -2,6 +2,7 @@ package hotspot.user.policy.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.BDDMockito.given;
@@ -24,9 +25,11 @@ import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
+import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
 
@@ -41,6 +44,9 @@ class UpdateAppBlockedServiceServiceImplTest {
 
     @Mock
     private AppBlockedServiceRepository appBlockedServiceRepository;
+
+    @Mock
+    private NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
 
     @InjectMocks
     private UpdateAppBlockedServiceServiceImpl service;
@@ -61,6 +67,12 @@ class UpdateAppBlockedServiceServiceImplTest {
         given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
         given(appBlockedServiceRepository.countByIdIn(anySet())).willReturn(2L); // 2개 요청 -> 2개 유효
         given(blockedServiceSubRepository.findActiveServiceIdsBySubId(subId)).willReturn(List.of(1L, 2L));
+        given(appBlockedServiceRepository.findAllByAppBlockedServiceIds(anyList()))
+                .willReturn(List.of(
+                        AppBlockedService.builder().id(1L).name("YouTube").build(),
+                        AppBlockedService.builder().id(2L).name("TikTok").build(),
+                        AppBlockedService.builder().id(3L).name("Instagram").build()
+                ));
 
         // when
         UpdateAppBlockedServiceResponse response =
