@@ -1,8 +1,10 @@
 package hotspot.user.usage.familyUsage.controller.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record FamilyUsageResponse(
+        LocalDateTime currentTime,
         Double familyDataAmount,
         Double familyDataUsageAmount,
         Double familyDataRemainAmount,

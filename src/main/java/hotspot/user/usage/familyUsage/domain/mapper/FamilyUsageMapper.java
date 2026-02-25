@@ -1,5 +1,6 @@
 package hotspot.user.usage.familyUsage.domain.mapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import hotspot.user.family.domain.FamilySubscription;
@@ -19,7 +20,8 @@ public class FamilyUsageMapper {
 
     public static FamilyUsageResponse toFamilyUsageResponse(
             FamilyUsage usage,
-            List<FamilySubList> subs
+            List<FamilySubList> subs,
+            LocalDateTime now
     ) {
 
         List<FamilyUsageResponse.FamilySubUsageResponse> subResponses =
@@ -28,6 +30,7 @@ public class FamilyUsageMapper {
                         .toList();
 
         return new FamilyUsageResponse(
+                now,
                 usage.familyLimitGb(),
                 usage.familyUsedGb(),
                 usage.familyRemainGb(),

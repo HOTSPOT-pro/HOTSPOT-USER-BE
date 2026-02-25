@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.ReportUsageErrorCode;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.subscription.service.SubscriptionService;
 import hotspot.user.usage.familyUsage.domain.mapper.FamilyUsageMapper;
 import hotspot.user.usage.familyUsage.service.schema.FamilySubList;
 import hotspot.user.usage.reportUsage.controller.port.FindReportUsageDayService;
@@ -27,33 +26,22 @@ public class FindReportUsageDayServiceImpl implements FindReportUsageDayService 
 
     private final ReportUsageRepository reportUsageRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
-    private final SubscriptionService subscriptionService;
 
     private final Clock clock;
 
     @Transactional(readOnly = true)
     @Override
     public ReportUsageDayResponse findReportUsageDay(
-            Long memberId,
             Long familyId,
             Long targetSubId
     ) {
 
-        Long selfSubId =
-                subscriptionService.findByMemberId(memberId).getId();
-
         List<FamilySubList> familySubList;
 
         if (familyId == null) {
-            // 가족이 없는 경우 → 본인만 조회 가능
-            if (targetSubId != null && !targetSubId.equals(selfSubId)) {
-                throw new ApplicationException(
-                        ReportUsageErrorCode.TARGET_SUBSCRIPTION_NOT_IN_FAMILY
-                );
-            }
 
             familySubList = List.of(
-                    new FamilySubList(selfSubId, null) // 이름은 mapper에서 처리하거나 null 허용
+                    new FamilySubList(targetSubId, null) // 이름은 mapper에서 처리하거나 null 허용
             );
 
         } else {
@@ -82,7 +70,6 @@ public class FindReportUsageDayServiceImpl implements FindReportUsageDayService 
                 dates,
                 familySubList,
                 subDailyMap,
-                selfSubId,
                 targetSubId
         );
     }
