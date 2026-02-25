@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.OutboxErrorCode;
 import hotspot.user.kafka.domain.KafkaEventType;
 import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.outbox.service.NotificationOutboxEventAppender;
@@ -92,16 +94,22 @@ public class NotificationUserAlertOutboxPublisher {
 
     // 집계 메타데이터와 함께 이벤트를 outbox_event 테이블에 저장한다.
     private void append(String type, UserAlertEvent event) {
-        String aggregateId = event.subId() != null
-                ? String.valueOf(event.subId())
-                : event.familyId() != null ? String.valueOf(event.familyId()) : event.alertId();
+        try {
+            String aggregateId = event.subId() != null
+                    ? String.valueOf(event.subId())
+                    : event.familyId() != null ? String.valueOf(event.familyId()) : event.alertId();
 
-        outboxEventAppender.append(
-                aggregateType,
-                aggregateId,
-                type,
-                event
-        );
+            outboxEventAppender.append(
+                    aggregateType,
+                    aggregateId,
+                    type,
+                    event
+            );
+        } catch (ApplicationException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new ApplicationException(OutboxErrorCode.OUTBOX_EVENT_PUBLISH_FAILED, ex);
+        }
     }
 
     // 모든 알림 이벤트에서 공통으로 쓰는 기본 필드를 만든다.
