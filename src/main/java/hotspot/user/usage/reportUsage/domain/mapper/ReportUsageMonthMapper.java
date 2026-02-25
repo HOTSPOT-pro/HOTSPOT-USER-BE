@@ -20,7 +20,6 @@ public final class ReportUsageMonthMapper {
             List<YearMonth> months,
             List<FamilySubList> familySubList,
             Map<Long, Map<YearMonth, Double>> subMonthlyMap,
-            Long selfSubId,
             Long targetSubId
     ) {
 
@@ -51,17 +50,7 @@ public final class ReportUsageMonthMapper {
                 build(-1L, "가족 전체", months, familyTotal)
         );
 
-        responses.add(
-                build(
-                        selfSubId,
-                        subIdToName.get(selfSubId),
-                        months,
-                        subMonthlyMap.getOrDefault(selfSubId, Map.of())
-                )
-        );
-
-        if (targetSubId != null &&
-                !targetSubId.equals(selfSubId)) {
+        if (targetSubId != null) {
 
             responses.add(
                     build(

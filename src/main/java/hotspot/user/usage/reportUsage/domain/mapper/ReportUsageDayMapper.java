@@ -20,7 +20,6 @@ public final class ReportUsageDayMapper {
             List<LocalDate> dates,
             List<FamilySubList> familySubList,
             Map<Long, Map<LocalDate, Double>> subDailyMap,
-            Long selfSubId,
             Long targetSubId
     ) {
 
@@ -52,18 +51,8 @@ public final class ReportUsageDayMapper {
                 toSubUsageResponse(-1L, "가족 전체", dates, familyTotal)
         );
 
-        // 본인
-        responses.add(
-                toSubUsageResponse(
-                        selfSubId,
-                        subIdToName.get(selfSubId),
-                        dates,
-                        subDailyMap.getOrDefault(selfSubId, Map.of())
-                )
-        );
-
         // targetSubId가 있을 때만 추가
-        if (targetSubId != null && !targetSubId.equals(selfSubId)) {
+        if (targetSubId != null) {
 
             responses.add(
                     toSubUsageResponse(
