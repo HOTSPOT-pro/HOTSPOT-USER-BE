@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reportUsage")
-public class ReportUsageController implements ReportUsageApi {
+public class ReportUsageController {
 
     private final FindReportUsageAppMonthService findReportUsageAppMonthService;
     private final FindReportUsageAppDayService findReportUsageAppDayService;
@@ -36,21 +36,23 @@ public class ReportUsageController implements ReportUsageApi {
 
     @GetMapping("/app/month")
     public ResponseEntity<ApiResponse<ReportUsageAppResponse>> findReportUsageAppMonth(
-            @AuthenticationPrincipal PrincipalDetails details) {
+            @AuthenticationPrincipal PrincipalDetails details,
+            @RequestParam Long targetSubId) {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         findReportUsageAppMonthService
-                                .findReportUsageAppMonth(details.getId())));
+                                .findReportUsageAppMonth(details.getId(), targetSubId)));
     }
 
     @GetMapping("/app/day")
     public ResponseEntity<ApiResponse<ReportUsageAppResponse>> findReportUsageAppDay(
-            @AuthenticationPrincipal PrincipalDetails details) {
+            @AuthenticationPrincipal PrincipalDetails details,
+            @RequestParam Long targetSubId) {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
                         findReportUsageAppDayService
-                                .findReportUsageAppDay(details.getId())
+                                .findReportUsageAppDay(details.getId(), targetSubId)
                 )
         );
     }
@@ -63,7 +65,6 @@ public class ReportUsageController implements ReportUsageApi {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         findReportUsageDayService.findReportUsageDay(
-                                details.getId(),
                                 details.getFamilyId(),
                                 targetSubId
                         )
@@ -79,7 +80,6 @@ public class ReportUsageController implements ReportUsageApi {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         findReportUsageMonthService.findReportUsageMonth(
-                                details.getId(),
                                 details.getFamilyId(),
                                 targetSubId
                         )
