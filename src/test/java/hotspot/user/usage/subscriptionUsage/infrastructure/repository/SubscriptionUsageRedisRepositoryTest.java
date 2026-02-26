@@ -1,5 +1,7 @@
 package hotspot.user.usage.subscriptionUsage.infrastructure.repository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -8,7 +10,6 @@ import java.time.ZoneId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -16,11 +17,9 @@ import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
@@ -29,8 +28,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import hotspot.user.common.util.redis.RedisPipelineExecutor;
 import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.usage.subscriptionUsage.domain.SubscriptionUsage;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
 @DataRedisTest
