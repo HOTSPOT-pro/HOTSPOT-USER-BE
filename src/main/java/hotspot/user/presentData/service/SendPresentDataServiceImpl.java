@@ -60,7 +60,11 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
         // [To-Do] 5. 현재 남은 데이터 양보다 더 많이 보내는지 확인
 
         // 6. DB 기록 저장
-        PresentData presentData = SendPresentDataMapper.toPresentData(providerFamilySub.getSubscription(), targetFamilySub.getSubscription(), request.dataAmount());
+        PresentData presentData = SendPresentDataMapper.toPresentData(
+                providerFamilySub.getSubscription(),
+                targetFamilySub.getSubscription(),
+                request.dataAmount()
+        );
         PresentData sentPresentData = presentDataRepository.sendPresentData(presentData);
 
         // 6. [To-Do] Redis 사용량 업데이트

@@ -12,7 +12,11 @@ import hotspot.user.subscription.domain.Subscription;
 public class SendPresentDataMapper {
 
     // requst -> domain
-    public static PresentData toPresentData(Subscription provideSubscription, Subscription targetSubscription, Long dataAmount) {
+    public static PresentData toPresentData(
+            Subscription provideSubscription,
+            Subscription targetSubscription,
+            Long dataAmount
+    ) {
         return PresentData.builder()
                 .provideSubscription(provideSubscription)
                 .targetSubscription(targetSubscription)
