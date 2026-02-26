@@ -22,7 +22,6 @@ public class UserAlertEventNotificationMapper {
 
     private final Map<KafkaEventType, UserAlertEventMappingStrategy> strategiesByEventType;
 
-    // 등록된 매핑 전략을 이벤트 타입별 1:1 맵으로 초기화한다.
     public UserAlertEventNotificationMapper(List<UserAlertEventMappingStrategy> mappingStrategies) {
         this.strategiesByEventType = new EnumMap<>(KafkaEventType.class);
         for (KafkaEventType eventType : KafkaEventType.values()) {
@@ -31,24 +30,21 @@ public class UserAlertEventNotificationMapper {
         }
     }
 
-    // 이벤트 타입을 해석한 뒤 해당 전략으로 매핑 결과를 생성한다.
     public AlertNotificationMappingResult map(UserAlertEvent event) {
         KafkaEventType eventType = KafkaEventType.from(AlertEventMappingSupport.normalize(event.eventType()));
         UserAlertEventMappingStrategy strategy = strategiesByEventType.get(eventType);
         return strategy.map(event);
     }
 
-    // 이벤트의 subId를 대상으로 Notification 엔티티를 생성한다.
     public Notification toNotification(UserAlertEvent event) {
         return toNotification(event, event.subId());
     }
 
-    // 지정된 targetSubId를 대상으로 Notification 엔티티를 생성한다.
     public Notification toNotification(UserAlertEvent event, Long targetSubId) {
         AlertNotificationMappingResult mapping = map(event);
         return Notification.builder()
                 .subId(requireSubId(targetSubId))
-                .eventId(resolveEventId(event))
+                .eventId(requireEventId(event.alertId()))
                 .notificationType(mapping.notificationType().name())
                 .title(mapping.content().title())
                 .content(mapping.content().body())
@@ -57,24 +53,20 @@ public class UserAlertEventNotificationMapper {
                 .build();
     }
 
-    // sourceEventId를 우선 사용하고 비어 있으면 alertId로 대체한다.
-    private String resolveEventId(UserAlertEvent event) {
-        String eventId = AlertEventMappingSupport.defaultIfBlank(event.sourceEventId(), event.alertId());
-        if (eventId.isBlank()) {
+    private String requireEventId(String eventId) {
+        if (eventId == null || eventId.isBlank()) {
             throw new ApplicationException(KafkaErrorCode.KAFKA_EVENT_ID_REQUIRED);
         }
         return eventId;
     }
 
-    // occurredAt을 UTC 기준 LocalDateTime으로 변환한다. 값이 없으면 현재 UTC 시간을 사용한다.
     private LocalDateTime resolveCreatedTime(UserAlertEvent event) {
-        if (event.occurredAt() == null) {
+        if (event.createdTime() == null) {
             return LocalDateTime.now(ZoneOffset.UTC);
         }
-        return LocalDateTime.ofInstant(event.occurredAt(), ZoneOffset.UTC);
+        return event.createdTime();
     }
 
-    // subId의 null/양수 여부를 검증한다.
     private static Long requireSubId(Long subId) {
         if (subId == null) {
             throw new ApplicationException(KafkaErrorCode.KAFKA_SUB_ID_REQUIRED);
@@ -85,7 +77,6 @@ public class UserAlertEventNotificationMapper {
         return subId;
     }
 
-    // 이벤트 타입별 전략이 정확히 1개인지 검증하고 반환한다.
     private UserAlertEventMappingStrategy resolveSingleStrategy(
             KafkaEventType eventType,
             List<UserAlertEventMappingStrategy> mappingStrategies
