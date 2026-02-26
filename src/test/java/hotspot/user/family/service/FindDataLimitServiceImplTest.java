@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
-import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.controller.response.FindDataLimitResponse;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubDataLimit;
@@ -26,9 +25,6 @@ class FindDataLimitServiceImplTest {
 
     @Mock
     private FamilySubscriptionRepository familySubscriptionRepository;
-
-    @Mock
-    private FindFamilySubscriptionService familySubscriptionService;
 
     @InjectMocks
     private FindDataLimitServiceImpl findDataLimitService;
@@ -47,13 +43,13 @@ class FindDataLimitServiceImplTest {
                 .build();
 
         FamilySubDataLimit dataLimit = FamilySubDataLimit.builder()
+                .familyId(familyId)
                 .name("김태연")
                 .isLocked(false)
                 .dataLimit(1048576L * 5) // 5GB
                 .familyDataAmount(1048576L * 24) // 24GB
                 .build();
 
-        given(familySubscriptionService.findBySubId(targetSubId)).willReturn(targetFs);
         given(familySubscriptionRepository.findDataLimitBySubId(targetSubId)).willReturn(dataLimit);
 
         // when
@@ -91,12 +87,15 @@ class FindDataLimitServiceImplTest {
         Long requesterFamilyId = 100L;
         Long targetFamilyId = 200L;
 
-        Family otherFamily = Family.builder().id(targetFamilyId).build();
-        FamilySubscription targetFs = FamilySubscription.builder()
-                .family(otherFamily)
+        FamilySubDataLimit dataLimit = FamilySubDataLimit.builder()
+                .familyId(targetFamilyId)
+                .name("김태연")
+                .isLocked(false)
+                .dataLimit(1048576L * 5)
+                .familyDataAmount(1048576L * 24)
                 .build();
 
-        given(familySubscriptionService.findBySubId(targetSubId)).willReturn(targetFs);
+        given(familySubscriptionRepository.findDataLimitBySubId(targetSubId)).willReturn(dataLimit);
 
         // when & then
         assertThatThrownBy(() -> findDataLimitService.findDataLimit(targetSubId, requesterFamilyId, FamilyRole.OWNER))

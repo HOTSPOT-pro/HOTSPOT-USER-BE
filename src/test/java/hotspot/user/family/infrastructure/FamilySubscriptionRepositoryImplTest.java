@@ -203,6 +203,7 @@ class FamilySubscriptionRepositoryImplTest {
         // given
         Long subId = 100L;
         FamilySubDataLimitRow row = mock(FamilySubDataLimitRow.class);
+        given(row.getFamilyId()).willReturn(1L);
         given(row.getName()).willReturn("김태연");
         given(row.getIsLocked()).willReturn(false);
         given(row.getDataLimit()).willReturn(5242880L);
@@ -214,6 +215,7 @@ class FamilySubscriptionRepositoryImplTest {
         FamilySubDataLimit result = familySubscriptionRepository.findDataLimitBySubId(subId);
 
         // then
+        assertThat(result.getFamilyId()).isEqualTo(1L);
         assertThat(result.getName()).isEqualTo("김태연");
         assertThat(result.getIsLocked()).isFalse();
         assertThat(result.getDataLimit()).isEqualTo(5242880L);
