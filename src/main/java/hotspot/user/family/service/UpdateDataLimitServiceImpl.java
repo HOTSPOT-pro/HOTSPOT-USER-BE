@@ -45,11 +45,20 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
             throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
         }
 
+        // 3. 데이터 한도 유효성 검증
+        if (request.dataLimit() < FamilyConstant.UNLIMITED_DATA_LIMIT) {
+            throw new ApplicationException(FamilyErrorCode.INVALID_DATA_LIMIT);
+        }
+
         // 4. 데이터 한도 업데이트
-        long dataLimitKb = request.dataLimit() * 1024L * 1024L;
+        // GB -> KB 변환 (-1은 무제한이므로 그대로 유지)
+        long dataLimitKb = (request.dataLimit() == FamilyConstant.UNLIMITED_DATA_LIMIT)
+                ? FamilyConstant.UNLIMITED_DATA_LIMIT
+                : request.dataLimit() * 1024L * 1024L;
+
         familySubscriptionRepository.updateDataLimit(request.subId(), dataLimitKb);
 
-        // 5. 차단 여부 업데이트 (Selective Update)
+        // 5. 차단 여부 업데이트
         subscriptionRepository.updateLockedStatus(request.subId(), request.isLocked());
 
         // 6. 실제 DB에서 최종 상태를 다시 읽어와서 응답 (데이터 정합성 보장)
