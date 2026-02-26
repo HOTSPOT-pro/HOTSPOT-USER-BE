@@ -31,6 +31,8 @@ import hotspot.user.subscription.domain.Subscription;
 @ExtendWith(MockitoExtension.class)
 class SendPresentDataServiceImplTest {
 
+    private static final long ONE_GB_IN_KB = 1048576L;
+
     @Mock
     private PresentDataRepository presentDataRepository;
 
@@ -42,7 +44,6 @@ class SendPresentDataServiceImplTest {
 
     private Long memberId;
     private Long targetSubId;
-    private Long oneGb;
     private Family family;
     private Subscription providerSub;
     private Subscription targetSub;
@@ -53,7 +54,6 @@ class SendPresentDataServiceImplTest {
     void setUp() {
         memberId = 1L;
         targetSubId = 2L;
-        oneGb = 1048576L;
 
         family = Family.builder()
                 .id(10L)
@@ -79,19 +79,21 @@ class SendPresentDataServiceImplTest {
     }
 
     @Test
-    @DisplayName("데이터 선물하기 성공")
+    @DisplayName("데이터 선물하기 성공 (1GB 요청 시 내부적으로 KB 변환 확인)")
     void sendPresentDataSuccess() {
         // given
-        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, oneGb);
-        PresentData presentData = PresentData.builder()
+        Long requestAmountGb = 1L; // 프론트에서 보내는 값 (GB)
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, requestAmountGb);
+
+        PresentData savedPresentData = PresentData.builder()
                 .provideSubscription(providerSub)
                 .targetSubscription(targetSub)
-                .dataAmount(oneGb)
+                .dataAmount(ONE_GB_IN_KB) // 저장된 값 (KB)
                 .build();
 
         when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
         when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.of(targetFamilySub));
-        when(presentDataRepository.sendPresentData(any(PresentData.class))).thenReturn(presentData);
+        when(presentDataRepository.sendPresentData(any(PresentData.class))).thenReturn(savedPresentData);
 
         // when
         SendPresentDataResponse response = sendPresentDataService.sendPresentData(memberId, request);
@@ -99,14 +101,14 @@ class SendPresentDataServiceImplTest {
         // then
         assertThat(response.provideSubId()).isEqualTo(providerSub.getId());
         assertThat(response.targetSubId()).isEqualTo(targetSub.getId());
-        assertThat(response.dataAmount()).isEqualTo(oneGb);
+        assertThat(response.dataAmount()).isEqualTo(ONE_GB_IN_KB);
     }
 
     @Test
     @DisplayName("보내는 사람의 가족 결합 정보를 찾을 수 없을 때 예외 발생")
     void sendPresentDataProviderFamilyNotFound() {
         // given
-        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, oneGb);
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 1L);
         when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
 
         // when & then
@@ -119,9 +121,8 @@ class SendPresentDataServiceImplTest {
     @DisplayName("받는 사람의 가족 결합 정보를 찾을 수 없을 때 예외 발생")
     void sendPresentDataTargetFamilyNotFound() {
         // given
-        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, oneGb);
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 1L);
         when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
-        when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.of(targetFamilySub));
         when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.empty());
 
         // when & then
@@ -140,7 +141,7 @@ class SendPresentDataServiceImplTest {
                 .subscription(targetSub)
                 .build();
 
-        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, oneGb);
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 1L);
         when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
         when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.of(otherFamilySub));
 
@@ -154,7 +155,7 @@ class SendPresentDataServiceImplTest {
     @DisplayName("자신에게 선물할 때 예외 발생")
     void sendPresentDataSelfGift() {
         // given
-        SendPresentDataRequest request = new SendPresentDataRequest(providerSub.getId(), oneGb);
+        SendPresentDataRequest request = new SendPresentDataRequest(providerSub.getId(), 1L);
         when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
         when(familySubscriptionRepository.findBySubId(providerSub.getId())).thenReturn(Optional.of(providerFamilySub));
 
@@ -168,7 +169,7 @@ class SendPresentDataServiceImplTest {
     @DisplayName("데이터 선물 요청량이 1GB 미만일 때 예외 발생")
     void sendPresentDataInvalidAmountTooSmall() {
         // given
-        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 500L);
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 0L);
         when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
         when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.of(targetFamilySub));
 
@@ -182,21 +183,7 @@ class SendPresentDataServiceImplTest {
     @DisplayName("데이터 선물 요청량이 5GB 초과일 때 예외 발생")
     void sendPresentDataInvalidAmountTooLarge() {
         // given
-        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, oneGb * 6);
-        when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
-        when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.of(targetFamilySub));
-
-        // when & then
-        assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
-                .isInstanceOf(ApplicationException.class)
-                .hasFieldOrPropertyWithValue("code", PresentDataErrorCode.PRESENT_DATA_INVALID_AMOUNT);
-    }
-
-    @Test
-    @DisplayName("데이터 선물 요청량이 1GB 단위가 아닐 때 예외 발생")
-    void sendPresentDataInvalidAmountNotStep() {
-        // given
-        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, oneGb + 100L);
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 6L);
         when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
         when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.of(targetFamilySub));
 

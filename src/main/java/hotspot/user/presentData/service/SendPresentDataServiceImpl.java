@@ -26,6 +26,12 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class SendPresentDataServiceImpl implements SendPresentDataService {
+
+    // 선물 데이터 GB => KB 변하기 위해 필요한 상수
+    private static final long MIN_PRESENT_AMOUNT_GB = 1L;
+    private static final long MAX_PRESENT_AMOUNT_GB = 5L;
+    private static final long GB_TO_KB_UNIT = 1048576L;
+
     private final PresentDataRepository presentDataRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
 
@@ -57,13 +63,16 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
         // 4. 선물 가능 단위 및 범위 확인 (1GB ~ 5GB, 1GB 단위)
         validateDataAmount(request.dataAmount());
 
+        // KB 단위로 변환 (1GB = 1,048,576 KB)
+        long dataAmountInKb = request.dataAmount() * GB_TO_KB_UNIT;
+
         // [To-Do] 5. 현재 남은 데이터 양보다 더 많이 보내는지 확인
 
         // 6. DB 기록 저장
         PresentData presentData = SendPresentDataMapper.toPresentData(
                 providerFamilySub.getSubscription(),
                 targetFamilySub.getSubscription(),
-                request.dataAmount()
+                dataAmountInKb
         );
         PresentData sentPresentData = presentDataRepository.sendPresentData(presentData);
 
@@ -73,13 +82,9 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
         return SendPresentDataMapper.toSendPresentDataResponse(sentPresentData);
     }
 
-    private void validateDataAmount(Long amount) {
-        long oneGbInKb = 1048576L; // 1GB in KB
-        long minAmount = oneGbInKb;
-        long maxAmount = oneGbInKb * 5;
-
-        if (amount == null || amount < minAmount || amount > maxAmount || amount % oneGbInKb != 0) {
-            log.warn("데이터 선물 유효성 검증 실패: 요청량={}KB", amount);
+    private void validateDataAmount(Long amountGb) {
+        if (amountGb == null || amountGb < MIN_PRESENT_AMOUNT_GB || amountGb > MAX_PRESENT_AMOUNT_GB) {
+            log.warn("데이터 선물 유효성 검증 실패: 요청량={}GB", amountGb);
             throw new ApplicationException(PresentDataErrorCode.PRESENT_DATA_INVALID_AMOUNT);
         }
     }
