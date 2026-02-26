@@ -30,7 +30,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtProperties;
-import hotspot.user.common.util.CookieUtil;
+import hotspot.user.common.util.cookie.CookieUtil;
 import lombok.RequiredArgsConstructor;
 
 @RestController

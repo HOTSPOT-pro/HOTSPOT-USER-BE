@@ -18,7 +18,7 @@ import hotspot.user.auth.controller.port.SaveTokenService;
 import hotspot.user.auth.controller.request.TokenRequest;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtProvider;
-import hotspot.user.common.util.CookieUtil;
+import hotspot.user.common.util.cookie.CookieUtil;
 import hotspot.user.member.domain.Status;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
