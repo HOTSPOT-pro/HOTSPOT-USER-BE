@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.FamilyErrorCode;
+import hotspot.user.family.domain.FamilySubDataLimit;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.infrastructure.entity.FamilySubscriptionEntity;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
@@ -47,5 +50,19 @@ public class FamilySubscriptionRepositoryImpl implements FamilySubscriptionRepos
         for (FamilySubscription sub : subscriptions) {
             jpaRepository.updatePriority(sub.getSubscription().getId(), sub.getPriority());
         }
+    }
+
+    // 구성원별 데이터 한도 조회
+    @Override
+    public FamilySubDataLimit findDataLimitBySubId(Long subId) {
+        return jpaRepository.findDataLimitBySubId(subId)
+                .map(row -> FamilySubDataLimit.builder()
+                        .familyId(row.getFamilyId())
+                        .name(row.getName())
+                        .isLocked(row.getIsLocked())
+                        .dataLimit(row.getDataLimit())
+                        .familyDataAmount(row.getFamilyDataAmount())
+                        .build())
+                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
     }
 }
