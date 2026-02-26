@@ -34,6 +34,7 @@ public interface PresentDataApi {
                     description = """
                             인증 실패
                             - AUTH_002: 유효하지 않은 토큰
+                            - AUTH_006: 토큰 만료
                             """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
@@ -41,7 +42,7 @@ public interface PresentDataApi {
                     responseCode = "404",
                     description = """
                             조회 실패
-                            - SUB_001: 회선 정보를 찾을 수 없습니다.
+                            - MEMBER_002: 회선 정보를 찾을 수 없습니다.
                             """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
@@ -62,6 +63,7 @@ public interface PresentDataApi {
                     description = """
                             인증 실패
                             - AUTH_002: 유효하지 않은 토큰
+                            - AUTH_006: 토큰 만료
                             """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
@@ -69,7 +71,7 @@ public interface PresentDataApi {
                     responseCode = "404",
                     description = """
                             조회 실패
-                            - SUB_001: 회선 정보를 찾을 수 없습니다.
+                            - MEMBER_002: 회선 정보를 찾을 수 없습니다.
                             """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
@@ -90,6 +92,7 @@ public interface PresentDataApi {
                     description = """
                             인증 실패
                             - AUTH_002: 유효하지 않은 토큰
+                            - AUTH_006: 토큰 만료
                             """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
@@ -97,7 +100,7 @@ public interface PresentDataApi {
                     responseCode = "404",
                     description = """
                             조회 실패
-                            - SUB_001: 회선 정보를 찾을 수 없습니다.
+                            - MEMBER_002: 회선 정보를 찾을 수 없습니다.
                             """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
@@ -117,7 +120,17 @@ public interface PresentDataApi {
                     responseCode = "400",
                     description = """
                             잘못된 요청
-                            - COMMON_002: 입력값 유효성 검증 실패 (1~5GB 범위를 벗어남 등)
+                            - PRESENT_001: 자신에게는 데이터를 선물할 수 없습니다.
+                            - PRESENT_002: 데이터 선물은 1GB에서 5GB 사이, 1GB 단위로만 가능합니다.
+                            """,
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = """
+                            인증 실패
+                            - AUTH_002: 유효하지 않은 토큰
+                            - AUTH_006: 토큰 만료
                             """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
@@ -125,7 +138,7 @@ public interface PresentDataApi {
                     responseCode = "403",
                     description = """
                             권한 없음
-                            - AUTH_004: 동일 가족 구성원이 아님
+                            - AUTH_004: 해당 요청에 대한 접근 권한이 없습니다. (가족 구성원이 아님 등)
                             """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
@@ -133,8 +146,7 @@ public interface PresentDataApi {
                     responseCode = "404",
                     description = """
                             조회 실패
-                            - MEMBER_001: 회원 정보를 찾을 수 없음
-                            - SUB_001: 회선 정보를 찾을 수 없음
+                            - MEMBER_004: 회선의 가족 결합 정보를 찾을 수 없습니다.
                             """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
