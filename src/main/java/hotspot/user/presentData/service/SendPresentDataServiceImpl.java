@@ -8,6 +8,7 @@ import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.PresentDataErrorCode;
 import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.presentData.controller.port.SendPresentDataService;
 import hotspot.user.presentData.controller.request.SendPresentDataRequest;
 import hotspot.user.presentData.controller.response.SendPresentDataResponse;
@@ -33,6 +34,7 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
 
     private final PresentDataRepository presentDataRepository;
     private final FindFamilySubscriptionService findFamilySubscriptionService;
+    private final NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
 
     @Override
     @Transactional
@@ -67,11 +69,31 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
                 dataAmountInKb
         );
         PresentData sentPresentData = presentDataRepository.sendPresentData(presentData);
+        publishPresentDataGiftedEvent(providerFamilySub, sentPresentData, request.dataAmount());
 
         // 6. [To-Do] Redis 사용량 업데이트
         // 주는 사람: 사용량 증가, 받는 사람: 선물 받은 데이터 양 증가?
 
         return SendPresentDataMapper.toSendPresentDataResponse(sentPresentData);
+    }
+
+    private void publishPresentDataGiftedEvent(
+            FamilySubscription providerFamilySub,
+            PresentData sentPresentData,
+            Long requestAmountGb
+    ) {
+        String senderName = providerFamilySub.getSubscription().getMember() != null
+                && providerFamilySub.getSubscription().getMember().getName() != null
+                ? providerFamilySub.getSubscription().getMember().getName()
+                : "사용자";
+
+        userAlertOutboxPublisher.publishPresentDataGifted(
+                sentPresentData.getTargetSubscription().getId(),
+                providerFamilySub.getFamily().getId(),
+                senderName,
+                requestAmountGb + "GB",
+                String.valueOf(sentPresentData.getPresentDataId())
+        );
     }
 
     private void validateDataAmount(Long amountGb) {
