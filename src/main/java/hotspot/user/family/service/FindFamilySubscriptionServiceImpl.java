@@ -1,13 +1,12 @@
 package hotspot.user.family.service;
 
-import hotspot.user.family.domain.FamilySubscription;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.controller.port.FindFamilySubscriptionService;
-import hotspot.user.family.controller.response.FamilySubscriptionResponse;
+import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 

@@ -1,6 +1,5 @@
 package hotspot.user.family.controller.port;
 
-import hotspot.user.family.controller.response.FamilySubscriptionResponse;
 import hotspot.user.family.domain.FamilySubscription;
 
 /**
