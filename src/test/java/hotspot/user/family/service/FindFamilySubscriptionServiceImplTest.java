@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
-import hotspot.user.family.controller.response.FamilySubscriptionResponse;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
@@ -35,7 +34,7 @@ class FindFamilySubscriptionServiceImplTest {
     private FindFamilySubscriptionServiceImpl service;
 
     @Test
-    @DisplayName("회선 ID로 가족 가입 정보를 조회하면 FamilySubscriptionResponse를 반환한다")
+    @DisplayName("회선 ID로 가족 가입 정보를 조회하면 FamilySubscription 도메인을 반환한다")
     void findBySubIdSuccess() {
         // given
         Long subId = 1L;
@@ -62,13 +61,13 @@ class FindFamilySubscriptionServiceImplTest {
         given(repository.findBySubId(subId)).willReturn(Optional.of(familySubscription));
 
         // when
-        FamilySubscriptionResponse response = service.findBySubId(subId);
+        FamilySubscription response = service.findBySubId(subId);
 
         // then
-        assertThat(response.id()).isEqualTo(familySubId);
-        assertThat(response.subscriptionId()).isEqualTo(subId);
-        assertThat(response.familyId()).isEqualTo(familyId);
-        assertThat(response.role()).isEqualTo(FamilyRole.PARENT);
+        assertThat(response.getId()).isEqualTo(familySubId);
+        assertThat(response.getSubscription().getId()).isEqualTo(subId);
+        assertThat(response.getFamily().getId()).isEqualTo(familyId);
+        assertThat(response.getFamilyRole()).isEqualTo(FamilyRole.PARENT);
     }
 
     @Test
@@ -82,5 +81,41 @@ class FindFamilySubscriptionServiceImplTest {
         assertThatThrownBy(() -> service.findBySubId(subId))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("회원 ID로 가족 가입 정보를 조회하면 FamilySubscription 도메인을 반환한다")
+    void findByMemberIdSuccess() {
+        // given
+        Long memberId = 1L;
+        Long subId = 2L;
+        Long familyId = 10L;
+        Long familySubId = 100L;
+
+        Subscription subscription = Subscription.builder()
+                .id(subId)
+                .build();
+
+        Family family = Family.builder()
+                .id(familyId)
+                .build();
+
+        FamilySubscription familySubscription = FamilySubscription.builder()
+                .id(familySubId)
+                .subscription(subscription)
+                .family(family)
+                .familyRole(FamilyRole.PARENT)
+                .priority(-1)
+                .dataLimit(10000)
+                .build();
+
+        given(repository.findByMemberId(memberId)).willReturn(Optional.of(familySubscription));
+
+        // when
+        FamilySubscription response = service.findByMemberId(memberId);
+
+        // then
+        assertThat(response.getId()).isEqualTo(familySubId);
+        assertThat(response.getSubscription().getId()).isEqualTo(subId);
     }
 }

@@ -18,4 +18,6 @@ public interface PresentDataRepository {
     Map<Long, SubUsage> findSubUsage(
             Map<Long, DataPeriod> subPeriodMap
     );
+
+    PresentData sendPresentData(PresentData presentData); // 데이터 선물하기
 }

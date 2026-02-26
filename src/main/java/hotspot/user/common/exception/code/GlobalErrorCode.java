@@ -13,6 +13,7 @@ public enum GlobalErrorCode implements BaseErrorCode {
   METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "COMMON_003", "지원하지 않은 Http Method 입니다."),
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_004", "서버 에러가 발생했습니다."),
   BLOCKED_API(HttpStatus.METHOD_NOT_ALLOWED, "COMMON_005", "운영 환경에서 사용할 수 없는 API 입니다."),
+  VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "COMMON_006", "입력값 유효성 검증에 실패했습니다."),
   ;
 
   private final HttpStatus httpStatus;
