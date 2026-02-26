@@ -3,7 +3,7 @@ package hotspot.user.kafka.mapper.strategy.usage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,18 +49,16 @@ class UsageThresholdAlertEventMappingStrategyTest {
                 "alert-1",
                 "USAGE_THRESHOLD",
                 alertType,
+                100L,
+                null,
                 threshold,
                 null,
                 null,
                 null,
                 null,
-                Instant.parse("2026-02-23T10:15:30Z"),
-                100L,
                 null,
                 null,
-                0L,
-                10,
-                "evt-1"
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
     }
 }
