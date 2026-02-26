@@ -199,6 +199,31 @@ class UserAlertEventsConsumerTest {
         then(acknowledgment).should().acknowledge();
     }
 
+    @Test
+    @DisplayName("family apply result notifications are persisted even without allow setting")
+    void consumeFamilyApplyResultAlwaysAllowed() {
+        UserAlertEvent event = event(101L, null, "evt-family-apply");
+        Notification notification = Notification.builder()
+                .subId(101L)
+                .eventId("evt-family-apply")
+                .notificationType("FAMILY_MEMBER_ADD_APPROVED")
+                .title("승인")
+                .content("추가 승인")
+                .isRead(false)
+                .createdTime(LocalDateTime.of(2026, 2, 23, 10, 15, 30))
+                .build();
+        Notification persisted = persistedNotification(33L, notification);
+        given(mapper.toNotification(event, 101L)).willReturn(notification);
+        given(notificationRepository.insertIfAbsent(notification)).willReturn(persisted);
+
+        consumer.consume(event, acknowledgment);
+
+        then(notificationAllowRepository).shouldHaveNoInteractions();
+        then(notificationRepository).should().insertIfAbsent(notification);
+        then(applicationEventPublisher).should().publishEvent(any(UserAlertNotificationsPersistedEvent.class));
+        then(acknowledgment).should().acknowledge();
+    }
+
     // 테스트용 이벤트 객체를 생성한다.
     private UserAlertEvent event(Long subId, Long familyId, String alertId) {
         return new UserAlertEvent(
