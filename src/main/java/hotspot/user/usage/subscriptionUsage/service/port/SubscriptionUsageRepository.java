@@ -8,4 +8,6 @@ public interface SubscriptionUsageRepository {
     SubscriptionUsage findSubscriptionUsage(
             Long subId,
             DataPeriod dataPeriod);
+
+    long findRemainingPlanKb(Long subId, DataPeriod dataPeriod);
 }

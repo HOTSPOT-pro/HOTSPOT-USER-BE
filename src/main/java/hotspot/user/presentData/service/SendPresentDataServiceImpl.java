@@ -1,5 +1,13 @@
 package hotspot.user.presentData.service;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,76 +16,150 @@ import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.PresentDataErrorCode;
 import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.gift.GiftReceivedEvent;
+import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.presentData.controller.port.SendPresentDataService;
 import hotspot.user.presentData.controller.request.SendPresentDataRequest;
 import hotspot.user.presentData.controller.response.SendPresentDataResponse;
 import hotspot.user.presentData.domain.PresentData;
 import hotspot.user.presentData.domain.mapper.SendPresentDataMapper;
 import hotspot.user.presentData.service.port.PresentDataRepository;
+import hotspot.user.subscription.domain.Subscription;
+import hotspot.user.usage.subscriptionUsage.service.port.SubscriptionUsageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-/**
- * 데이터 선물하기 서비스 구현체
- */
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SendPresentDataServiceImpl implements SendPresentDataService {
 
-    // 선물 데이터 GB => KB 변하기 위해 필요한 상수
     private static final long MIN_PRESENT_AMOUNT_GB = 1L;
     private static final long MAX_PRESENT_AMOUNT_GB = 5L;
-    private static final long GB_TO_KB_UNIT = 1048576L;
+    private static final long GB_TO_KB_UNIT = 1_048_576L;
 
     private final PresentDataRepository presentDataRepository;
     private final FindFamilySubscriptionService findFamilySubscriptionService;
+    private final SubscriptionUsageRepository subscriptionUsageRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
+
+    private final Clock clock;
 
     @Override
     @Transactional
     public SendPresentDataResponse sendPresentData(Long memberId, SendPresentDataRequest request) {
 
-        log.info("전달 받은 memberId: {}, 전달 받은 subId: {}", memberId, request.targetSubId());
+        long giftKb = toKb(request.dataAmount());
 
-        // 1. 보내는 사람과 받는 사람의 가족 정보 조회
-        // 보내는 사람: memberId 기반 조회
-        FamilySubscription providerFamilySub = findFamilySubscriptionService.findByMemberId(memberId);
+        // 1) 입력 검증 (단위/범위)
+        validateGiftAmountGb(request.dataAmount());
 
-        // 받는 사람: subId 기반 조회
-        FamilySubscription targetFamilySub = findFamilySubscriptionService.findBySubId(request.targetSubId());
+        // 2) 도메인 조회
+        FamilySubscription giver = findFamilySubscriptionService.findByMemberId(memberId);
+        FamilySubscription receiver = findFamilySubscriptionService.findBySubId(request.targetSubId());
 
-        // 3. 선물 가능 단위 및 범위 확인 (1GB ~ 5GB, 1GB 단위)
-        validateDataAmount(request.dataAmount());
+        // 3) 권한/관계 검증 (같은 가족인지)
+        validateSameFamily(giver, receiver);
 
-        // KB 단위로 변환 (1GB = 1,048,576 KB)
-        long dataAmountInKb = request.dataAmount() * GB_TO_KB_UNIT;
+        // 4) 정책 검증
+        validateEnoughPlanRemaining(giver.getSubscription(), giftKb);
+        validateMonthlyGiftLimit(giver.getSubscription().getId(), giftKb);
 
-        // [To-Do] 4. 현재 남은 데이터 양보다 더 많이 보내는지 확인
+        // 5) 저장
+        PresentData saved = savePresentData(giver, receiver, giftKb);
 
-        // 5. 같은 가족 구성원인지 확인 (가족 정보 기반 검증)
-        if (!providerFamilySub.getFamily().getId().equals(targetFamilySub.getFamily().getId())) {
-            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
-        }
+        // 6) 이벤트 발행 (Outbox로 흘러가게)
+        publishGiftReceivedEvent(giver, receiver, saved, giftKb);
 
-        // 6. DB 기록 저장
-        PresentData presentData = SendPresentDataMapper.toPresentData(
-                providerFamilySub.getSubscription(),
-                targetFamilySub.getSubscription(),
-                dataAmountInKb
-        );
-        PresentData sentPresentData = presentDataRepository.sendPresentData(presentData);
-
-        // 6. [To-Do] Redis 사용량 업데이트
-        // 주는 사람: 사용량 증가, 받는 사람: 선물 받은 데이터 양 증가?
-
-        return SendPresentDataMapper.toSendPresentDataResponse(sentPresentData);
+        return SendPresentDataMapper.toSendPresentDataResponse(saved);
     }
 
-    private void validateDataAmount(Long amountGb) {
+    private long toKb(Long amountGb) {
+        if (amountGb == null) {
+            return 0L;
+        }
+        return amountGb * GB_TO_KB_UNIT;
+    }
+
+    private void validateGiftAmountGb(Long amountGb) {
         if (amountGb == null || amountGb < MIN_PRESENT_AMOUNT_GB || amountGb > MAX_PRESENT_AMOUNT_GB) {
             log.warn("데이터 선물 유효성 검증 실패: 요청량={}GB", amountGb);
             throw new ApplicationException(PresentDataErrorCode.PRESENT_DATA_INVALID_AMOUNT);
         }
+    }
+
+    private void validateSameFamily(FamilySubscription giver, FamilySubscription receiver) {
+        if (!giver.getFamily().getId().equals(receiver.getFamily().getId())) {
+            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
+        }
+    }
+
+    private void validateEnoughPlanRemaining(Subscription giverSubscription, long giftKb) {
+
+        DataPeriod period = giverSubscription.getPlan().getDataPeriod();
+
+        long remainingKb =
+                subscriptionUsageRepository.findRemainingPlanKb(giverSubscription.getId(), period);
+
+        if (remainingKb < giftKb) {
+            throw new ApplicationException(PresentDataErrorCode.NOT_ENOUGH_DATA);
+        }
+    }
+
+    private void validateMonthlyGiftLimit(Long giverSubId, long giftKb) {
+
+        YearMonth nowYm = YearMonth.now(clock);
+
+        LocalDateTime start = nowYm.atDay(1).atStartOfDay();
+        LocalDateTime end = nowYm.plusMonths(1).atDay(1).atStartOfDay();
+
+        long sentThisMonthKb =
+                presentDataRepository.sumMonthlySentKb(giverSubId, start, end);
+
+        long maxMonthlyGiftKb = MAX_PRESENT_AMOUNT_GB * GB_TO_KB_UNIT;
+
+        if (sentThisMonthKb + giftKb > maxMonthlyGiftKb) {
+            throw new ApplicationException(PresentDataErrorCode.MONTHLY_GIFT_LIMIT_EXCEEDED);
+        }
+    }
+
+    private PresentData savePresentData(
+            FamilySubscription giver,
+            FamilySubscription receiver,
+            long giftKb
+    ) {
+        PresentData presentData = SendPresentDataMapper.toPresentData(
+                giver.getSubscription(),
+                receiver.getSubscription(),
+                giftKb
+        );
+        return presentDataRepository.sendPresentData(presentData);
+    }
+
+    private void publishGiftReceivedEvent(
+            FamilySubscription giver,
+            FamilySubscription receiver,
+            PresentData saved,
+            long giftKb
+    ) {
+
+        String yyyyMM = YearMonth.now(clock).toString().replace("-", "");
+        String yyyyMMdd = LocalDate.now(clock)
+                .format(DateTimeFormatter.BASIC_ISO_DATE);
+
+        eventPublisher.publishEvent(
+                new GiftReceivedEvent(
+                        "GIFT_RECEIVED",
+                        receiver.getSubscription().getId(),
+                        giver.getSubscription().getId(),
+                        saved.getPresentDataId(),
+                        giftKb,   // giftLimitBytes
+                        giftKb,   // giftAmountBytes
+                        yyyyMM,
+                        yyyyMMdd,
+                        UUID.randomUUID().toString()
+                )
+        );
     }
 }
