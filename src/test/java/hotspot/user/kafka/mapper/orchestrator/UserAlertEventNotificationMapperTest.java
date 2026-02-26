@@ -3,7 +3,6 @@ package hotspot.user.kafka.mapper.orchestrator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -48,34 +47,32 @@ class UserAlertEventNotificationMapperTest {
     @Test
     @DisplayName("toNotification maps deterministic fields")
     void toNotificationSuccess() {
-        Instant occurredAt = Instant.parse("2026-02-23T10:15:30Z");
+        LocalDateTime createdTime = LocalDateTime.of(2026, 2, 23, 10, 15, 30);
         UserAlertEvent event = new UserAlertEvent(
                 "alert-1",
                 "USAGE_THRESHOLD",
                 "PLAN_REMAINING",
+                101L,
+                null,
                 "30",
                 null,
                 null,
                 null,
                 null,
-                occurredAt,
-                101L,
                 null,
                 null,
-                0L,
-                30,
-                "evt-100"
+                createdTime
         );
 
         Notification notification = mapper.toNotification(event);
 
         assertThat(notification.getSubId()).isEqualTo(101L);
-        assertThat(notification.getEventId()).isEqualTo("evt-100");
+        assertThat(notification.getEventId()).isEqualTo("alert-1");
         assertThat(notification.getNotificationType()).isEqualTo("SINGLE_USAGE_THRESHOLD_30");
         assertThat(notification.getTitle()).isNotBlank();
         assertThat(notification.getContent()).contains("30%");
         assertThat(notification.getIsRead()).isFalse();
-        assertThat(notification.getCreatedTime()).isEqualTo(LocalDateTime.of(2026, 2, 23, 10, 15, 30));
+        assertThat(notification.getCreatedTime()).isEqualTo(createdTime);
     }
 
     @Test
@@ -95,18 +92,16 @@ class UserAlertEventNotificationMapperTest {
                 "alert-1",
                 "USAGE_THRESHOLD",
                 "PLAN_REMAINING",
+                null,
+                null,
                 "30",
                 null,
                 null,
                 null,
                 null,
-                Instant.parse("2026-02-23T10:15:30Z"),
                 null,
                 null,
-                null,
-                0L,
-                30,
-                "evt-100"
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
 
         assertThatThrownBy(() -> mapper.toNotification(event))
@@ -121,18 +116,16 @@ class UserAlertEventNotificationMapperTest {
                 "alert-1",
                 "USAGE_THRESHOLD",
                 "PLAN_REMAINING",
+                0L,
+                null,
                 "30",
                 null,
                 null,
                 null,
                 null,
-                Instant.parse("2026-02-23T10:15:30Z"),
-                0L,
                 null,
                 null,
-                0L,
-                30,
-                "evt-100"
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
 
         assertThatThrownBy(() -> mapper.toNotification(event))
@@ -145,18 +138,16 @@ class UserAlertEventNotificationMapperTest {
                 "alert-1",
                 eventType,
                 alertType,
+                100L,
+                null,
                 threshold,
                 null,
                 null,
                 null,
                 null,
-                Instant.parse("2026-02-23T10:15:30Z"),
-                100L,
                 null,
                 null,
-                0L,
-                10,
-                "evt-1"
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
     }
 }
