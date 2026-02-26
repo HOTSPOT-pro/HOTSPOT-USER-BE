@@ -1,5 +1,7 @@
 package hotspot.user.presentData.service;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,7 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
     private static final long MIN_PRESENT_AMOUNT_GB = 1L;
     private static final long MAX_PRESENT_AMOUNT_GB = 5L;
     private static final long GB_TO_KB_UNIT = 1048576L;
+    private static final String DEFAULT_SENDER_NAME = "사용자";
 
     private final PresentDataRepository presentDataRepository;
     private final FindFamilySubscriptionService findFamilySubscriptionService;
@@ -82,10 +85,10 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
             PresentData sentPresentData,
             Long requestAmountGb
     ) {
-        String senderName = providerFamilySub.getSubscription().getMember() != null
-                && providerFamilySub.getSubscription().getMember().getName() != null
-                ? providerFamilySub.getSubscription().getMember().getName()
-                : "사용자";
+        String senderName = Optional.ofNullable(providerFamilySub.getSubscription())
+                .map(subscription -> subscription.getMember())
+                .map(member -> member.getName())
+                .orElse(DEFAULT_SENDER_NAME);
 
         userAlertOutboxPublisher.publishPresentDataGifted(
                 sentPresentData.getTargetSubscription().getId(),
