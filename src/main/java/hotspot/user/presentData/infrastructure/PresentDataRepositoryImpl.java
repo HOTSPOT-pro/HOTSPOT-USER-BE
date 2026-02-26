@@ -58,4 +58,14 @@ public class PresentDataRepositoryImpl implements PresentDataRepository {
     ) {
         return redisRepository.findUsageAndLimit(subPeriodMap);
     }
+
+    // 데이터 선물하기
+    @Override
+    public PresentData sendPresentData(PresentData presentData) {
+        PresentDataEntity entity = PresentDataEntity.domainToEntity(presentData);
+        PresentDataEntity savedEntity = presentDataJpaRepository.save(entity);
+        return savedEntity.entityToDomain();
+
+
+    }
 }
