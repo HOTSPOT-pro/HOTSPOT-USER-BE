@@ -7,6 +7,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.common.exception.code.PresentDataErrorCode;
+import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.presentData.controller.port.SendPresentDataService;
@@ -34,6 +35,7 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
 
     private final PresentDataRepository presentDataRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
+    private final FindFamilySubscriptionService findFamilySubscriptionService;
 
     @Override
     @Transactional
@@ -43,30 +45,23 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
 
         // 1. 보내는 사람과 받는 사람의 가족 정보 조회
         // 보내는 사람: memberId 기반 조회
-        FamilySubscription providerFamilySub = familySubscriptionRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new ApplicationException(MemberErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
+        FamilySubscription providerFamilySub = findFamilySubscriptionService.findByMemberId(memberId);
 
         // 받는 사람: subId 기반 조회
-        FamilySubscription targetFamilySub = familySubscriptionRepository.findBySubId(request.targetSubId())
-                .orElseThrow(() -> new ApplicationException(MemberErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
+        FamilySubscription targetFamilySub = findFamilySubscriptionService.findBySubId(request.targetSubId());
 
-        // 2. 같은 가족 구성원인지 확인
-        if (!providerFamilySub.getFamily().getId().equals(targetFamilySub.getFamily().getId())) {
-            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
-        }
-
-        // 3. 자신에게 선물하는지 확인
-        if (providerFamilySub.getSubscription().getId().equals(targetFamilySub.getSubscription().getId())) {
-            throw new ApplicationException(PresentDataErrorCode.PRESENT_DATA_SELF_GIFT);
-        }
-
-        // 4. 선물 가능 단위 및 범위 확인 (1GB ~ 5GB, 1GB 단위)
+        // 3. 선물 가능 단위 및 범위 확인 (1GB ~ 5GB, 1GB 단위)
         validateDataAmount(request.dataAmount());
 
         // KB 단위로 변환 (1GB = 1,048,576 KB)
         long dataAmountInKb = request.dataAmount() * GB_TO_KB_UNIT;
 
-        // [To-Do] 5. 현재 남은 데이터 양보다 더 많이 보내는지 확인
+        // [To-Do] 4. 현재 남은 데이터 양보다 더 많이 보내는지 확인
+
+        // 5. 같은 가족 구성원인지 확인 (가족 정보 기반 검증)
+        if (!providerFamilySub.getFamily().getId().equals(targetFamilySub.getFamily().getId())) {
+            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
+        }
 
         // 6. DB 기록 저장
         PresentData presentData = SendPresentDataMapper.toPresentData(

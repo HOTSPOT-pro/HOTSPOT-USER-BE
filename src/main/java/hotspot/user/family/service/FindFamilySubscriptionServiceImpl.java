@@ -1,5 +1,6 @@
 package hotspot.user.family.service;
 
+import hotspot.user.family.domain.FamilySubscription;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +22,14 @@ public class FindFamilySubscriptionServiceImpl implements FindFamilySubscription
     private final FamilySubscriptionRepository repository;
 
     @Override
-    public FamilySubscriptionResponse findBySubId(Long subId) {
+    public FamilySubscription findBySubId(Long subId) {
         return repository.findBySubId(subId)
-                .map(FamilySubscriptionResponse::from)
+                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
+    }
+
+    @Override
+    public FamilySubscription findByMemberId(Long memberId) {
+        return repository.findByMemberId(memberId)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
     }
 }
