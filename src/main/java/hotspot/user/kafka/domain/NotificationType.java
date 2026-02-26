@@ -57,7 +57,11 @@ public enum NotificationType {
         }
     }
 
+    public static boolean isAlwaysAllowed(NotificationType type) {
+        return ALWAYS_ALLOWED_TYPES.contains(type);
+    }
+
     public static boolean isAlwaysAllowed(String rawType) {
-        return ALWAYS_ALLOWED_TYPES.contains(from(rawType));
+        return isAlwaysAllowed(from(rawType));
     }
 }
