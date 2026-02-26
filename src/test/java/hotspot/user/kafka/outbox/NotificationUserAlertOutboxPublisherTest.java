@@ -25,7 +25,7 @@ class NotificationUserAlertOutboxPublisherTest {
     private NotificationUserAlertOutboxPublisher publisher;
 
     @Test
-    @DisplayName("publishPolicyApplied: SCHEDULED 정책은 TIME_WINDOW_POLICY 이벤트로 저장한다")
+    @DisplayName("publishPolicyApplied emits TIME_WINDOW_POLICY event")
     void publishPolicyAppliedWithScheduledType() {
         publisher.publishPolicyApplied(101L, 11L, "study-time", PolicyType.SCHEDULED);
 
@@ -33,7 +33,7 @@ class NotificationUserAlertOutboxPublisherTest {
     }
 
     @Test
-    @DisplayName("publishPolicyReleased: ONCE 정책은 IMMEDIATE_BLOCK 이벤트로 저장한다")
+    @DisplayName("publishPolicyReleased emits IMMEDIATE_BLOCK event")
     void publishPolicyReleasedWithImmediateType() {
         publisher.publishPolicyReleased(202L, 22L, "night-block", PolicyType.ONCE);
 
@@ -41,7 +41,7 @@ class NotificationUserAlertOutboxPublisherTest {
     }
 
     @Test
-    @DisplayName("publishServiceAccessApplied: 서비스 차단 적용 이벤트를 저장한다")
+    @DisplayName("publishServiceAccessApplied emits service access applied event")
     void publishServiceAccessApplied() {
         publisher.publishServiceAccessApplied(303L, 33L, "YouTube");
 
@@ -49,7 +49,7 @@ class NotificationUserAlertOutboxPublisherTest {
     }
 
     @Test
-    @DisplayName("publishServiceAccessReleased: subId가 없으면 familyId를 aggregateId로 사용한다")
+    @DisplayName("publishServiceAccessReleased uses familyId as aggregateId when subId missing")
     void publishServiceAccessReleasedUsesFamilyIdAsAggregateIdWhenSubIdMissing() {
         publisher.publishServiceAccessReleased(null, 44L, "Instagram");
 
@@ -67,7 +67,7 @@ class NotificationUserAlertOutboxPublisherTest {
     }
 
     @Test
-    @DisplayName("publishPresentDataGifted: 선물 데이터 이벤트를 저장한다")
+    @DisplayName("publishPresentDataGifted emits present data event")
     void publishPresentDataGifted() {
         publisher.publishPresentDataGifted(505L, 55L, "Alice", "1GB", "gift-1");
 
@@ -103,8 +103,7 @@ class NotificationUserAlertOutboxPublisherTest {
 
         UserAlertEvent event = (UserAlertEvent) payloadCaptor.getValue();
         assertThat(event.alertId()).isNotBlank();
-        assertThat(event.sourceEventId()).isEqualTo(event.alertId());
-        assertThat(event.occurredAt()).isNotNull();
+        assertThat(event.createdTime()).isNotNull();
         assertThat(event.eventType()).isEqualTo(expectedEventType);
         assertThat(event.alertType()).isEqualTo(expectedAlertType);
         assertThat(event.policyName()).isEqualTo(expectedPolicyName);
