@@ -1,6 +1,7 @@
 package hotspot.user.kafka.outbox;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -119,7 +120,7 @@ public class NotificationUserAlertOutboxPublisher {
                 eventId,
                 eventType,
                 alertType,
-                Instant.now(),
+                LocalDateTime.now(ZoneOffset.UTC),
                 subId,
                 familyId
         );
@@ -130,9 +131,10 @@ public class NotificationUserAlertOutboxPublisher {
         private final String alertId;
         private final String eventType;
         private final String alertType;
-        private final Instant occurredAt;
+        private final LocalDateTime createdTime;
         private final Long subId;
         private final Long familyId;
+        private String threshold;
         private String policyName;
         private String serviceName;
         private String presentSenderName;
@@ -143,14 +145,14 @@ public class NotificationUserAlertOutboxPublisher {
                 String alertId,
                 String eventType,
                 String alertType,
-                Instant occurredAt,
+                LocalDateTime createdTime,
                 Long subId,
                 Long familyId
         ) {
             this.alertId = alertId;
             this.eventType = eventType;
             this.alertType = alertType;
-            this.occurredAt = occurredAt;
+            this.createdTime = createdTime;
             this.subId = subId;
             this.familyId = familyId;
         }
@@ -181,18 +183,16 @@ public class NotificationUserAlertOutboxPublisher {
                     alertId,
                     eventType,
                     alertType,
-                    null,
+                    subId,
+                    familyId,
+                    threshold,
                     policyName,
                     serviceName,
                     presentSenderName,
                     presentAmount,
-                    occurredAt,
-                    subId,
-                    familyId,
                     giftId,
-                    0L,
-                    0,
-                    alertId
+                    null,
+                    createdTime
             );
         }
     }
