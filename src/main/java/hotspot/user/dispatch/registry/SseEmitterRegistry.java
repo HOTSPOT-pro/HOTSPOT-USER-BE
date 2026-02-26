@@ -41,7 +41,11 @@ public class SseEmitterRegistry {
     public void closeAllBySubId(Long subId) {
         findBySubId(subId).forEach(registeredEmitter -> {
             remove(registeredEmitter.emitterId());
-            registeredEmitter.emitter().complete();
+            try {
+                registeredEmitter.emitter().complete();
+            } catch (RuntimeException ignored) {
+                // 연결 종료 중 예외가 발생해도 다른 emitter 정리는 계속 진행한다.
+            }
         });
     }
 
