@@ -6,7 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.app.AppBlockListUpdateEvent;
 import hotspot.user.policy.controller.port.UpdateAppBlockedServiceService;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
@@ -38,6 +41,9 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final AppBlockedServiceRepository appBlockedServiceRepository;
     private final NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
+
+    // ✅ 정책 동기화 outbox(스냅샷 이벤트)
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public UpdateAppBlockedServiceResponse updateAppBlockedService(
@@ -87,12 +93,27 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
         }
         publishServiceAccessAlerts(subId, familySub.getFamily().getId(), toAddIds, toRemoveIds);
 
-        List<Long> finalBlockedIdList = blockedServiceSubRepository.findActiveServiceIdsBySubId(subId);
+        List<Long> finalBlockedIdList =
+                blockedServiceSubRepository.findActiveServiceIdsBySubId(subId);
+
+        // Outbox 이벤트 발행: 스냅샷(list) 기반
+        publishAppBlockSnapshotEvent(subId, finalBlockedIdList);
 
         return AppBlockedServiceMapper.toUpdateAppBlockedServiceResponse(
                 familySub.getFamily().getId(),
                 subId,
                 finalBlockedIdList);
+    }
+
+    private void publishAppBlockSnapshotEvent(Long subId, List<Long> finalBlockedIds) {
+        eventPublisher.publishEvent(
+                new AppBlockListUpdateEvent(
+                        "APP_BLOCK_LIST_UPDATED",
+                        subId,
+                        finalBlockedIds,
+                        UUID.randomUUID().toString()
+                )
+        );
     }
 
     // 변경된 서비스 ID 기준으로 차단/해제 알림 outbox 이벤트를 발행한다.
