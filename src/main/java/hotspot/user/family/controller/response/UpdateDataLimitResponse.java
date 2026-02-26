@@ -13,7 +13,7 @@ import lombok.Builder;
 public record UpdateDataLimitResponse(
         Long familyId,
         Long subId,
-        int dataLimit,
+        long dataLimit,
         boolean isLocked
 ) {
 }
