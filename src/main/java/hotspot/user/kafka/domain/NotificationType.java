@@ -28,11 +28,15 @@ public enum NotificationType {
     SERVICE_ACCESS_RELEASED(NotificationCategory.APP_SERVICE),
     PRESENT_DATA(NotificationCategory.PRESENT),
     FAMILY_MEMBER_ADD_APPROVED(NotificationCategory.POLICY),
-    FAMILY_MEMBER_ADD_REJECTED(NotificationCategory.POLICY);
+    FAMILY_MEMBER_ADD_REJECTED(NotificationCategory.POLICY),
+    FAMILY_MEMBER_REMOVE_APPROVED(NotificationCategory.POLICY),
+    FAMILY_MEMBER_REMOVE_REJECTED(NotificationCategory.POLICY);
 
     private static final Set<NotificationType> ALWAYS_ALLOWED_TYPES = EnumSet.of(
             FAMILY_MEMBER_ADD_APPROVED,
-            FAMILY_MEMBER_ADD_REJECTED
+            FAMILY_MEMBER_ADD_REJECTED,
+            FAMILY_MEMBER_REMOVE_APPROVED,
+            FAMILY_MEMBER_REMOVE_REJECTED
     );
 
     private final NotificationCategory category;
