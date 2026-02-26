@@ -5,11 +5,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
-import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.common.exception.code.PresentDataErrorCode;
 import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.domain.FamilySubscription;
-import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.presentData.controller.port.SendPresentDataService;
 import hotspot.user.presentData.controller.request.SendPresentDataRequest;
 import hotspot.user.presentData.controller.response.SendPresentDataResponse;
@@ -34,7 +32,6 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
     private static final long GB_TO_KB_UNIT = 1048576L;
 
     private final PresentDataRepository presentDataRepository;
-    private final FamilySubscriptionRepository familySubscriptionRepository;
     private final FindFamilySubscriptionService findFamilySubscriptionService;
 
     @Override

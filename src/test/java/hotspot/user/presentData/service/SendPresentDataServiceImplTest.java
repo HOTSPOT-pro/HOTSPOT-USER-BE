@@ -5,8 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,11 +15,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
-import hotspot.user.common.exception.code.MemberErrorCode;
+import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.PresentDataErrorCode;
+import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
-import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.presentData.controller.request.SendPresentDataRequest;
 import hotspot.user.presentData.controller.response.SendPresentDataResponse;
 import hotspot.user.presentData.domain.PresentData;
@@ -37,7 +35,7 @@ class SendPresentDataServiceImplTest {
     private PresentDataRepository presentDataRepository;
 
     @Mock
-    private FamilySubscriptionRepository familySubscriptionRepository;
+    private FindFamilySubscriptionService findFamilySubscriptionService;
 
     @InjectMocks
     private SendPresentDataServiceImpl sendPresentDataService;
@@ -91,8 +89,8 @@ class SendPresentDataServiceImplTest {
                 .dataAmount(ONE_GB_IN_KB) // 저장된 값 (KB)
                 .build();
 
-        when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
-        when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.of(targetFamilySub));
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(targetSubId)).thenReturn(targetFamilySub);
         when(presentDataRepository.sendPresentData(any(PresentData.class))).thenReturn(savedPresentData);
 
         // when
@@ -109,12 +107,13 @@ class SendPresentDataServiceImplTest {
     void sendPresentDataProviderFamilyNotFound() {
         // given
         SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 1L);
-        when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
+        when(findFamilySubscriptionService.findByMemberId(memberId))
+                .thenThrow(new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
 
         // when & then
         assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
                 .isInstanceOf(ApplicationException.class)
-                .hasFieldOrPropertyWithValue("code", MemberErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND);
+                .hasFieldOrPropertyWithValue("code", FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND);
     }
 
     @Test
@@ -122,13 +121,14 @@ class SendPresentDataServiceImplTest {
     void sendPresentDataTargetFamilyNotFound() {
         // given
         SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 1L);
-        when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
-        when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.empty());
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(targetSubId))
+                .thenThrow(new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
 
         // when & then
         assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
                 .isInstanceOf(ApplicationException.class)
-                .hasFieldOrPropertyWithValue("code", MemberErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND);
+                .hasFieldOrPropertyWithValue("code", FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND);
     }
 
     @Test
@@ -142,8 +142,8 @@ class SendPresentDataServiceImplTest {
                 .build();
 
         SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 1L);
-        when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
-        when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.of(otherFamilySub));
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(targetSubId)).thenReturn(otherFamilySub);
 
         // when & then
         assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
@@ -156,8 +156,8 @@ class SendPresentDataServiceImplTest {
     void sendPresentDataSelfGift() {
         // given
         SendPresentDataRequest request = new SendPresentDataRequest(providerSub.getId(), 1L);
-        when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
-        when(familySubscriptionRepository.findBySubId(providerSub.getId())).thenReturn(Optional.of(providerFamilySub));
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(providerSub.getId())).thenReturn(providerFamilySub);
 
         // when & then
         assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
@@ -170,8 +170,8 @@ class SendPresentDataServiceImplTest {
     void sendPresentDataInvalidAmountTooSmall() {
         // given
         SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 0L);
-        when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
-        when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.of(targetFamilySub));
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(targetSubId)).thenReturn(targetFamilySub);
 
         // when & then
         assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
@@ -184,8 +184,8 @@ class SendPresentDataServiceImplTest {
     void sendPresentDataInvalidAmountTooLarge() {
         // given
         SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 6L);
-        when(familySubscriptionRepository.findByMemberId(memberId)).thenReturn(Optional.of(providerFamilySub));
-        when(familySubscriptionRepository.findBySubId(targetSubId)).thenReturn(Optional.of(targetFamilySub));
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(targetSubId)).thenReturn(targetFamilySub);
 
         // when & then
         assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
