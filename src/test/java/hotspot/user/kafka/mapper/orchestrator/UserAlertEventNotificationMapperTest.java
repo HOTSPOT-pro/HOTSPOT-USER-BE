@@ -14,6 +14,7 @@ import hotspot.user.common.exception.code.KafkaErrorCode;
 import hotspot.user.kafka.domain.NotificationType;
 import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.kafka.mapper.strategy.appservice.AppServiceAlertEventMappingStrategy;
+import hotspot.user.kafka.mapper.strategy.family.FamilyMemberApplyAlertEventMappingStrategy;
 import hotspot.user.kafka.mapper.strategy.policy.PolicyAlertEventMappingStrategy;
 import hotspot.user.kafka.mapper.strategy.present.PresentDataAlertEventMappingStrategy;
 import hotspot.user.kafka.mapper.strategy.usage.UsageThresholdAlertEventMappingStrategy;
@@ -25,7 +26,8 @@ class UserAlertEventNotificationMapperTest {
             new UsageThresholdAlertEventMappingStrategy(),
             new PolicyAlertEventMappingStrategy(),
             new AppServiceAlertEventMappingStrategy(),
-            new PresentDataAlertEventMappingStrategy()
+            new PresentDataAlertEventMappingStrategy(),
+            new FamilyMemberApplyAlertEventMappingStrategy()
     ));
 
     @Test
@@ -42,6 +44,54 @@ class UserAlertEventNotificationMapperTest {
         UserAlertEvent event = event("USAGE_THRESHOLD", "GIFT_REMAINING", "10");
 
         assertThat(mapper.map(event)).isEqualTo(mapper.map(event));
+    }
+
+    @Test
+    @DisplayName("maps family member apply approved with targetName")
+    void mapFamilyMemberApplyApproved() {
+        UserAlertEvent event = new UserAlertEvent(
+                "alert-2",
+                "FAMILY_MEMBER_ADD",
+                "APPROVED",
+                null,
+                200L,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "Alice",
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
+        );
+
+        assertThat(mapper.map(event).notificationType())
+                .isEqualTo(NotificationType.FAMILY_MEMBER_ADD_APPROVED);
+        assertThat(mapper.map(event).content().body()).contains("Alice");
+    }
+
+    @Test
+    @DisplayName("maps family member remove rejected with targetName")
+    void mapFamilyMemberRemoveRejected() {
+        UserAlertEvent event = new UserAlertEvent(
+                "alert-3",
+                "FAMILY_MEMBER_REMOVE",
+                "REJECTED",
+                null,
+                200L,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "Bob",
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
+        );
+
+        assertThat(mapper.map(event).notificationType())
+                .isEqualTo(NotificationType.FAMILY_MEMBER_REMOVE_REJECTED);
+        assertThat(mapper.map(event).content().body()).contains("Bob");
     }
 
     @Test
