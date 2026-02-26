@@ -42,27 +42,53 @@ public class UserAlertEventsConsumer {
             containerFactory = "userAlertKafkaListenerContainerFactory"
     )
     public void consume(UserAlertEvent event, Acknowledgment acknowledgment) {
-        List<Long> targetSubIds = resolveTargetSubIds(event);
+        List<Long> targetSubIds;
+        try {
+            targetSubIds = resolveTargetSubIds(event);
+        } catch (ApplicationException ex) {
+            log.warn(
+                    "Skip invalid target for event. eventId={}, subId={}, familyId={}, errorCode={}, reason={}",
+                    event.alertId(),
+                    event.subId(),
+                    event.familyId(),
+                    ex.getCode().getCustomCode(),
+                    ex.getMessage()
+            );
+            acknowledgment.acknowledge();
+            return;
+        }
 
         List<Notification> persistedNotifications = new ArrayList<>();
         for (Long targetSubId : targetSubIds) {
-            Notification notification = mapper.toNotification(event, targetSubId);
+            Notification notification;
+            try {
+                notification = mapper.toNotification(event, targetSubId);
+            } catch (ApplicationException ex) {
+                log.warn(
+                        "Skip invalid notification mapping. subId={}, eventId={}, errorCode={}, reason={}",
+                        targetSubId,
+                        event.alertId(),
+                        ex.getCode().getCustomCode(),
+                        ex.getMessage()
+                );
+                continue;
+            }
             NotificationCategory category;
 
             try {
                 NotificationType notificationType = NotificationType.from(notification.getNotificationType());
-                category = NotificationType.isAlwaysAllowed(notificationType.name())
+                category = NotificationType.isAlwaysAllowed(notificationType)
                         ? null
                         : notificationType.category();
             } catch (ApplicationException ex) {
                 log.warn(
-                        "Skip invalid notification type. subId={}, eventId={}, notificationType={}",
+                        "Skip invalid notification type. subId={}, eventId={}, notificationType={}, errorCode={}",
                         targetSubId,
                         event.alertId(),
-                        notification.getNotificationType()
+                        notification.getNotificationType(),
+                        ex.getCode().getCustomCode()
                 );
-                acknowledgment.acknowledge();
-                return;
+                continue;
             }
 
             if (category != null && !isNotificationAllowed(targetSubId, category)) {
