@@ -37,6 +37,14 @@ public class SseEmitterRegistry {
         removeFromBucket(emittersBySubId, subId, emitterId);
     }
 
+    // 특정 subId에 연결된 모든 SSE 연결을 강제로 종료하고 레지스트리에서 제거한다.
+    public void closeAllBySubId(Long subId) {
+        findBySubId(subId).forEach(registeredEmitter -> {
+            remove(registeredEmitter.emitterId());
+            registeredEmitter.emitter().complete();
+        });
+    }
+
     // 특정 subId에 연결된 모든 SSE 연결을 조회한다.
     public List<RegisteredEmitter> findBySubId(Long subId) {
         Map<String, SseEmitter> bucket = emittersBySubId.get(subId);
