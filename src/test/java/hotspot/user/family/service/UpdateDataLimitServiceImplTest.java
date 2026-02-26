@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
 
-import hotspot.user.outbox.consistencyOutbox.domain.event.family.limit.FamilySubLimitChangedEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +16,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
@@ -27,8 +27,8 @@ import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.outbox.consistencyOutbox.domain.event.family.limit.FamilySubLimitChangedEvent;
 import hotspot.user.subscription.domain.Subscription;
-import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * 구성원의 데이터 한도 조정하는 서비스 단위 테스트
@@ -87,7 +87,7 @@ class UpdateDataLimitServiceImplTest {
 
         assertThat(event.familyId()).isEqualTo(familyId);
         assertThat(event.subId()).isEqualTo(subId);
-        
+
         long expectedKb = newDataLimitGb * GB_TO_KB_UNIT;
         assertThat(event.newLimit()).isEqualTo(expectedKb);
     }
