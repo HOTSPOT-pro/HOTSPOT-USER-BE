@@ -1,5 +1,6 @@
 package hotspot.user.presentData.service.port;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -15,9 +16,10 @@ public interface PresentDataRepository {
 
     Map<Long, String> findGiftGiverNames(List<Long> giftIds);
 
-    Map<Long, SubUsage> findSubUsage(
-            Map<Long, DataPeriod> subPeriodMap
-    );
+    Map<Long, SubUsage> findSubUsage(Map<Long, DataPeriod> subPeriodMap);
 
-    PresentData sendPresentData(PresentData presentData); // 데이터 선물하기
+    PresentData sendPresentData(PresentData presentData);
+
+    long sumMonthlySentKb(Long providerSubId, LocalDateTime start, LocalDateTime end);
+
 }
