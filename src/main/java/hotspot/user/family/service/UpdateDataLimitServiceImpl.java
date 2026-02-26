@@ -3,23 +3,30 @@ package hotspot.user.family.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import hotspot.user.common.constant.FamilyConstant;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
+import hotspot.user.family.domain.FamilySubDataLimit;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.domain.mapper.FamilySubscriptionMapper;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.subscription.service.port.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 구성원 데이터 한도 및 즉시 차단 여부 업데이트 서비스 구현체
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
     private final FamilySubscriptionRepository familySubscriptionRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     @Override
     public UpdateDataLimitResponse updateDataLimit(UpdateDataLimitRequest request,
@@ -38,11 +45,15 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
             throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
         }
 
-        // 3. 데이터 한도 업데이트
-        familySub.updateDataLimit(request.dataLimit());
+        // 4. 데이터 한도 업데이트
+        long dataLimitKb = request.dataLimit() * 1024L * 1024L;
+        familySubscriptionRepository.updateDataLimit(request.subId(), dataLimitKb);
 
-        FamilySubscription savedFamilySub = familySubscriptionRepository.save(familySub);
+        // 5. 차단 여부 업데이트 (Selective Update)
+        subscriptionRepository.updateLockedStatus(request.subId(), request.isLocked());
 
-        return FamilySubscriptionMapper.toUpdateDataLimitResponse(savedFamilySub);
+        // 6. 실제 DB에서 최종 상태를 다시 읽어와서 응답 (데이터 정합성 보장)
+        FamilySubDataLimit savedDataLimit = familySubscriptionRepository.findDataLimitBySubId(request.subId());
+        return FamilySubscriptionMapper.toUpdateDataLimitResponse(request.subId(), savedDataLimit);
     }
 }
