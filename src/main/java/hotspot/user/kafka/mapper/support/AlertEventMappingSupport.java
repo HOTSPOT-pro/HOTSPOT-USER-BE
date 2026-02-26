@@ -51,7 +51,7 @@ public final class AlertEventMappingSupport {
 
     // 이벤트의 임계치 문자열을 가져와 숫자만 추출해 임계치로 반환한다.
     public static int resolveThreshold(UserAlertEvent event) {
-        String thresholdRaw = defaultIfBlank(event.threshold(), String.valueOf(event.remainingPct()));
+        String thresholdRaw = defaultIfBlank(event.threshold(), "");
         Matcher matcher = NUMBER_PATTERN.matcher(thresholdRaw);
         if (!matcher.find()) {
             throw new ApplicationException(KafkaErrorCode.UNSUPPORTED_KAFKA_THRESHOLD);
