@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.KafkaErrorCode;
-import hotspot.user.common.exception.code.NotificationErrorCode;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.kafka.domain.NotificationType;
 import hotspot.user.kafka.dto.UserAlertEvent;
@@ -36,7 +35,7 @@ public class UserAlertEventsConsumer {
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    //Kafka에서 유저 알림 이벤트를 소비해 대상 구독자별 알림을 생성·허용여부를 확인·중복 없이 저장하고, 저장된 알림이 있으면 후속 이벤트를 발행한 뒤 ACK 처리한다.
+    // Kafka에서 유저 알림 이벤트를 받아 대상 구독자별로 알림을 생성하고(타입/허용 여부 검증 포함) 중복 없이 저장한 뒤 저장된 게 있으면 후속 이벤트 발행 후 ACK 한다.
     @Transactional
     @KafkaListener(
             topics = "${app.topics.user-alert-events}",
@@ -49,8 +48,12 @@ public class UserAlertEventsConsumer {
         for (Long targetSubId : targetSubIds) {
             Notification notification = mapper.toNotification(event, targetSubId);
             NotificationCategory category;
+
             try {
-                category = resolveNotificationCategory(notification.getNotificationType());
+                NotificationType notificationType = NotificationType.from(notification.getNotificationType());
+                category = NotificationType.isAlwaysAllowed(notificationType.name())
+                        ? null
+                        : notificationType.category();
             } catch (ApplicationException ex) {
                 log.warn(
                         "Skip invalid notification type. subId={}, eventId={}, notificationType={}",
@@ -62,7 +65,7 @@ public class UserAlertEventsConsumer {
                 return;
             }
 
-            if (!isNotificationAllowed(targetSubId, category)) {
+            if (category != null && !isNotificationAllowed(targetSubId, category)) {
                 log.info(
                         "Skip disallowed notification. subId={}, category={}, eventId={}",
                         targetSubId,
@@ -71,6 +74,7 @@ public class UserAlertEventsConsumer {
                 );
                 continue;
             }
+
             Notification persistedNotification = notificationRepository.insertIfAbsent(notification);
             if (persistedNotification != null) {
                 persistedNotifications.add(persistedNotification);
@@ -104,19 +108,10 @@ public class UserAlertEventsConsumer {
                 .toList();
     }
 
-    // 해당 구독자가 해당 카테고리 알림을 허용했는지 설정 저장소에서 확인한다.
+    // 해당 subId가 해당 알림 카테고리를 수신 허용했는지 설정값을 조회해 true/false를 반환한다.
     private boolean isNotificationAllowed(Long subId, NotificationCategory category) {
         return notificationAllowRepository.findBySubIdAndCategory(subId, category)
                 .map(notificationAllow -> Boolean.TRUE.equals(notificationAllow.getNotificationAllow()))
                 .orElse(false);
-    }
-
-    // 문자열로 들어온 알림 타입을 enum으로 매핑해 알림 카테고리를 결정하고, 매핑 불가 시 예외를 발생시킨다.
-    private NotificationCategory resolveNotificationCategory(String notificationTypeRaw) {
-        try {
-            return NotificationType.valueOf(notificationTypeRaw).category();
-        } catch (IllegalArgumentException ex) {
-            throw new ApplicationException(NotificationErrorCode.NOTIFICATION_CATEGORY_MAPPING_NOT_FOUND);
-        }
     }
 }
