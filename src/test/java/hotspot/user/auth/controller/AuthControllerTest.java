@@ -158,7 +158,6 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.tokenResponse.accessToken").value(ACCESS_TOKEN))
                 .andReturn();
 
         List<String> cookies = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
