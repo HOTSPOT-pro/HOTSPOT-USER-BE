@@ -10,7 +10,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.OutboxErrorCode;
 import hotspot.user.kafka.domain.KafkaEventType;
 import hotspot.user.kafka.dto.UserAlertEvent;
-import hotspot.user.outbox.service.NotificationOutboxEventAppender;
+import hotspot.user.outbox.notificationOutbox.service.NotificationOutboxEventAppender;
 import hotspot.user.policy.domain.PolicyType;
 import lombok.RequiredArgsConstructor;
 

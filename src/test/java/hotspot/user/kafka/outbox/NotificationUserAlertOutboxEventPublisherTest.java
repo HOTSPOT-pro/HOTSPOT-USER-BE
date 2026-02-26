@@ -12,11 +12,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.kafka.dto.UserAlertEvent;
-import hotspot.user.outbox.service.NotificationOutboxEventAppender;
+import hotspot.user.outbox.notificationOutbox.service.NotificationOutboxEventAppender;
 import hotspot.user.policy.domain.PolicyType;
 
 @ExtendWith(MockitoExtension.class)
-class NotificationUserAlertOutboxPublisherTest {
+class NotificationUserAlertOutboxEventPublisherTest {
 
     @Mock
     private NotificationOutboxEventAppender outboxEventAppender;
