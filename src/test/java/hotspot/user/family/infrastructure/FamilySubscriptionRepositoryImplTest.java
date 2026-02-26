@@ -1,7 +1,9 @@
 package hotspot.user.family.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,8 +15,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.domain.Family;
+import hotspot.user.family.domain.FamilySubDataLimit;
 import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.family.infrastructure.FamilySubscriptionJpaRepository.FamilySubDataLimitRow;
 import hotspot.user.family.infrastructure.entity.FamilyEntity;
 import hotspot.user.family.infrastructure.entity.FamilySubscriptionEntity;
 import hotspot.user.member.domain.FamilyRole;
@@ -189,5 +195,41 @@ class FamilySubscriptionRepositoryImplTest {
                 .updatePriority(100L, 1);
         org.mockito.Mockito.verify(familySubscriptionJpaRepository, org.mockito.Mockito.times(1))
                 .updatePriority(101L, 2);
+    }
+
+    @Test
+    @DisplayName("회선 ID로 구성원별 데이터 한도 조회 성공")
+    void findDataLimitBySubIdSuccess() {
+        // given
+        Long subId = 100L;
+        FamilySubDataLimitRow row = mock(FamilySubDataLimitRow.class);
+        given(row.getName()).willReturn("김태연");
+        given(row.getIsLocked()).willReturn(false);
+        given(row.getDataLimit()).willReturn(5242880L);
+        given(row.getFamilyDataAmount()).willReturn(25165824L);
+
+        given(familySubscriptionJpaRepository.findDataLimitBySubId(subId)).willReturn(Optional.of(row));
+
+        // when
+        FamilySubDataLimit result = familySubscriptionRepository.findDataLimitBySubId(subId);
+
+        // then
+        assertThat(result.getName()).isEqualTo("김태연");
+        assertThat(result.getIsLocked()).isFalse();
+        assertThat(result.getDataLimit()).isEqualTo(5242880L);
+        assertThat(result.getFamilyDataAmount()).isEqualTo(25165824L);
+    }
+
+    @Test
+    @DisplayName("회선 ID로 데이터 한도 조회 시 정보가 없으면 예외 발생")
+    void findDataLimitBySubIdNotFound() {
+        // given
+        Long subId = 999L;
+        given(familySubscriptionJpaRepository.findDataLimitBySubId(subId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> familySubscriptionRepository.findDataLimitBySubId(subId))
+                .isInstanceOf(ApplicationException.class)
+                .hasFieldOrPropertyWithValue("code", FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND);
     }
 }
