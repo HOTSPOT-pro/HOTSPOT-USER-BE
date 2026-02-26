@@ -5,7 +5,7 @@ import hotspot.user.family.controller.response.FindDataLimitResponse;
 import hotspot.user.family.domain.FamilySubDataLimit;
 
 /**
- * 구성원 데이터 한도 도메인 <-> dto 변</->
+ * 구성원 데이터 한도 도메인 <-> dto
  */
 public class FamilySubDataLimitMapper {
 
