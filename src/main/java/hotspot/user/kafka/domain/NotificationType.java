@@ -1,5 +1,10 @@
 package hotspot.user.kafka.domain;
 
+import java.util.EnumSet;
+import java.util.Set;
+
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.NotificationErrorCode;
 import hotspot.user.notification.domain.NotificationCategory;
 
 public enum NotificationType {
@@ -21,7 +26,14 @@ public enum NotificationType {
     IMMEDIATE_BLOCK_RELEASED(NotificationCategory.POLICY),
     SERVICE_ACCESS_BLOCKED(NotificationCategory.APP_SERVICE),
     SERVICE_ACCESS_RELEASED(NotificationCategory.APP_SERVICE),
-    PRESENT_DATA(NotificationCategory.PRESENT);
+    PRESENT_DATA(NotificationCategory.PRESENT),
+    FAMILY_MEMBER_ADD_APPROVED(NotificationCategory.POLICY),
+    FAMILY_MEMBER_ADD_REJECTED(NotificationCategory.POLICY);
+
+    private static final Set<NotificationType> ALWAYS_ALLOWED_TYPES = EnumSet.of(
+            FAMILY_MEMBER_ADD_APPROVED,
+            FAMILY_MEMBER_ADD_REJECTED
+    );
 
     private final NotificationCategory category;
 
@@ -31,5 +43,17 @@ public enum NotificationType {
 
     public NotificationCategory category() {
         return category;
+    }
+
+    public static NotificationType from(String rawType) {
+        try {
+            return NotificationType.valueOf(rawType);
+        } catch (IllegalArgumentException ex) {
+            throw new ApplicationException(NotificationErrorCode.NOTIFICATION_CATEGORY_MAPPING_NOT_FOUND);
+        }
+    }
+
+    public static boolean isAlwaysAllowed(String rawType) {
+        return ALWAYS_ALLOWED_TYPES.contains(from(rawType));
     }
 }
