@@ -1,5 +1,7 @@
 package hotspot.user.family.service;
 
+import hotspot.user.outbox.consistencyOutbox.domain.event.family.limit.FamilySubLimitChangedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +17,17 @@ import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
 import lombok.RequiredArgsConstructor;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
+
     private final FamilySubscriptionRepository familySubscriptionRepository;
+    private final ApplicationEventPublisher eventPublisher;
+
+    private static final long GB_TO_KB_UNIT = 1_048_576L;
 
     @Override
     public UpdateDataLimitResponse updateDataLimit(UpdateDataLimitRequest request,
@@ -43,6 +51,31 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
 
         FamilySubscription savedFamilySub = familySubscriptionRepository.save(familySub);
 
+        long newLimitKb = request.dataLimit() * GB_TO_KB_UNIT;
+
+        // 2️⃣ Outbox 이벤트 발행 (스냅샷)
+        publishFamilyLimitChangedEvent(
+                savedFamilySub.getFamily().getId(),
+                savedFamilySub.getSubscription().getId(),
+                newLimitKb
+        );
+
         return FamilySubscriptionMapper.toUpdateDataLimitResponse(savedFamilySub);
+    }
+
+    private void publishFamilyLimitChangedEvent(
+            Long familyId,
+            Long subId,
+            Long newLimit
+    ) {
+        eventPublisher.publishEvent(
+                new FamilySubLimitChangedEvent(
+                        "FAMILY_SUB_LIMIT_CHANGED",
+                        familyId,
+                        subId,
+                        newLimit,
+                        UUID.randomUUID().toString()
+                )
+        );
     }
 }
