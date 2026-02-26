@@ -1,7 +1,6 @@
 package hotspot.user.kafka.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
@@ -23,8 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.support.Acknowledgment;
 
-import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.KafkaErrorCode;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
@@ -72,7 +69,6 @@ class UserAlertEventsConsumerTest {
 
     @Test
     @DisplayName("subId target: persist and publish only inserted notifications, then ack")
-    // subId 대상일 때 저장/발행/ack 흐름을 검증한다.
     void consumeWithSubIdTarget() {
         UserAlertEvent event = event(101L, null, "evt-sub");
         Notification notification = notification(101L, "evt-sub");
@@ -96,7 +92,6 @@ class UserAlertEventsConsumerTest {
 
     @Test
     @DisplayName("does not persist or publish when category is not allowed")
-    // category 허용 설정이 없거나 false면 저장/발행 없이 ack만 수행하는지 검증한다.
     void consumeSkipsWhenNotificationCategoryDisallowed() {
         UserAlertEvent event = event(101L, null, "evt-disallowed");
         Notification notification = notification(101L, "evt-disallowed");
@@ -113,7 +108,6 @@ class UserAlertEventsConsumerTest {
 
     @Test
     @DisplayName("familyId target: fan-out and publish only successfully inserted notifications")
-    // familyId 대상일 때 fan-out 저장과 성공 건 발행을 검증한다.
     void consumeWithFamilyFanOut() {
         UserAlertEvent event = event(null, 200L, "evt-family");
         List<FamilySubscription> familySubscriptions = List.of(
@@ -148,7 +142,6 @@ class UserAlertEventsConsumerTest {
 
     @Test
     @DisplayName("does not publish follow-up event when every insert was skipped")
-    // 저장 성공이 없으면 후속 이벤트를 발행하지 않는지 검증한다.
     void consumeWithoutInsertedRows() {
         UserAlertEvent event = event(303L, null, "evt-dup");
         Notification notification = notification(303L, "evt-dup");
@@ -162,16 +155,13 @@ class UserAlertEventsConsumerTest {
     }
 
     @Test
-    @DisplayName("throws when neither subId nor familyId exists and does not ack")
-    // 대상 정보가 없으면 예외가 나고 ack가 호출되지 않는지 검증한다.
+    @DisplayName("acks and skips when neither subId nor familyId exists")
     void consumeWithoutTarget() {
         UserAlertEvent event = event(null, null, "evt-invalid");
 
-        assertThatThrownBy(() -> consumer.consume(event, acknowledgment))
-                .isInstanceOf(ApplicationException.class)
-                .hasMessage(KafkaErrorCode.KAFKA_SUB_ID_REQUIRED.getMessage());
+        consumer.consume(event, acknowledgment);
 
-        then(acknowledgment).shouldHaveNoInteractions();
+        then(acknowledgment).should().acknowledge();
         then(applicationEventPublisher).shouldHaveNoInteractions();
         then(notificationRepository).shouldHaveNoInteractions();
         then(mapper).shouldHaveNoInteractions();
@@ -199,7 +189,55 @@ class UserAlertEventsConsumerTest {
         then(acknowledgment).should().acknowledge();
     }
 
-    // 테스트용 이벤트 객체를 생성한다.
+    @Test
+    @DisplayName("family apply result notifications are persisted even without allow setting")
+    void consumeFamilyApplyResultAlwaysAllowed() {
+        UserAlertEvent event = event(101L, null, "evt-family-apply");
+        Notification notification = Notification.builder()
+                .subId(101L)
+                .eventId("evt-family-apply")
+                .notificationType("FAMILY_MEMBER_ADD_APPROVED")
+                .title("approved")
+                .content("add approved")
+                .isRead(false)
+                .createdTime(LocalDateTime.of(2026, 2, 23, 10, 15, 30))
+                .build();
+        Notification persisted = persistedNotification(33L, notification);
+        given(mapper.toNotification(event, 101L)).willReturn(notification);
+        given(notificationRepository.insertIfAbsent(notification)).willReturn(persisted);
+
+        consumer.consume(event, acknowledgment);
+
+        then(notificationAllowRepository).shouldHaveNoInteractions();
+        then(notificationRepository).should().insertIfAbsent(notification);
+        then(applicationEventPublisher).should().publishEvent(any(UserAlertNotificationsPersistedEvent.class));
+        then(acknowledgment).should().acknowledge();
+    }
+
+    @Test
+    @DisplayName("family remove result notifications are persisted even without allow setting")
+    void consumeFamilyRemoveResultAlwaysAllowed() {
+        UserAlertEvent event = event(101L, null, "evt-family-remove");
+        Notification notification = Notification.builder()
+                .subId(101L)
+                .eventId("evt-family-remove")
+                .notificationType("FAMILY_MEMBER_REMOVE_APPROVED")
+                .title("approved")
+                .content("remove approved")
+                .isRead(false)
+                .createdTime(LocalDateTime.of(2026, 2, 23, 10, 15, 30))
+                .build();
+        Notification persisted = persistedNotification(34L, notification);
+        given(mapper.toNotification(event, 101L)).willReturn(notification);
+        given(notificationRepository.insertIfAbsent(notification)).willReturn(persisted);
+
+        consumer.consume(event, acknowledgment);
+
+        then(notificationAllowRepository).shouldHaveNoInteractions();
+        then(notificationRepository).should().insertIfAbsent(notification);
+        then(applicationEventPublisher).should().publishEvent(any(UserAlertNotificationsPersistedEvent.class));
+        then(acknowledgment).should().acknowledge();
+    }
     private UserAlertEvent event(Long subId, Long familyId, String alertId) {
         return new UserAlertEvent(
                 alertId,
@@ -217,8 +255,6 @@ class UserAlertEventsConsumerTest {
                 LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
     }
-
-    // 테스트용 Notification 객체를 생성한다.
     private Notification notification(Long subId, String eventId) {
         return Notification.builder()
                 .subId(subId)
@@ -243,8 +279,6 @@ class UserAlertEventsConsumerTest {
                 .createdTime(notification.getCreatedTime())
                 .build();
     }
-
-    // 테스트용 FamilySubscription 객체를 생성한다.
     private FamilySubscription familySubscription(Long subId, Long familyId) {
         return FamilySubscription.builder()
                 .family(Family.builder().id(familyId).build())
