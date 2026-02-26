@@ -18,20 +18,40 @@ public interface S3Api {
 
     @Operation(
             summary = "Presigned URL 생성",
-            description = "PNG 이미지 업로드를 위한 Presigned URL을 생성합니다.\n"
-                    + "- contentType은 반드시 image/png 이어야 합니다.\n"
-                    + "- 생성된 URL은 5분간 유효합니다."
+            description = """
+                    PNG 이미지 업로드를 위한 Presigned URL을 생성합니다.
+
+                    - contentType은 반드시 image/png 이어야 합니다.
+                    - 생성된 URL은 5분간 유효합니다.
+                    """
     )
     @ApiResponses(value = {
+
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
                     description = "Presigned URL 생성 성공"
             ),
+
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "400",
-                    description = "PNG 파일이 아닌 경우\n"
-                            + "- S3_001: PNG 파일만 업로드 가능합니다.",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    description = """
+                            잘못된 요청
+                            - S3_001: 파일 확장자로 PNG만 가능합니다.
+                            """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "500",
+                    description = """
+                            서버 내부 오류
+                            - S3_006: Presign URL 생성 실패
+                            """,
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
             )
     })
     ResponseEntity<ApiResponse<S3PathResponse>> createPresignedUrl(

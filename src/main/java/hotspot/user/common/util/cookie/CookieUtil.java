@@ -1,4 +1,4 @@
-package hotspot.user.common.util;
+package hotspot.user.common.util.cookie;
 
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;

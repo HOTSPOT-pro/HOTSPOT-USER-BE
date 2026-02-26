@@ -23,6 +23,7 @@ import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.presentData.controller.port.FindFamilyDataService;
 import hotspot.user.presentData.controller.port.FindPresentProvideService;
 import hotspot.user.presentData.controller.port.FindPresentReceiveService;
+import hotspot.user.presentData.controller.port.SendPresentDataService;
 import hotspot.user.presentData.controller.response.FamilyDataResponse;
 import hotspot.user.presentData.controller.response.PresentDataResponse;
 
@@ -43,6 +44,9 @@ class PresentDataControllerTest {
     FindPresentProvideService findPresentProvideService;
 
     @MockBean
+    SendPresentDataService sendPresentDataService;
+
+    @MockBean
     JwtFilter jwtFilter;
 
     @MockBean
@@ -55,7 +59,7 @@ class PresentDataControllerTest {
     @DisplayName("가족 선물 데이터 조회 성공")
     void shouldReturnFamilyPresentDataSuccessfully() throws Exception {
 
-        // 🔥 Security Context 직접 세팅
+        // Security Context 직접 세팅
         setAuthentication(1L, 10L, FamilyRole.OWNER);
 
         FamilyDataResponse.SubUsageResponse sub1 =

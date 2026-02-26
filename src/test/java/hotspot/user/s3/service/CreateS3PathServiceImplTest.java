@@ -5,48 +5,47 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
-import java.net.URL;
+import java.time.Duration;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.util.s3.S3Util;
 import hotspot.user.s3.controller.response.S3PathResponse;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
-
 
 class CreateS3PathServiceImplTest {
 
     @Test
     @DisplayName("Presigned URL 생성 성공")
-    void createS3PathSuccess() throws Exception {
+    void createS3PathSuccess() {
 
-        S3Presigner presigner = Mockito.mock(S3Presigner.class);
-
-        PresignedPutObjectRequest mockRequest =
-                Mockito.mock(PresignedPutObjectRequest.class);
-
-        Mockito.when(mockRequest.url())
-                .thenReturn(new URL("https://mock-url"));
+        // given
+        S3Util s3Util = Mockito.mock(S3Util.class);
 
         Mockito.when(
-                presigner.presignPutObject(any(PutObjectPresignRequest.class))
-        ).thenReturn(mockRequest);
+                s3Util.createPutPresignedUrl(
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(Duration.class)
+                )
+        ).thenReturn("https://mock-url");
 
         CreateS3PathServiceImpl service =
-                new CreateS3PathServiceImpl(presigner);
+                new CreateS3PathServiceImpl(s3Util);
 
-        // tempBucket 필드 수동 주입
         org.springframework.test.util.ReflectionTestUtils
                 .setField(service, "tempBucket", "test-bucket");
 
+        // when
         S3PathResponse result =
                 service.createS3Path("image/png");
 
+        // then
         assertNotNull(result);
         assertEquals("https://mock-url", result.uploadUrl());
         assertTrue(result.tempKey().endsWith(".png"));
@@ -56,14 +55,16 @@ class CreateS3PathServiceImplTest {
     @DisplayName("PNG 아닌 경우 예외 발생")
     void createS3PathFailInvalidType() {
 
-        S3Presigner presigner = Mockito.mock(S3Presigner.class);
+        // given
+        S3Util s3Util = Mockito.mock(S3Util.class);
 
         CreateS3PathServiceImpl service =
-                new CreateS3PathServiceImpl(presigner);
+                new CreateS3PathServiceImpl(s3Util);
 
         org.springframework.test.util.ReflectionTestUtils
                 .setField(service, "tempBucket", "test-bucket");
 
+        // when & then
         assertThrows(ApplicationException.class,
                 () -> service.createS3Path("image/jpeg"));
     }
