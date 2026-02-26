@@ -9,6 +9,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class FamilySubDataLimit {
+    Long familyId;
     String name;
     Boolean isLocked;
     Long dataLimit;

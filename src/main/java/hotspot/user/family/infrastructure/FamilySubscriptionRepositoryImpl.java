@@ -57,6 +57,7 @@ public class FamilySubscriptionRepositoryImpl implements FamilySubscriptionRepos
     public FamilySubDataLimit findDataLimitBySubId(Long subId) {
         return jpaRepository.findDataLimitBySubId(subId)
                 .map(row -> FamilySubDataLimit.builder()
+                        .familyId(row.getFamilyId())
                         .name(row.getName())
                         .isLocked(row.getIsLocked())
                         .dataLimit(row.getDataLimit())

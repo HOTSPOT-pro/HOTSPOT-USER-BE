@@ -48,6 +48,7 @@ public interface FamilySubscriptionJpaRepository extends JpaRepository<FamilySub
      * 조회 전용 Projection 인터페이스
      */
     interface FamilySubDataLimitRow {
+        Long getFamilyId();
         String getName();
         Boolean getIsLocked();
         Long getDataLimit();

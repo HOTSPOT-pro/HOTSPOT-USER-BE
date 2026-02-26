@@ -34,15 +34,12 @@ public class FindDataLimitServiceImpl implements FindDataLimitService {
         }
 
         // 대상자 가족 정보 조회
-        FamilySubscription targetFamilySub = familySubscriptionService.findBySubId(targetSubId);
+        FamilySubDataLimit familySubDataLimit = familySubscriptionRepository.findDataLimitBySubId(targetSubId);
 
         // 같은 가족 구성원인지 확인
-        if (!requesterFamilyId.equals(targetFamilySub.getFamily().getId())) {
+        if (!requesterFamilyId.equals(familySubDataLimit.getFamilyId())) {
             throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
         }
-
-        // 최적화된 쿼리로 한도 정보 조회
-        FamilySubDataLimit familySubDataLimit = familySubscriptionRepository.findDataLimitBySubId(targetSubId);
 
         return FamilySubDataLimitMapper.toFindDataLimitResponse(familySubDataLimit);
     }
