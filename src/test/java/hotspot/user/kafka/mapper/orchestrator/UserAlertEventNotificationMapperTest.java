@@ -71,6 +71,30 @@ class UserAlertEventNotificationMapperTest {
     }
 
     @Test
+    @DisplayName("maps family member remove rejected with targetName")
+    void mapFamilyMemberRemoveRejected() {
+        UserAlertEvent event = new UserAlertEvent(
+                "alert-3",
+                "FAMILY_MEMBER_REMOVE",
+                "REJECTED",
+                null,
+                200L,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "Bob",
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
+        );
+
+        assertThat(mapper.map(event).notificationType())
+                .isEqualTo(NotificationType.FAMILY_MEMBER_REMOVE_REJECTED);
+        assertThat(mapper.map(event).content().body()).contains("Bob");
+    }
+
+    @Test
     @DisplayName("toNotification maps deterministic fields")
     void toNotificationSuccess() {
         LocalDateTime createdTime = LocalDateTime.of(2026, 2, 23, 10, 15, 30);
