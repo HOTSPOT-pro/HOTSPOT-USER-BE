@@ -1,5 +1,7 @@
 package hotspot.user.auth.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import hotspot.user.member.domain.FamilyRole;
 import lombok.Builder;
 
@@ -21,6 +23,7 @@ public record OnboardingResponse(
         String email,
         String phone,
         FamilyRole familyRole,
-        TokenResponse tokenResponse
+        @JsonIgnore
+        TokenResponse tokenResponse // cookie로 전달해서 응답값에서 제외
 ) {
 }
