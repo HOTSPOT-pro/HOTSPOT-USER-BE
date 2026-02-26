@@ -1,7 +1,5 @@
 package hotspot.user.presentData.domain.mapper;
 
-import java.time.LocalDateTime;
-
 import hotspot.user.presentData.controller.response.SendPresentDataResponse;
 import hotspot.user.presentData.domain.PresentData;
 import hotspot.user.subscription.domain.Subscription;
@@ -21,7 +19,6 @@ public class SendPresentDataMapper {
                 .provideSubscription(provideSubscription)
                 .targetSubscription(targetSubscription)
                 .dataAmount(dataAmount)
-                .createdTime(LocalDateTime.now())
                 .build();
     }
 
