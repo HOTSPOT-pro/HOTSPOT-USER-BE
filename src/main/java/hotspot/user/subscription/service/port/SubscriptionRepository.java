@@ -15,5 +15,6 @@ public interface SubscriptionRepository {
     Optional<Subscription> findByMemberId(Long memberId);
     Optional<Subscription> findByPhoneHash(String phoneHash);
     Subscription save(Subscription subscription);
+    void updateLockedStatus(Long subId, boolean isLocked);
     Map<Long, DataPeriod> findDataPeriodsBySubIds(List<Long> subIds);
 }
