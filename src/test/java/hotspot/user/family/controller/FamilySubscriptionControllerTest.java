@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,6 +29,7 @@ import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
+import hotspot.user.family.controller.port.FindDataLimitService;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.port.UpdateFamilyPriorityService;
 import hotspot.user.family.controller.port.UpdateFamilyRoleService;
@@ -35,6 +37,7 @@ import hotspot.user.family.controller.request.MemberPriorityRequest;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.request.UpdateFamilyPriorityRequest;
 import hotspot.user.family.controller.request.UpdateFamilyRoleRequest;
+import hotspot.user.family.controller.response.FindDataLimitResponse;
 import hotspot.user.family.controller.response.MemberPriorityResponse;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
 import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
@@ -64,6 +67,9 @@ class FamilySubscriptionControllerTest {
 
     @MockBean
     private UpdateFamilyRoleService updateFamilyRoleService;
+
+    @MockBean
+    private FindDataLimitService findDataLimitService;
 
     @MockBean
     private FamilySubscriptionRepository familySubscriptionRepository;
@@ -274,5 +280,28 @@ class FamilySubscriptionControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("FAMILY_017"));
+    }
+
+    @Test
+    @DisplayName("성공: OWNER 권한으로 구성원의 데이터 한도 정보를 조회하면 200 OK를 반환한다")
+    void findDataLimitSuccess() throws Exception {
+        // given
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+        FindDataLimitResponse response = FindDataLimitResponse.builder()
+                .name("김태연")
+                .isLocked(false)
+                .dataLimit(5.0)
+                .familyDataAmount(24.0)
+                .build();
+
+        given(findDataLimitService.findDataLimit(eq(2L), eq(100L), eq(FamilyRole.OWNER)))
+                .willReturn(response);
+
+        // when & then
+        mockMvc.perform(get("/api/v1/families/data-limit/2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data.name").value("김태연"))
+                .andExpect(jsonPath("$.data.dataLimit").value(5.0));
     }
 }
