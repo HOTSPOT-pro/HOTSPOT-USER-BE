@@ -32,6 +32,7 @@ public interface FamilySubscriptionJpaRepository extends JpaRepository<FamilySub
 
     @Query("""
              SELECT
+                 f.familyId as familyId,
                  m.name as name,
                  s.isLocked as isLocked,
                  fs.dataLimit as dataLimit,
