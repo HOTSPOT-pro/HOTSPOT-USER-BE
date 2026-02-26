@@ -10,6 +10,8 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtProvider;
+import hotspot.user.dispatch.registry.SseEmitterRegistry;
+import hotspot.user.subscription.service.port.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -19,6 +21,8 @@ public class LogoutServiceImpl implements LogoutService {
 
     private final TokenRepository tokenRepository;
     private final JwtProvider jwtProvider;
+    private final SubscriptionRepository subscriptionRepository;
+    private final SseEmitterRegistry sseEmitterRegistry;
 
     @Override
     public void logout(Long memberId, TokenRequest request) {
@@ -39,5 +43,7 @@ public class LogoutServiceImpl implements LogoutService {
 
         // 3. 토큰 삭제 (무효화)
         tokenRepository.deleteByMemberId(memberId);
+        subscriptionRepository.findByMemberId(memberId)
+                .ifPresent(subscription -> sseEmitterRegistry.closeAllBySubId(subscription.getId()));
     }
 }
