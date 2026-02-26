@@ -19,10 +19,10 @@ class FamilyMemberApplyAlertEventMappingStrategyTest {
             new FamilyMemberApplyAlertEventMappingStrategy();
 
     @Test
-    @DisplayName("maps approved and rejected apply result")
-    void mapsApprovedAndRejected() {
-        UserAlertEvent approved = event("APPROVED", "Alice");
-        UserAlertEvent rejected = event("REJECTED", "Bob");
+    @DisplayName("maps add approved and rejected apply result")
+    void mapsAddApprovedAndRejected() {
+        UserAlertEvent approved = event("FAMILY_MEMBER_ADD", "APPROVED", "Alice");
+        UserAlertEvent rejected = event("FAMILY_MEMBER_ADD", "REJECTED", "Bob");
 
         assertThat(strategy.map(approved).notificationType())
                 .isEqualTo(NotificationType.FAMILY_MEMBER_ADD_APPROVED);
@@ -33,17 +33,31 @@ class FamilyMemberApplyAlertEventMappingStrategyTest {
     }
 
     @Test
+    @DisplayName("maps remove approved and rejected apply result")
+    void mapsRemoveApprovedAndRejected() {
+        UserAlertEvent approved = event("FAMILY_MEMBER_REMOVE", "APPROVED", "Alice");
+        UserAlertEvent rejected = event("FAMILY_MEMBER_REMOVE", "REJECTED", "Bob");
+
+        assertThat(strategy.map(approved).notificationType())
+                .isEqualTo(NotificationType.FAMILY_MEMBER_REMOVE_APPROVED);
+        assertThat(strategy.map(approved).content().body()).contains("Alice");
+        assertThat(strategy.map(rejected).notificationType())
+                .isEqualTo(NotificationType.FAMILY_MEMBER_REMOVE_REJECTED);
+        assertThat(strategy.map(rejected).content().body()).contains("Bob");
+    }
+
+    @Test
     @DisplayName("throws on unsupported alert type")
     void unsupportedType() {
-        assertThatThrownBy(() -> strategy.map(event("PENDING", "Chris")))
+        assertThatThrownBy(() -> strategy.map(event("FAMILY_MEMBER_ADD", "PENDING", "Chris")))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(KafkaErrorCode.UNSUPPORTED_KAFKA_ALERT_TYPE.getMessage());
     }
 
-    private UserAlertEvent event(String alertType, String targetName) {
+    private UserAlertEvent event(String eventType, String alertType, String targetName) {
         return new UserAlertEvent(
                 "alert-family",
-                "FAMILY_MEMBER_ADD",
+                eventType,
                 alertType,
                 null,
                 200L,
