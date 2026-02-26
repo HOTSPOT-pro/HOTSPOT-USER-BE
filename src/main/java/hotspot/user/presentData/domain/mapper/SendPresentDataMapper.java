@@ -4,6 +4,8 @@ import hotspot.user.presentData.controller.response.SendPresentDataResponse;
 import hotspot.user.presentData.domain.PresentData;
 import hotspot.user.subscription.domain.Subscription;
 
+import java.time.LocalDateTime;
+
 /**
  * 데이터 선물하기 dto <-> domain
  */
@@ -19,6 +21,7 @@ public class SendPresentDataMapper {
                 .provideSubscription(provideSubscription)
                 .targetSubscription(targetSubscription)
                 .dataAmount(dataAmount)
+                .createdTime(LocalDateTime.now())
                 .build();
     }
 
