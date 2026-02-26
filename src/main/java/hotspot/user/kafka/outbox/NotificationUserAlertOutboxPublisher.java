@@ -1,10 +1,13 @@
 package hotspot.user.kafka.outbox;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.OutboxErrorCode;
 import hotspot.user.kafka.domain.KafkaEventType;
 import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.outbox.service.NotificationOutboxEventAppender;
@@ -92,16 +95,22 @@ public class NotificationUserAlertOutboxPublisher {
 
     // 집계 메타데이터와 함께 이벤트를 outbox_event 테이블에 저장한다.
     private void append(String type, UserAlertEvent event) {
-        String aggregateId = event.subId() != null
-                ? String.valueOf(event.subId())
-                : event.familyId() != null ? String.valueOf(event.familyId()) : event.alertId();
+        try {
+            String aggregateId = event.subId() != null
+                    ? String.valueOf(event.subId())
+                    : event.familyId() != null ? String.valueOf(event.familyId()) : event.alertId();
 
-        outboxEventAppender.append(
-                aggregateType,
-                aggregateId,
-                type,
-                event
-        );
+            outboxEventAppender.append(
+                    aggregateType,
+                    aggregateId,
+                    type,
+                    event
+            );
+        } catch (ApplicationException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new ApplicationException(OutboxErrorCode.OUTBOX_EVENT_PUBLISH_FAILED, ex);
+        }
     }
 
     // 모든 알림 이벤트에서 공통으로 쓰는 기본 필드를 만든다.
@@ -111,7 +120,7 @@ public class NotificationUserAlertOutboxPublisher {
                 eventId,
                 eventType,
                 alertType,
-                Instant.now(),
+                LocalDateTime.now(ZoneOffset.UTC),
                 subId,
                 familyId
         );
@@ -122,9 +131,10 @@ public class NotificationUserAlertOutboxPublisher {
         private final String alertId;
         private final String eventType;
         private final String alertType;
-        private final Instant occurredAt;
+        private final LocalDateTime createdTime;
         private final Long subId;
         private final Long familyId;
+        private String threshold;
         private String policyName;
         private String serviceName;
         private String presentSenderName;
@@ -135,14 +145,14 @@ public class NotificationUserAlertOutboxPublisher {
                 String alertId,
                 String eventType,
                 String alertType,
-                Instant occurredAt,
+                LocalDateTime createdTime,
                 Long subId,
                 Long familyId
         ) {
             this.alertId = alertId;
             this.eventType = eventType;
             this.alertType = alertType;
-            this.occurredAt = occurredAt;
+            this.createdTime = createdTime;
             this.subId = subId;
             this.familyId = familyId;
         }
@@ -173,18 +183,16 @@ public class NotificationUserAlertOutboxPublisher {
                     alertId,
                     eventType,
                     alertType,
-                    null,
+                    subId,
+                    familyId,
+                    threshold,
                     policyName,
                     serviceName,
                     presentSenderName,
                     presentAmount,
-                    occurredAt,
-                    subId,
-                    familyId,
                     giftId,
-                    0L,
-                    0,
-                    alertId
+                    null,
+                    createdTime
             );
         }
     }

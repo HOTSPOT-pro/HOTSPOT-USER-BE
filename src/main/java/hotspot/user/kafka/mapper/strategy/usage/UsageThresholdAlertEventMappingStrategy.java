@@ -28,22 +28,22 @@ public class UsageThresholdAlertEventMappingStrategy implements UserAlertEventMa
             return switch (threshold) {
                 case 50 -> AlertEventMappingSupport.create(
                         NotificationType.SINGLE_USAGE_THRESHOLD_50,
-                        "데이터 임계치 알림",
+                        "개인 요금제 데이터 알림",
                         "데이터 잔여량이 50% 이하입니다."
                 );
                 case 30 -> AlertEventMappingSupport.create(
                         NotificationType.SINGLE_USAGE_THRESHOLD_30,
-                        "데이터 임계치 알림",
+                        "개인 요금제 데이터 알림",
                         "데이터 잔여량이 30% 이하입니다."
                 );
                 case 10 -> AlertEventMappingSupport.create(
                         NotificationType.SINGLE_USAGE_THRESHOLD_10,
-                        "데이터 임계치 알림",
+                        "개인 요금제 데이터 알림",
                         "데이터 잔여량이 10% 이하입니다."
                 );
                 case 0 -> AlertEventMappingSupport.create(
                         NotificationType.SINGLE_USAGE_EXHAUSTED,
-                        "데이터 임계치 알림",
+                        "개인 요금제 데이터 알림",
                         "데이터 잔여량이 모두 소진되었습니다."
                 );
                 default -> throw new ApplicationException(KafkaErrorCode.UNSUPPORTED_KAFKA_THRESHOLD);

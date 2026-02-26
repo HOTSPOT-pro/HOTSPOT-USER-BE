@@ -36,12 +36,12 @@ public class UserAlertEventsConsumer {
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    //Kafka에서 유저 알림 이벤트를 소비해 대상 구독자별 알림을 생성·허용여부를 확인·중복 없이 저장하고, 저장된 알림이 있으면 후속 이벤트를 발행한 뒤 ACK 처리한다.
     @Transactional
     @KafkaListener(
             topics = "${app.topics.user-alert-events}",
             containerFactory = "userAlertKafkaListenerContainerFactory"
     )
-    // 이벤트를 수신해 대상별 저장 후 성공 건만 후속 이벤트로 전달한다.
     public void consume(UserAlertEvent event, Acknowledgment acknowledgment) {
         List<Long> targetSubIds = resolveTargetSubIds(event);
 
@@ -55,7 +55,7 @@ public class UserAlertEventsConsumer {
                 log.warn(
                         "Skip invalid notification type. subId={}, eventId={}, notificationType={}",
                         targetSubId,
-                        resolveEventId(event),
+                        event.alertId(),
                         notification.getNotificationType()
                 );
                 acknowledgment.acknowledge();
@@ -86,7 +86,7 @@ public class UserAlertEventsConsumer {
         acknowledgment.acknowledge();
     }
 
-    // subId 우선, 없으면 familyId 기준으로 fan-out 대상 subId 목록을 만든다.
+    // 이벤트에 subId가 있으면 단건 대상으로, 없으면 familyId로 가족 구성원의 subId 목록을 조회해 알림 대상들을 결정한다.
     private List<Long> resolveTargetSubIds(UserAlertEvent event) {
         if (event.subId() != null) {
             return List.of(event.subId());
@@ -104,25 +104,19 @@ public class UserAlertEventsConsumer {
                 .toList();
     }
 
-    // 알림 타입을 카테고리로 변환해 허용된 경우에만 저장/전송 대상으로 처리한다.
+    // 해당 구독자가 해당 카테고리 알림을 허용했는지 설정 저장소에서 확인한다.
     private boolean isNotificationAllowed(Long subId, NotificationCategory category) {
         return notificationAllowRepository.findBySubIdAndCategory(subId, category)
                 .map(notificationAllow -> Boolean.TRUE.equals(notificationAllow.getNotificationAllow()))
                 .orElse(false);
     }
 
+    // 문자열로 들어온 알림 타입을 enum으로 매핑해 알림 카테고리를 결정하고, 매핑 불가 시 예외를 발생시킨다.
     private NotificationCategory resolveNotificationCategory(String notificationTypeRaw) {
         try {
             return NotificationType.valueOf(notificationTypeRaw).category();
         } catch (IllegalArgumentException ex) {
             throw new ApplicationException(NotificationErrorCode.NOTIFICATION_CATEGORY_MAPPING_NOT_FOUND);
         }
-    }
-
-    private String resolveEventId(UserAlertEvent event) {
-        if (event.sourceEventId() != null && !event.sourceEventId().isBlank()) {
-            return event.sourceEventId();
-        }
-        return event.alertId();
     }
 }

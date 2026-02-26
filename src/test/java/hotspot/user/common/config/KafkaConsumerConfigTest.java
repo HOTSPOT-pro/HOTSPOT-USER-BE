@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -36,13 +36,11 @@ class KafkaConsumerConfigTest {
                   "eventType": "USAGE",
                   "alertType": "THRESHOLD_EXCEEDED",
                   "threshold": "80",
-                  "occurredAt": "2026-02-23T01:00:00Z",
+                  "createdTime": "2026-02-23T01:00:00",
                   "subId": 1001,
                   "familyId": 2002,
                   "giftId": "3003",
-                  "remainingBytes": 1048576,
-                  "remainingPct": 12,
-                  "sourceEventId": "worker-event-999"
+                  "targetName": "Kid A"
                 }
                 """;
 
@@ -58,13 +56,11 @@ class KafkaConsumerConfigTest {
         assertThat(event.eventType()).isEqualTo("USAGE");
         assertThat(event.alertType()).isEqualTo("THRESHOLD_EXCEEDED");
         assertThat(event.threshold()).isEqualTo("80");
-        assertThat(event.occurredAt()).isEqualTo(Instant.parse("2026-02-23T01:00:00Z"));
+        assertThat(event.createdTime()).isEqualTo(LocalDateTime.parse("2026-02-23T01:00:00"));
         assertThat(event.subId()).isEqualTo(1001L);
         assertThat(event.familyId()).isEqualTo(2002L);
         assertThat(event.giftId()).isEqualTo("3003");
-        assertThat(event.remainingBytes()).isEqualTo(1048576L);
-        assertThat(event.remainingPct()).isEqualTo(12);
-        assertThat(event.sourceEventId()).isEqualTo("worker-event-999");
+        assertThat(event.targetName()).isEqualTo("Kid A");
     }
 
     @Test

@@ -2,8 +2,6 @@ package hotspot.user.dispatch.service;
 
 import java.time.LocalDateTime;
 
-import jakarta.transaction.Transactional;
-
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -20,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class SubscribeSseServiceImpl implements SubscribeSseService {
 
     private static final long SSE_TIMEOUT_MILLIS = 30L * 60L * 1000L;

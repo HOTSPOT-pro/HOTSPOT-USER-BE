@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.GlobalErrorCode;
+import hotspot.user.common.exception.code.OutboxErrorCode;
 import hotspot.user.outbox.infrastructure.NotificationOutboxEventJpaRepository;
 import hotspot.user.outbox.infrastructure.entity.NotificationOutboxEventEntity;
 
@@ -36,7 +36,7 @@ class NotificationOutboxEventAppenderTest {
     private NotificationOutboxEventAppender appender;
 
     @Test
-    @DisplayName("append: payload를 JSON으로 저장한다")
+    @DisplayName("append saves serialized payload")
     void appendSavesSerializedPayload() throws Exception {
         Map<String, Object> payload = Map.of("key", "value");
         given(objectMapper.writeValueAsString(payload)).willReturn("{\"key\":\"value\"}");
@@ -56,7 +56,7 @@ class NotificationOutboxEventAppenderTest {
     }
 
     @Test
-    @DisplayName("append: 직렬화 실패 시 INTERNAL_SERVER_ERROR를 던진다")
+    @DisplayName("append throws outbox serialization error on JSON failure")
     void appendThrowsWhenSerializationFails() throws Exception {
         Object payload = new Object();
         given(objectMapper.writeValueAsString(payload)).willThrow(new JsonProcessingException("boom") {
@@ -65,7 +65,7 @@ class NotificationOutboxEventAppenderTest {
         assertThatThrownBy(() -> appender.append("user-alert", "101", "POLICY_APPLIED", payload))
                 .isInstanceOf(ApplicationException.class)
                 .satisfies(ex -> assertThat(((ApplicationException) ex).getCode())
-                        .isEqualTo(GlobalErrorCode.INTERNAL_SERVER_ERROR));
+                        .isEqualTo(OutboxErrorCode.OUTBOX_PAYLOAD_SERIALIZATION_FAILED));
 
         then(outboxEventJpaRepository).shouldHaveNoInteractions();
     }

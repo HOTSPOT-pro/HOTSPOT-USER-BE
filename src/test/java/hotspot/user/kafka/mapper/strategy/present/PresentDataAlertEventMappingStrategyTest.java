@@ -2,7 +2,7 @@ package hotspot.user.kafka.mapper.strategy.present;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,18 +37,16 @@ class PresentDataAlertEventMappingStrategyTest {
                 "alert-1",
                 "PRESENT_DATA",
                 null,
+                100L,
+                null,
                 null,
                 null,
                 null,
                 senderName,
                 amount,
-                Instant.parse("2026-02-23T10:15:30Z"),
-                100L,
                 null,
                 null,
-                0L,
-                10,
-                "evt-1"
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
     }
 }

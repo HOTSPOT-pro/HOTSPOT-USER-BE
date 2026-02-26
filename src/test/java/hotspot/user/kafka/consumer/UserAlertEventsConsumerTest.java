@@ -8,7 +8,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.lenient;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -201,23 +200,21 @@ class UserAlertEventsConsumerTest {
     }
 
     // 테스트용 이벤트 객체를 생성한다.
-    private UserAlertEvent event(Long subId, Long familyId, String sourceEventId) {
+    private UserAlertEvent event(Long subId, Long familyId, String alertId) {
         return new UserAlertEvent(
-                "alert-1",
+                alertId,
                 "USAGE_THRESHOLD",
                 "PLAN_REMAINING",
+                subId,
+                familyId,
                 "30",
                 null,
                 null,
                 null,
                 null,
-                Instant.parse("2026-02-23T10:15:30Z"),
-                subId,
-                familyId,
                 null,
-                0L,
-                30,
-                sourceEventId
+                null,
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
     }
 
