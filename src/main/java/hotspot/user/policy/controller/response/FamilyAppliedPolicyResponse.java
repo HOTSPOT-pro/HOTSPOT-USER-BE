@@ -12,7 +12,7 @@ import lombok.Builder;
 public record FamilyAppliedPolicyResponse(
         Long familyId,
         int familyNum,
-        int familyDataAmount,
+        double familyDataAmount,
         PriorityType priorityType,
         List<AppliedPolicyResponse> memberPolicies
 ) {

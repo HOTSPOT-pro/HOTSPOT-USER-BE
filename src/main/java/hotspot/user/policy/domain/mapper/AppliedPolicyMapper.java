@@ -44,7 +44,7 @@ public class AppliedPolicyMapper {
         return FamilyAppliedPolicyResponse.builder()
                 .familyId(family.getId())
                 .familyNum(family.getFamilyNum())
-                .familyDataAmount(family.getFamilyDataAmount())
+                .familyDataAmount(RedisUsageCalculator.kbToGb(family.getFamilyDataAmount()))
                 .priorityType(family.getPriorityType())
                 .memberPolicies(memberPolicies)
                 .build();
