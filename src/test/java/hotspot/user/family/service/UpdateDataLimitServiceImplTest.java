@@ -184,38 +184,39 @@ class UpdateDataLimitServiceImplTest {
                 .hasFieldOrPropertyWithValue("code", FamilyErrorCode.INVALID_DATA_LIMIT);
     }
 
-    @Test
-    @DisplayName("실패: 설정하려는 한도가 가족 전체 데이터 양을 초과하면 예외가 발생한다")
-    void updateDataLimitFailExceedsFamilyAmount() {
-        // given
-        Long familyId = 1L;
-        Long subId = 100L;
-        long newDataLimitGb = 10L; // 10GB 요청
-        int familyDataAmountKb = 5 * 1024 * 1024; // 가족 총량은 5GB
-        UpdateDataLimitRequest request = new UpdateDataLimitRequest(familyId, subId, newDataLimitGb, false);
+        @Test
+        @DisplayName("실패: 설정하려는 한도가 가족 전체 데이터 양을 초과하면 예외가 발생한다")
+        void updateDataLimitFailExceedsFamilyAmount() {
+            // given
+            Long familyId = 1L;
+            Long subId = 100L;
+            long newDataLimitGb = 10L; // 10GB 요청
+            long familyDataAmountKb = 5L * 1024L * 1024L; // 가족 총량은 5GB
+            UpdateDataLimitRequest request = new UpdateDataLimitRequest(familyId, subId, newDataLimitGb, false);
 
-        FamilySubscription familySub = createFamilySubscription(familyId, subId, 1000, familyDataAmountKb);
-        given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
+            FamilySubscription familySub = createFamilySubscription(familyId, subId, 1000L, familyDataAmountKb);
+            given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
 
-        // when & then
-        assertThatThrownBy(() -> updateDataLimitService.updateDataLimit(request, familyId, FamilyRole.OWNER))
-                .isInstanceOf(ApplicationException.class)
-                .hasFieldOrPropertyWithValue("code", FamilyErrorCode.DATA_LIMIT_EXCEEDS_FAMILY_AMOUNT);
+            // when & then
+            assertThatThrownBy(() -> updateDataLimitService.updateDataLimit(request, familyId, FamilyRole.OWNER))
+                    .isInstanceOf(ApplicationException.class)
+                    .hasFieldOrPropertyWithValue("code", FamilyErrorCode.DATA_LIMIT_EXCEEDS_FAMILY_AMOUNT);
+        }
+
+        private FamilySubscription createFamilySubscription(Long familyId, Long subId,
+                                                        long currentLimit, long familyDataAmount) {
+            return FamilySubscription.builder()
+                    .id(1L)
+                    .family(Family.builder()
+                            .id(familyId)
+                            .familyDataAmount(familyDataAmount)
+                            .build())
+                    .subscription(Subscription.builder().id(subId).build())
+                    .dataLimit(currentLimit)
+                    .build();
+        }
+
+        private FamilySubscription createFamilySubscription(Long familyId, Long subId, long currentLimit) {
+            return createFamilySubscription(familyId, subId, currentLimit, 100L * 1024L * 1024L); // 기본 100GB
+        }
     }
-
-    private FamilySubscription createFamilySubscription(Long familyId, Long subId, int currentLimit, int familyDataAmount) {
-        return FamilySubscription.builder()
-                .id(1L)
-                .family(Family.builder()
-                        .id(familyId)
-                        .familyDataAmount(familyDataAmount)
-                        .build())
-                .subscription(Subscription.builder().id(subId).build())
-                .dataLimit(currentLimit)
-                .build();
-    }
-
-    private FamilySubscription createFamilySubscription(Long familyId, Long subId, int currentLimit) {
-        return createFamilySubscription(familyId, subId, currentLimit, 100 * 1024 * 1024); // 기본 100GB
-    }
-}
