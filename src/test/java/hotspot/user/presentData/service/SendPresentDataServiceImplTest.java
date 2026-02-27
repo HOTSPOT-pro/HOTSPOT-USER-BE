@@ -3,6 +3,7 @@ package hotspot.user.presentData.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,9 @@ import hotspot.user.common.exception.code.PresentDataErrorCode;
 import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
+import hotspot.user.member.domain.Member;
+import hotspot.user.member.domain.Status;
 import hotspot.user.presentData.controller.request.SendPresentDataRequest;
 import hotspot.user.presentData.controller.response.SendPresentDataResponse;
 import hotspot.user.presentData.domain.PresentData;
@@ -36,6 +40,9 @@ class SendPresentDataServiceImplTest {
 
     @Mock
     private FindFamilySubscriptionService findFamilySubscriptionService;
+
+    @Mock
+    private NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
 
     @InjectMocks
     private SendPresentDataServiceImpl sendPresentDataService;
@@ -59,6 +66,12 @@ class SendPresentDataServiceImplTest {
 
         providerSub = Subscription.builder()
                 .id(1L)
+                .member(Member.builder()
+                        .id(memberId)
+                        .name("Alice")
+                        .birth("1990-01-01")
+                        .status(Status.APPROVED)
+                        .build())
                 .build();
 
         targetSub = Subscription.builder()
@@ -84,6 +97,7 @@ class SendPresentDataServiceImplTest {
         SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, requestAmountGb);
 
         PresentData savedPresentData = PresentData.builder()
+                .presentDataId(99L)
                 .provideSubscription(providerSub)
                 .targetSubscription(targetSub)
                 .dataAmount(ONE_GB_IN_KB) // 저장된 값 (KB)
@@ -100,6 +114,13 @@ class SendPresentDataServiceImplTest {
         assertThat(response.provideSubId()).isEqualTo(providerSub.getId());
         assertThat(response.targetSubId()).isEqualTo(targetSub.getId());
         assertThat(response.dataAmount()).isEqualTo(ONE_GB_IN_KB);
+        verify(userAlertOutboxPublisher).publishPresentDataGifted(
+                targetSubId,
+                family.getId(),
+                "Alice",
+                "1GB",
+                "99"
+        );
     }
 
     @Test
