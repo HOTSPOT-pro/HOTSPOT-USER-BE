@@ -21,7 +21,7 @@ public class FamilySubscription {
     private Family family;
     private FamilyRole familyRole;
     private int priority;
-    private int dataLimit;
+    private long dataLimit;
 
     /**
      * 같은 가족 구성원인지 검증
@@ -33,7 +33,7 @@ public class FamilySubscription {
     }
 
     // 데이터 한도 업데이트
-    public void updateDataLimit(int dataLimit) {
+    public void updateDataLimit(long dataLimit) {
         if (dataLimit < FamilyConstant.UNLIMITED_DATA_LIMIT) {
             throw new ApplicationException(
                 FamilyErrorCode.INVALID_DATA_LIMIT

@@ -12,7 +12,7 @@ public record FamilySubscriptionResponse(
         Long familyId,
         FamilyRole role,
         int priority,
-        int dataLimit
+        double dataLimit
 ) {
     public static FamilySubscriptionResponse from(FamilySubscription familySubscription) {
         return new FamilySubscriptionResponse(
