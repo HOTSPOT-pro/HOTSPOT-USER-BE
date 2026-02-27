@@ -25,4 +25,18 @@ class SseEmitterRegistryTest {
         assertThat(sseEmitterRegistry.findBySubId(11L)).isEmpty();
         assertThat(sseEmitterRegistry.findAll()).isEmpty();
     }
+
+    @Test
+    @DisplayName("closeAllBySubId removes all emitters for target subscription")
+    void closeAllBySubIdRemovesEmitters() {
+        sseEmitterRegistry.register(11L, new SseEmitter());
+        sseEmitterRegistry.register(11L, new SseEmitter());
+        sseEmitterRegistry.register(12L, new SseEmitter());
+
+        sseEmitterRegistry.closeAllBySubId(11L);
+
+        assertThat(sseEmitterRegistry.findBySubId(11L)).isEmpty();
+        assertThat(sseEmitterRegistry.findBySubId(12L)).hasSize(1);
+        assertThat(sseEmitterRegistry.findAll()).hasSize(1);
+    }
 }

@@ -9,6 +9,8 @@ public enum KafkaEventType {
     IMMEDIATE_BLOCK,
     SERVICE_ACCESS,
     PRESENT_DATA,
+    FAMILY_MEMBER_ADD,
+    FAMILY_MEMBER_REMOVE,
     ;
 
     public static KafkaEventType from(String raw) {

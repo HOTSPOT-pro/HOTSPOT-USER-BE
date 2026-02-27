@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,6 +19,7 @@ import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.gift.GiftReceivedEvent;
 import hotspot.user.plan.domain.DataPeriod;
+import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.presentData.controller.port.SendPresentDataService;
 import hotspot.user.presentData.controller.request.SendPresentDataRequest;
 import hotspot.user.presentData.controller.response.SendPresentDataResponse;
@@ -37,6 +39,7 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
     private static final long MIN_PRESENT_AMOUNT_GB = 1L;
     private static final long MAX_PRESENT_AMOUNT_GB = 5L;
     private static final long GB_TO_KB_UNIT = 1_048_576L;
+    private static final String DEFAULT_SENDER_NAME = "사용자";
 
     private final PresentDataRepository presentDataRepository;
     private final FindFamilySubscriptionService findFamilySubscriptionService;
@@ -45,6 +48,7 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
     private final ApplicationEventPublisher eventPublisher;
 
     private final Clock clock;
+    private final NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
 
     @Override
     @Transactional
@@ -71,6 +75,7 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
 
         // 6) 이벤트 발행 (Outbox로 흘러가게)
         publishGiftReceivedEvent(giver, receiver, saved, giftKb);
+        publishPresentDataGiftedEvent(giver, saved, request.dataAmount());
 
         return SendPresentDataMapper.toSendPresentDataResponse(saved);
     }
@@ -160,6 +165,25 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
                         yyyyMMdd,
                         UUID.randomUUID().toString()
                 )
+        );
+    }
+
+    private void publishPresentDataGiftedEvent(
+            FamilySubscription providerFamilySub,
+            PresentData sentPresentData,
+            Long requestAmountGb
+    ) {
+        String senderName = Optional.ofNullable(providerFamilySub.getSubscription())
+                .map(subscription -> subscription.getMember())
+                .map(member -> member.getName())
+                .orElse(DEFAULT_SENDER_NAME);
+
+        userAlertOutboxPublisher.publishPresentDataGifted(
+                sentPresentData.getTargetSubscription().getId(),
+                providerFamilySub.getFamily().getId(),
+                senderName,
+                requestAmountGb + "GB",
+                String.valueOf(sentPresentData.getPresentDataId())
         );
     }
 }

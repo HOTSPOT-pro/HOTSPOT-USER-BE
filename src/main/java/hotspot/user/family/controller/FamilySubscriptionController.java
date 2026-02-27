@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,12 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.family.controller.port.FindDataLimitService;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.port.UpdateFamilyPriorityService;
 import hotspot.user.family.controller.port.UpdateFamilyRoleService;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.request.UpdateFamilyPriorityRequest;
 import hotspot.user.family.controller.request.UpdateFamilyRoleRequest;
+import hotspot.user.family.controller.response.FindDataLimitResponse;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
 import hotspot.user.family.controller.response.UpdateFamilyPriorityResponse;
 import hotspot.user.family.controller.response.UpdateFamilyRoleResponse;
@@ -35,6 +38,7 @@ public class FamilySubscriptionController implements FamilySubscriptionApi {
     private final UpdateDataLimitService updateDataLimitService;
     private final UpdateFamilyPriorityService updateFamilyPriorityService;
     private final UpdateFamilyRoleService updateFamilyRoleService; // 가족 역할 업데이트 서비스
+    private final FindDataLimitService findDataLimitService; // 가족 데이터 한도 조회 서비스
 
     // 구성원의 가족 공유 데이터 한도 조정
     @Override
@@ -50,6 +54,22 @@ public class FamilySubscriptionController implements FamilySubscriptionApi {
         );
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    // 구성원 데이터 한도 및 즉시 차단 여부 조회 서비스
+    @GetMapping("/data-limit/{subId}")
+    public ResponseEntity<ApiResponse<FindDataLimitResponse>> findDataLimit(
+            @PathVariable Long subId,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        FindDataLimitResponse response = findDataLimitService.findDataLimit(
+                subId,
+                principal.getFamilyId(),
+                principal.getRole()
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
 
     // 가족 우선순위 정책 및 구성원 순위 업데이트
     @Override

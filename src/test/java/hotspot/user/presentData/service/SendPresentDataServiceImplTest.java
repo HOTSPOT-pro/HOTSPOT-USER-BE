@@ -1,18 +1,10 @@
 package hotspot.user.presentData.service;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,28 +13,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
+import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.PresentDataErrorCode;
 import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
-import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.gift.GiftReceivedEvent;
-import hotspot.user.plan.domain.DataPeriod;
-import hotspot.user.plan.domain.Plan;
+import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
+import hotspot.user.member.domain.Member;
+import hotspot.user.member.domain.Status;
 import hotspot.user.presentData.controller.request.SendPresentDataRequest;
 import hotspot.user.presentData.controller.response.SendPresentDataResponse;
 import hotspot.user.presentData.domain.PresentData;
 import hotspot.user.presentData.service.port.PresentDataRepository;
 import hotspot.user.subscription.domain.Subscription;
-import hotspot.user.usage.subscriptionUsage.service.port.SubscriptionUsageRepository;
 
 @ExtendWith(MockitoExtension.class)
 class SendPresentDataServiceImplTest {
 
-    private static final long ONE_GB_IN_KB = 1_048_576L;
+    private static final long ONE_GB_IN_KB = 1048576L;
 
     @Mock
     private PresentDataRepository presentDataRepository;
@@ -51,12 +42,7 @@ class SendPresentDataServiceImplTest {
     private FindFamilySubscriptionService findFamilySubscriptionService;
 
     @Mock
-    private SubscriptionUsageRepository subscriptionUsageRepository;
-
-    @Mock
-    private ApplicationEventPublisher eventPublisher;
-
-    private Clock fixedClock;
+    private NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
 
     @InjectMocks
     private SendPresentDataServiceImpl sendPresentDataService;
@@ -71,37 +57,25 @@ class SendPresentDataServiceImplTest {
 
     @BeforeEach
     void setUp() {
-
-        fixedClock = Clock.fixed(
-                Instant.parse("2026-02-19T00:00:00Z"),
-                ZoneId.systemDefault()
-        );
-
-        sendPresentDataService = new SendPresentDataServiceImpl(
-                presentDataRepository,
-                findFamilySubscriptionService,
-                subscriptionUsageRepository,
-                eventPublisher,
-                fixedClock
-        );
-
         memberId = 1L;
         targetSubId = 2L;
 
-        family = Family.builder().id(10L).build();
-
-        Plan plan = Plan.builder()
-                .dataPeriod(DataPeriod.MONTH)
+        family = Family.builder()
+                .id(10L)
                 .build();
 
         providerSub = Subscription.builder()
                 .id(1L)
-                .plan(plan)
+                .member(Member.builder()
+                        .id(memberId)
+                        .name("Alice")
+                        .birth("1990-01-01")
+                        .status(Status.APPROVED)
+                        .build())
                 .build();
 
         targetSub = Subscription.builder()
                 .id(2L)
-                .plan(plan)
                 .build();
 
         providerFamilySub = FamilySubscription.builder()
@@ -116,126 +90,127 @@ class SendPresentDataServiceImplTest {
     }
 
     @Test
-    @DisplayName("데이터 선물하기 성공")
+    @DisplayName("데이터 선물하기 성공 (1GB 요청 시 내부적으로 KB 변환 확인)")
     void sendPresentDataSuccess() {
-
-        SendPresentDataRequest request =
-                new SendPresentDataRequest(targetSubId, 1L);
+        // given
+        Long requestAmountGb = 1L; // 프론트에서 보내는 값 (GB)
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, requestAmountGb);
 
         PresentData savedPresentData = PresentData.builder()
+                .presentDataId(99L)
                 .provideSubscription(providerSub)
                 .targetSubscription(targetSub)
-                .dataAmount(ONE_GB_IN_KB)
+                .dataAmount(ONE_GB_IN_KB) // 저장된 값 (KB)
                 .build();
 
-        when(findFamilySubscriptionService.findByMemberId(memberId))
-                .thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(targetSubId)).thenReturn(targetFamilySub);
+        when(presentDataRepository.sendPresentData(any(PresentData.class))).thenReturn(savedPresentData);
 
-        when(findFamilySubscriptionService.findBySubId(targetSubId))
-                .thenReturn(targetFamilySub);
+        // when
+        SendPresentDataResponse response = sendPresentDataService.sendPresentData(memberId, request);
 
-        // 잔여량 충분
-        when(subscriptionUsageRepository.findRemainingPlanKb(anyLong(), any()))
-                .thenReturn(10L * ONE_GB_IN_KB);
-
-        // 이번달 선물한 총량 0
-        when(presentDataRepository.sumMonthlySentKb(anyLong(), any(), any()))
-                .thenReturn(0L);
-
-        when(presentDataRepository.sendPresentData(any()))
-                .thenReturn(savedPresentData);
-
-        SendPresentDataResponse response =
-                sendPresentDataService.sendPresentData(memberId, request);
-
+        // then
         assertThat(response.provideSubId()).isEqualTo(providerSub.getId());
         assertThat(response.targetSubId()).isEqualTo(targetSub.getId());
         assertThat(response.dataAmount()).isEqualTo(ONE_GB_IN_KB);
-
-        verify(eventPublisher, times(1)).publishEvent(isA(GiftReceivedEvent.class));
+        verify(userAlertOutboxPublisher).publishPresentDataGifted(
+                targetSubId,
+                family.getId(),
+                "Alice",
+                "1GB",
+                "99"
+        );
     }
 
     @Test
-    @DisplayName("잔여 데이터 부족 시 예외")
-    void notEnoughData() {
-
-        SendPresentDataRequest request =
-                new SendPresentDataRequest(targetSubId, 3L);
-
+    @DisplayName("보내는 사람의 가족 결합 정보를 찾을 수 없을 때 예외 발생")
+    void sendPresentDataProviderFamilyNotFound() {
+        // given
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 1L);
         when(findFamilySubscriptionService.findByMemberId(memberId))
-                .thenReturn(providerFamilySub);
+                .thenThrow(new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
 
-        when(findFamilySubscriptionService.findBySubId(targetSubId))
-                .thenReturn(targetFamilySub);
-
-        when(subscriptionUsageRepository.findRemainingPlanKb(anyLong(), any()))
-                .thenReturn(1L * ONE_GB_IN_KB); // 부족
-
-        assertThatThrownBy(() ->
-                sendPresentDataService.sendPresentData(memberId, request))
+        // when & then
+        assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
                 .isInstanceOf(ApplicationException.class)
-                .hasFieldOrPropertyWithValue(
-                        "code",
-                        PresentDataErrorCode.NOT_ENOUGH_DATA
-                );
+                .hasFieldOrPropertyWithValue("code", FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND);
     }
 
     @Test
-    @DisplayName("월 한도 초과 시 예외")
-    void monthlyLimitExceeded() {
-
-        SendPresentDataRequest request =
-                new SendPresentDataRequest(targetSubId, 3L);
-
-        when(findFamilySubscriptionService.findByMemberId(memberId))
-                .thenReturn(providerFamilySub);
-
+    @DisplayName("받는 사람의 가족 결합 정보를 찾을 수 없을 때 예외 발생")
+    void sendPresentDataTargetFamilyNotFound() {
+        // given
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 1L);
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
         when(findFamilySubscriptionService.findBySubId(targetSubId))
-                .thenReturn(targetFamilySub);
+                .thenThrow(new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
 
-        when(subscriptionUsageRepository.findRemainingPlanKb(anyLong(), any()))
-                .thenReturn(10L * ONE_GB_IN_KB);
-
-        // 이미 4GB 사용한 상태
-        when(presentDataRepository.sumMonthlySentKb(anyLong(), any(), any()))
-                .thenReturn(4L * ONE_GB_IN_KB);
-
-        assertThatThrownBy(() ->
-                sendPresentDataService.sendPresentData(memberId, request))
+        // when & then
+        assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
                 .isInstanceOf(ApplicationException.class)
-                .hasFieldOrPropertyWithValue(
-                        "code",
-                        PresentDataErrorCode.MONTHLY_GIFT_LIMIT_EXCEEDED
-                );
+                .hasFieldOrPropertyWithValue("code", FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND);
     }
 
     @Test
-    @DisplayName("같은 가족이 아닐 경우 예외")
-    void notSameFamily() {
+    @DisplayName("같은 가족 구성원이 아닐 때 예외 발생")
+    void sendPresentDataNotSameFamily() {
+        // given
+        Family otherFamily = Family.builder().id(20L).build();
+        FamilySubscription otherFamilySub = FamilySubscription.builder()
+                .family(otherFamily)
+                .subscription(targetSub)
+                .build();
 
-        Family otherFamily = Family.builder().id(99L).build();
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 1L);
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(targetSubId)).thenReturn(otherFamilySub);
 
-        FamilySubscription otherFamilySub =
-                FamilySubscription.builder()
-                        .family(otherFamily)
-                        .subscription(targetSub)
-                        .build();
-
-        SendPresentDataRequest request =
-                new SendPresentDataRequest(targetSubId, 1L);
-
-        when(findFamilySubscriptionService.findByMemberId(memberId))
-                .thenReturn(providerFamilySub);
-
-        when(findFamilySubscriptionService.findBySubId(targetSubId))
-                .thenReturn(otherFamilySub);
-
-        assertThatThrownBy(() ->
-                sendPresentDataService.sendPresentData(memberId, request))
+        // when & then
+        assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
                 .isInstanceOf(ApplicationException.class)
-                .hasFieldOrPropertyWithValue(
-                        "code",
-                        AuthErrorCode.ACCESS_DENIED
-                );
+                .hasFieldOrPropertyWithValue("code", AuthErrorCode.ACCESS_DENIED);
+    }
+
+    @Test
+    @DisplayName("자신에게 선물할 때 예외 발생")
+    void sendPresentDataSelfGift() {
+        // given
+        SendPresentDataRequest request = new SendPresentDataRequest(providerSub.getId(), 1L);
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(providerSub.getId())).thenReturn(providerFamilySub);
+
+        // when & then
+        assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
+                .isInstanceOf(ApplicationException.class)
+                .hasFieldOrPropertyWithValue("code", PresentDataErrorCode.PRESENT_DATA_SELF_GIFT);
+    }
+
+    @Test
+    @DisplayName("데이터 선물 요청량이 1GB 미만일 때 예외 발생")
+    void sendPresentDataInvalidAmountTooSmall() {
+        // given
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 0L);
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(targetSubId)).thenReturn(targetFamilySub);
+
+        // when & then
+        assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
+                .isInstanceOf(ApplicationException.class)
+                .hasFieldOrPropertyWithValue("code", PresentDataErrorCode.PRESENT_DATA_INVALID_AMOUNT);
+    }
+
+    @Test
+    @DisplayName("데이터 선물 요청량이 5GB 초과일 때 예외 발생")
+    void sendPresentDataInvalidAmountTooLarge() {
+        // given
+        SendPresentDataRequest request = new SendPresentDataRequest(targetSubId, 6L);
+        when(findFamilySubscriptionService.findByMemberId(memberId)).thenReturn(providerFamilySub);
+        when(findFamilySubscriptionService.findBySubId(targetSubId)).thenReturn(targetFamilySub);
+
+        // when & then
+        assertThatThrownBy(() -> sendPresentDataService.sendPresentData(memberId, request))
+                .isInstanceOf(ApplicationException.class)
+                .hasFieldOrPropertyWithValue("code", PresentDataErrorCode.PRESENT_DATA_INVALID_AMOUNT);
     }
 }

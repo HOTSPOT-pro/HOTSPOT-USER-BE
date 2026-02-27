@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,8 +20,11 @@ import hotspot.user.auth.service.port.TokenRepository;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtProvider;
+import hotspot.user.dispatch.registry.SseEmitterRegistry;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
+import hotspot.user.subscription.domain.Subscription;
+import hotspot.user.subscription.service.port.SubscriptionRepository;
 
 /**
  * 로그아웃 서비스 단위 테스트
@@ -31,6 +36,10 @@ class LogoutServiceImplTest {
     private JwtProvider jwtProvider;
     @Mock
     private TokenRepository tokenRepository;
+    @Mock
+    private SubscriptionRepository subscriptionRepository;
+    @Mock
+    private SseEmitterRegistry sseEmitterRegistry;
 
     @InjectMocks
     private LogoutServiceImpl logoutService;
@@ -51,12 +60,15 @@ class LogoutServiceImplTest {
 
         given(jwtProvider.validateToken(refreshToken)).willReturn(true);
         given(jwtProvider.getAuthenticationFromRefreshToken(refreshToken)).willReturn(authentication);
+        given(subscriptionRepository.findByMemberId(memberId))
+                .willReturn(Optional.of(Subscription.builder().id(1000003L).build()));
 
         // when
         logoutService.logout(memberId, request);
 
         // then
         verify(tokenRepository).deleteByMemberId(memberId);
+        verify(sseEmitterRegistry).closeAllBySubId(1000003L);
     }
 
     @Test

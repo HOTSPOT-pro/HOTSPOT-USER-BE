@@ -23,6 +23,15 @@ public class FamilySubscription {
     private int priority;
     private int dataLimit;
 
+    /**
+     * 같은 가족 구성원인지 검증
+     */
+    public void validateSameFamily(FamilySubscription target) {
+        if (!this.family.getId().equals(target.getFamily().getId())) {
+            throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
+        }
+    }
+
     // 데이터 한도 업데이트
     public void updateDataLimit(int dataLimit) {
         if (dataLimit < FamilyConstant.UNLIMITED_DATA_LIMIT) {

@@ -29,4 +29,31 @@ public interface FamilySubscriptionJpaRepository extends JpaRepository<FamilySub
     @Modifying(clearAutomatically = true)
     @Query("UPDATE FamilySubscriptionEntity fs SET fs.priority = :priority WHERE fs.subscription.subId = :subId")
     void updatePriority(@Param("subId") Long subId, @Param("priority") int priority);
+
+    @Query("""
+             SELECT
+                 f.familyId as familyId,
+                 m.name as name,
+                 s.isLocked as isLocked,
+                 fs.dataLimit as dataLimit,
+                 f.familyDataAmount as familyDataAmount
+             FROM FamilySubscriptionEntity fs
+             JOIN fs.subscription s
+             JOIN s.member m
+            JOIN fs.family f
+            WHERE s.subId = :subId
+        """)
+    Optional<FamilySubDataLimitRow> findDataLimitBySubId(@Param("subId") Long subId);
+
+    /**
+     * 조회 전용 Projection 인터페이스
+     */
+    interface FamilySubDataLimitRow {
+        Long getFamilyId();
+        String getName();
+        Boolean getIsLocked();
+        Long getDataLimit();
+        Long getFamilyDataAmount();
+    }
+
 }
