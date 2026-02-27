@@ -7,11 +7,13 @@ import lombok.Builder;
  * @param familyId
  * @param subId
  * @param dataLimit
+ * @param isLocked
  */
 @Builder
 public record UpdateDataLimitResponse(
         Long familyId,
         Long subId,
-        int dataLimit
+        double dataLimit,
+        boolean isLocked
 ) {
 }

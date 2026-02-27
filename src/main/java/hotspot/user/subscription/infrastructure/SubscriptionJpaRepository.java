@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 
@@ -32,4 +34,8 @@ public interface SubscriptionJpaRepository extends JpaRepository<SubscriptionEnt
         where s.subId in :subIds
     """)
     List<SubscriptionEntity> findAllByIdIn(List<Long> subIds);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE SubscriptionEntity s SET s.isLocked = :isLocked WHERE s.subId = :subId")
+    void updateLockedStatus(@Param("subId") Long subId, @Param("isLocked") boolean isLocked);
 }

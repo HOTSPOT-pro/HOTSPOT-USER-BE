@@ -44,7 +44,7 @@ public class FamilyEntity extends BaseEntity {
 
     @Column(nullable = false)
     @Builder.Default
-    private int familyDataAmount = 0;
+    private long familyDataAmount = 0;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

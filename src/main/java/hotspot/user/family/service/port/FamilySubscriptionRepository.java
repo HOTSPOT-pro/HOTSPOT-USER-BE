@@ -15,5 +15,6 @@ public interface FamilySubscriptionRepository {
     Optional<FamilySubscription> findByMemberId(Long memberId);
     FamilySubscription save(FamilySubscription familySubscription);
     void updatePriorities(List<FamilySubscription> subscriptions);
+    void updateDataLimit(Long subId, long dataLimit);
     FamilySubDataLimit findDataLimitBySubId(Long subId); // subId로 데이터 한도 관련 정보 찾기
 }

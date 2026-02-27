@@ -22,14 +22,14 @@ class FamilySubscriptionTest {
         // given
         FamilySubscription familySubscription = FamilySubscription.builder()
                 .id(1L)
-                .dataLimit(100)
+                .dataLimit(100L)
                 .build();
 
         // when
-        familySubscription.updateDataLimit(500);
+        familySubscription.updateDataLimit(500L);
 
         // then
-        assertThat(familySubscription.getDataLimit()).isEqualTo(500);
+        assertThat(familySubscription.getDataLimit()).isEqualTo(500L);
     }
 
     @Test
@@ -38,11 +38,11 @@ class FamilySubscriptionTest {
         // given
         FamilySubscription familySubscription = FamilySubscription.builder()
                 .id(1L)
-                .dataLimit(100)
+                .dataLimit(100L)
                 .build();
 
         // when & then
-        assertThatThrownBy(() -> familySubscription.updateDataLimit(-2))
+        assertThatThrownBy(() -> familySubscription.updateDataLimit(-2L))
                 .isInstanceOf(ApplicationException.class)
                 .hasFieldOrPropertyWithValue("code", FamilyErrorCode.INVALID_DATA_LIMIT);
     }
@@ -129,12 +129,12 @@ class FamilySubscriptionTest {
                 .family(family)
                 .familyRole(FamilyRole.OWNER)
                 .priority(1)
-                .dataLimit(1000)
+                .dataLimit(1000L)
                 .build();
 
         // then
         assertThat(familySubscription.getId()).isEqualTo(1L);
         assertThat(familySubscription.getFamilyRole()).isEqualTo(FamilyRole.OWNER);
-        assertThat(familySubscription.getDataLimit()).isEqualTo(1000);
+        assertThat(familySubscription.getDataLimit()).isEqualTo(1000L);
     }
 }

@@ -137,7 +137,7 @@ class FamilySubscriptionRepositoryImplTest {
                 .family(family)
                 .familyRole(FamilyRole.CHILD)
                 .priority(-1)
-                .dataLimit(500)
+                .dataLimit(500L)
                 .build();
 
         // entityToDomain 변환 시 필요한 연관 엔티티들 모킹
@@ -158,7 +158,7 @@ class FamilySubscriptionRepositoryImplTest {
                 .subscription(subEntity)
                 .family(familyEntity)
                 .familyRole(FamilyRole.CHILD)
-                .dataLimit(500)
+                .dataLimit(500L)
                 .build();
 
         org.mockito.BDDMockito.given(familySubscriptionJpaRepository.save(

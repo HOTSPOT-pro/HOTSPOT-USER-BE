@@ -23,6 +23,14 @@ public final class RedisUsageCalculator {
                 .doubleValue();
     }
 
+    // GB -> KB 로직 추가
+    public static long gbToKb(double gb) {
+        if (gb < 0) {
+            return -1L;
+        }
+        return Math.round(gb * KB_TO_GB);
+    }
+
     public static double calculateRemain(double limitKb, double usedKb) {
         return Math.max(limitKb - usedKb, 0);
     }

@@ -30,6 +30,10 @@ public interface FamilySubscriptionJpaRepository extends JpaRepository<FamilySub
     @Query("UPDATE FamilySubscriptionEntity fs SET fs.priority = :priority WHERE fs.subscription.subId = :subId")
     void updatePriority(@Param("subId") Long subId, @Param("priority") int priority);
 
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE FamilySubscriptionEntity fs SET fs.dataLimit = :dataLimit WHERE fs.subscription.subId = :subId")
+    void updateDataLimit(@Param("subId") Long subId, @Param("dataLimit") long dataLimit);
+
     @Query("""
              SELECT
                  f.familyId as familyId,
