@@ -27,7 +27,7 @@ class SubscriptionUsageRepositoryImplTest {
 
     @Test
     @DisplayName("findSubscriptionUsage: redisRepository를 그대로 위임 호출한다")
-    void shouldCallRedisRepository_findSubscriptionUsage() {
+    void shouldCallRedisRepositoryFindSubscriptionUsage() {
 
         Long subId = 1L;
         DataPeriod dataPeriod = DataPeriod.MONTH;
@@ -48,7 +48,7 @@ class SubscriptionUsageRepositoryImplTest {
 
     @Test
     @DisplayName("findRemainingPlanKb: redisRepository를 그대로 위임 호출한다")
-    void shouldCallRedisRepository_findRemainingPlanKb() {
+    void shouldCallRedisRepositoryFindRemainingPlanKb() {
 
         Long subId = 1L;
         DataPeriod dataPeriod = DataPeriod.DAY;

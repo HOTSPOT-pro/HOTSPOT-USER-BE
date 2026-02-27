@@ -11,8 +11,6 @@ import static org.mockito.Mockito.verify;
 import java.util.List;
 import java.util.Optional;
 
-import hotspot.user.outbox.consistencyOutbox.domain.event.family.mode.FamilyModeChangedToFifoEvent;
-import hotspot.user.outbox.consistencyOutbox.domain.event.family.mode.FamilyModeChangedToPriorityEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
@@ -33,8 +32,9 @@ import hotspot.user.family.domain.PriorityType;
 import hotspot.user.family.service.port.FamilyRepository;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.outbox.consistencyOutbox.domain.event.family.mode.FamilyModeChangedToFifoEvent;
+import hotspot.user.outbox.consistencyOutbox.domain.event.family.mode.FamilyModeChangedToPriorityEvent;
 import hotspot.user.subscription.domain.Subscription;
-import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateFamilyPriorityServiceImplTest {

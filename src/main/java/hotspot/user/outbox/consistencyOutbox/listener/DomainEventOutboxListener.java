@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
@@ -36,6 +35,8 @@ public class DomainEventOutboxListener {
 
             outboxEventRepository.save(outbox);
 
+        } catch (ApplicationException e) {
+            throw e;
         } catch (Exception e) {
             throw new ApplicationException(OutboxErrorCode.OUTBOX_EVENT_SAVE_FAILED, e);
         }
@@ -44,7 +45,7 @@ public class DomainEventOutboxListener {
     private String toJson(Object payload) {
         try {
             return objectMapper.writeValueAsString(payload);
-        } catch (JsonProcessingException ex) {
+        } catch (Exception ex) {
             throw new ApplicationException(OutboxErrorCode.OUTBOX_PAYLOAD_SERIALIZATION_FAILED, ex);
         }
     }
