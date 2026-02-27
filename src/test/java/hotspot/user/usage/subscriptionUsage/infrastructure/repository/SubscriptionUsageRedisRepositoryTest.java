@@ -53,8 +53,7 @@ class SubscriptionUsageRedisRepositoryTest {
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port",
-                () -> redis.getMappedPort(6379));
+        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
     }
 
     @Autowired
@@ -67,9 +66,7 @@ class SubscriptionUsageRedisRepositoryTest {
     static class RedisTestConfig {
 
         @Bean
-        RedisPipelineExecutor redisPipelineExecutor(
-                StringRedisTemplate redisTemplate
-        ) {
+        RedisPipelineExecutor redisPipelineExecutor(StringRedisTemplate redisTemplate) {
             return new RedisPipelineExecutor(redisTemplate);
         }
 
@@ -105,10 +102,10 @@ class SubscriptionUsageRedisRepositoryTest {
                 "25165824"
         );
 
-        // 🔥 개인 사용량 (member_family_used로 변경)
+        // 개인 사용량 (⭐ plan_used)
         redisTemplate.opsForHash().put(
                 "usage:sub:1:" + yyyyMM,
-                "member_family_used",
+                "plan_used",
                 "0"
         );
 
@@ -134,13 +131,89 @@ class SubscriptionUsageRedisRepositoryTest {
         );
 
         SubscriptionUsage usage =
-                repository.findSubscriptionUsage(
-                        1L,
-                        DataPeriod.MONTH
-                );
+                repository.findSubscriptionUsage(1L, DataPeriod.MONTH);
 
         assertEquals(24.0, usage.limitGb());
         assertEquals(1.0, usage.giftTotalLimitGb());
         assertEquals(0.5, usage.giftTotalUsedGb());
+    }
+
+    @Test
+    @DisplayName("findRemainingPlanKb(MONTH): plan_limit - plan_used 계산")
+    void shouldReturnRemainingPlanKbForMonth() {
+
+        String yyyyMM = "202602";
+
+        // plan_limit: 24GB (KB)
+        redisTemplate.opsForHash().put(
+                "limit:sub:1",
+                "plan_limit",
+                "25165824"
+        );
+
+        // plan_used: 3GB (KB)
+        redisTemplate.opsForHash().put(
+                "usage:sub:1:" + yyyyMM,
+                "plan_used",
+                "3145728"
+        );
+
+        long remainingKb =
+                repository.findRemainingPlanKb(1L, DataPeriod.MONTH);
+
+        // 24GB - 3GB = 21GB
+        assertEquals(22020096L, remainingKb);
+    }
+
+    @Test
+    @DisplayName("findRemainingPlanKb(DAY): plan_limit - plan_used 계산")
+    void shouldReturnRemainingPlanKbForDay() {
+
+        String yyyyMMdd = "20260201";
+
+        // plan_limit: 5GB (KB)
+        redisTemplate.opsForHash().put(
+                "limit:sub:1",
+                "plan_limit",
+                "5242880"
+        );
+
+        // plan_used: 1GB (KB)
+        redisTemplate.opsForHash().put(
+                "usage:sub:1:" + yyyyMMdd,
+                "plan_used",
+                "1048576"
+        );
+
+        long remainingKb =
+                repository.findRemainingPlanKb(1L, DataPeriod.DAY);
+
+        // 5GB - 1GB = 4GB
+        assertEquals(4194304L, remainingKb);
+    }
+
+    @Test
+    @DisplayName("findRemainingPlanKb: plan_used가 없으면 0으로 처리")
+    void shouldTreatMissingPlanUsedAsZero() {
+
+        String yyyyMM = "202602";
+
+        redisTemplate.opsForHash().put(
+                "limit:sub:1",
+                "plan_limit",
+                "1048576"
+        );
+
+        // usage key는 있지만 plan_used 없음(또는 키 자체 없음) → 0 처리 기대
+        redisTemplate.opsForHash().put(
+                "usage:sub:1:" + yyyyMM,
+                "member_family_used",
+                "999"
+        );
+
+        long remainingKb =
+                repository.findRemainingPlanKb(1L, DataPeriod.MONTH);
+
+        assertEquals(1048576L, remainingKb);
     }
 }

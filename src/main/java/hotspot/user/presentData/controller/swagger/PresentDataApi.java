@@ -112,47 +112,59 @@ public interface PresentDataApi {
 
     @Operation(
             summary = "데이터 선물하기",
-            description = "같은 가족 구성원에게 데이터를 선물합니다. (1GB ~ 5GB 단위)"
+            description = """
+                같은 가족 구성원에게 데이터를 선물합니다.
+                - 1GB ~ 5GB 사이, 1GB 단위
+                - 월 최대 5GB까지 선물 가능
+                - 개인 요금제 잔여 데이터 초과 불가
+                """
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "선물하기 성공"),
+
             @ApiResponse(
                     responseCode = "400",
                     description = """
-                            잘못된 요청
-                            - PRESENT_001: 자신에게는 데이터를 선물할 수 없습니다.
-                            - PRESENT_002: 데이터 선물은 1GB에서 5GB 사이, 1GB 단위로만 가능합니다.
-                            """,
+                        잘못된 요청
+                        - PRESENT_DATA_INVALID_AMOUNT: 1GB~5GB 범위 초과
+                        - PRESENT_DATA_SELF_GIFT_NOT_ALLOWED: 자신에게는 선물 불가
+                        - NOT_ENOUGH_DATA: 개인 요금제 잔여 데이터 부족
+                        - MONTHLY_GIFT_LIMIT_EXCEEDED: 월 최대 선물 한도(5GB) 초과
+                        """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
+
             @ApiResponse(
                     responseCode = "401",
                     description = """
-                            인증 실패
-                            - AUTH_002: 유효하지 않은 토큰
-                            - AUTH_006: 토큰 만료
-                            """,
+                        인증 실패
+                        - AUTH_002: 유효하지 않은 토큰
+                        - AUTH_006: 토큰 만료
+                        """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
+
             @ApiResponse(
                     responseCode = "403",
                     description = """
-                            권한 없음
-                            - AUTH_004: 해당 요청에 대한 접근 권한이 없습니다. (가족 구성원이 아님 등)
-                            """,
+                        권한 없음
+                        - AUTH_004: 같은 가족 구성원이 아님
+                        """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
+
             @ApiResponse(
                     responseCode = "404",
                     description = """
-                            조회 실패
-                            - MEMBER_004: 회선의 가족 결합 정보를 찾을 수 없습니다.
-                            """,
+                        조회 실패
+                        - MEMBER_004: 회선의 가족 결합 정보를 찾을 수 없습니다.
+                        """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     ResponseEntity<hotspot.user.common.ApiResponse<SendPresentDataResponse>> sendPresentData(
             @Valid @RequestBody SendPresentDataRequest request,
-            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails details
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal PrincipalDetails details
     );
 }

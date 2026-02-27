@@ -72,8 +72,7 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/", "/health", "/login/**", "/oauth2/**", "/oauth/**",
                         "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                        "/actuator/health", "/api/v1/image/presigned-url",
-                        "/api/v1/auth/reissue"
+                        "/actuator/health", "/api/v1/auth/reissue"
                 ).permitAll()
                 // isAuthenticated() 조건 추가로 500 에러 방지
                 // 온보딩은 PENDING인 유저만 가능

@@ -2,8 +2,10 @@ package hotspot.user.family.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,8 @@ import hotspot.user.family.domain.mapper.FamilyMapper;
 import hotspot.user.family.service.port.FamilyRepository;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.outbox.consistencyOutbox.domain.event.family.mode.FamilyModeChangedToFifoEvent;
+import hotspot.user.outbox.consistencyOutbox.domain.event.family.mode.FamilyModeChangedToPriorityEvent;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -34,6 +38,7 @@ public class UpdateFamilyPriorityServiceImpl implements UpdateFamilyPriorityServ
 
     private final FamilyRepository familyRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public UpdateFamilyPriorityResponse updateFamilyPriority(
@@ -62,6 +67,8 @@ public class UpdateFamilyPriorityServiceImpl implements UpdateFamilyPriorityServ
 
         // 5. 변경 사항 영속화 (UPDATE만)
         familySubscriptionRepository.updatePriorities(members.toList());
+
+        publishFamilyModeChangedEvent(family, members);
 
         // 6. 결과 반환 (DB 재조회 없이, 최신화된 메모리 도메인 객체를 바로 매퍼로 전달)
         return FamilyMapper.toUpdateFamilyPriorityResponse(family, members.toList());
@@ -95,6 +102,46 @@ public class UpdateFamilyPriorityServiceImpl implements UpdateFamilyPriorityServ
                             MemberPriorityRequest::priority
                     ));
             members.updatePriorities(priorityMap);
+        }
+    }
+
+    // Redis 정합성 리스너 로직
+    private void publishFamilyModeChangedEvent(
+            Family family,
+            FamilySubscriptions members
+    ) {
+        String eventId = UUID.randomUUID().toString();
+
+        if (family.getPriorityType() == PriorityType.FIFO) {
+
+            eventPublisher.publishEvent(
+                    new FamilyModeChangedToFifoEvent(
+                            "FAMILY_MODE_CHANGED",
+                            family.getId(),
+                            "FIFO",
+                            eventId
+                    )
+            );
+
+        } else {
+
+            List<FamilyModeChangedToPriorityEvent.Priority> priorities =
+                    members.toList().stream()
+                            .map(sub -> new FamilyModeChangedToPriorityEvent.Priority(
+                                    sub.getSubscription().getId(),
+                                    sub.getPriority()
+                            ))
+                            .toList();
+
+            eventPublisher.publishEvent(
+                    new FamilyModeChangedToPriorityEvent(
+                            "FAMILY_MODE_CHANGED",
+                            family.getId(),
+                            "PRIORITY",
+                            priorities,
+                            eventId
+                    )
+            );
         }
     }
 }

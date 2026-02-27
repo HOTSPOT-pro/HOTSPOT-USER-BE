@@ -1,5 +1,8 @@
 package hotspot.user.family.service;
 
+import java.util.UUID;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +19,7 @@ import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.domain.mapper.FamilySubscriptionMapper;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.outbox.consistencyOutbox.domain.event.family.limit.FamilySubLimitChangedEvent;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -26,7 +30,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
+
     private final FamilySubscriptionRepository familySubscriptionRepository;
+    private final ApplicationEventPublisher eventPublisher;
+
+    private static final long GB_TO_KB_UNIT = 1_048_576L;
     private final SubscriptionRepository subscriptionRepository;
 
     @Override
@@ -61,6 +69,8 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
             throw new ApplicationException(FamilyErrorCode.DATA_LIMIT_EXCEEDS_FAMILY_AMOUNT);
         }
 
+        long newLimitKb = request.dataLimit() * GB_TO_KB_UNIT;
+
         familySubscriptionRepository.updateDataLimit(request.subId(), dataLimitKb);
 
         // 5. 차단 여부 업데이트
@@ -68,6 +78,29 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
 
         // 6. 실제 DB에서 최종 상태를 다시 읽어와서 응답 (데이터 정합성 보장)
         FamilySubDataLimit savedDataLimit = familySubscriptionRepository.findDataLimitBySubId(request.subId());
+
+        // Outbox 이벤트 발행 (스냅샷)
+        publishFamilyLimitChangedEvent(
+                requesterFamilyId,
+                request.subId(),
+                newLimitKb
+        );
         return FamilySubscriptionMapper.toUpdateDataLimitResponse(request.subId(), savedDataLimit);
+    }
+
+    private void publishFamilyLimitChangedEvent(
+            Long familyId,
+            Long subId,
+            Long newLimit
+    ) {
+        eventPublisher.publishEvent(
+                new FamilySubLimitChangedEvent(
+                        "FAMILY_SUB_LIMIT_CHANGED",
+                        familyId,
+                        subId,
+                        newLimit,
+                        UUID.randomUUID().toString()
+                )
+        );
     }
 }

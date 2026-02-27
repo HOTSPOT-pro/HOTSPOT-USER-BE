@@ -1,5 +1,6 @@
 package hotspot.user.presentData.infrastructure;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,13 +39,11 @@ public class PresentDataRepositoryImpl implements PresentDataRepository {
 
     @Override
     public Map<Long, String> findGiftGiverNames(List<Long> giftIds) {
-
         if (giftIds == null || giftIds.isEmpty()) {
             return Map.of();
         }
 
-        return presentDataJpaRepository
-                .findGiftGivers(giftIds)
+        return presentDataJpaRepository.findGiftGivers(giftIds)
                 .stream()
                 .collect(Collectors.toMap(
                         PresentDataJpaRepository.GiftGiverRow::getGiftId,
@@ -53,19 +52,18 @@ public class PresentDataRepositoryImpl implements PresentDataRepository {
     }
 
     @Override
-    public Map<Long, SubUsage> findSubUsage(
-            Map<Long, DataPeriod> subPeriodMap
-    ) {
+    public Map<Long, SubUsage> findSubUsage(Map<Long, DataPeriod> subPeriodMap) {
         return redisRepository.findUsageAndLimit(subPeriodMap);
     }
 
-    // 데이터 선물하기
     @Override
     public PresentData sendPresentData(PresentData presentData) {
         PresentDataEntity entity = PresentDataEntity.domainToEntity(presentData);
-        PresentDataEntity savedEntity = presentDataJpaRepository.save(entity);
-        return savedEntity.entityToDomain();
+        return presentDataJpaRepository.save(entity).entityToDomain();
+    }
 
-
+    @Override
+    public long sumMonthlySentKb(Long providerSubId, LocalDateTime start, LocalDateTime end) {
+        return presentDataJpaRepository.sumMonthlySentKb(providerSubId, start, end);
     }
 }

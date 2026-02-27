@@ -2,6 +2,7 @@ package hotspot.user.policy.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
@@ -27,6 +29,7 @@ import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.app.AppBlockListUpdateEvent;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
 import hotspot.user.policy.domain.AppBlockedService;
@@ -47,6 +50,9 @@ class UpdateAppBlockedServiceServiceImplTest {
 
     @Mock
     private NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private UpdateAppBlockedServiceServiceImpl service;
@@ -82,6 +88,9 @@ class UpdateAppBlockedServiceServiceImplTest {
         assertThat(response.subId()).isEqualTo(subId);
         verify(blockedServiceSubRepository, times(1)).saveAll(anyLong(), anySet());
         verify(blockedServiceSubRepository, times(1)).deleteAll(anyLong(), anySet());
+
+        verify(eventPublisher, times(1))
+                .publishEvent(any(AppBlockListUpdateEvent.class));
     }
 
     @Test

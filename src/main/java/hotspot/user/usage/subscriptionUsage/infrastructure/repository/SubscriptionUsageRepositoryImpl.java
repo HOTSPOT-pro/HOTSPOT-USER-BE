@@ -20,4 +20,12 @@ public class SubscriptionUsageRepositoryImpl
             DataPeriod dataPeriod) {
         return redisRepository.findSubscriptionUsage(subId, dataPeriod);
     }
+
+    @Override
+    public long findRemainingPlanKb(
+            Long subId,
+            DataPeriod dataPeriod
+    ) {
+        return redisRepository.findRemainingPlanKb(subId, dataPeriod);
+    }
 }

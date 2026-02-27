@@ -1,4 +1,4 @@
-package hotspot.user.outbox.service;
+package hotspot.user.outbox.notificationOutbox.service;
 
 import java.util.UUID;
 
@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.OutboxErrorCode;
-import hotspot.user.outbox.infrastructure.NotificationOutboxEventJpaRepository;
-import hotspot.user.outbox.infrastructure.entity.NotificationOutboxEventEntity;
+import hotspot.user.outbox.notificationOutbox.infrastructure.NotificationOutboxEventJpaRepository;
+import hotspot.user.outbox.notificationOutbox.infrastructure.entity.NotificationOutboxEventEntity;
 import lombok.RequiredArgsConstructor;
 
 @Service

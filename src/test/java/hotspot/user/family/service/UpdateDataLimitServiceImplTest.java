@@ -2,6 +2,7 @@ package hotspot.user.family.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import hotspot.user.common.constant.FamilyConstant;
 import hotspot.user.common.exception.ApplicationException;
@@ -42,6 +44,9 @@ class UpdateDataLimitServiceImplTest {
     @Mock
     private SubscriptionRepository subscriptionRepository;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private UpdateDataLimitServiceImpl updateDataLimitService;
 
@@ -67,7 +72,8 @@ class UpdateDataLimitServiceImplTest {
         given(familySubscriptionRepository.findDataLimitBySubId(subId)).willReturn(finalState);
 
         // when
-        UpdateDataLimitResponse response = updateDataLimitService.updateDataLimit(request, familyId, FamilyRole.OWNER);
+        UpdateDataLimitResponse response =
+                updateDataLimitService.updateDataLimit(request, familyId, FamilyRole.OWNER);
 
         // then
         assertThat(response.subId()).isEqualTo(subId);
@@ -112,6 +118,8 @@ class UpdateDataLimitServiceImplTest {
         assertThatThrownBy(() -> updateDataLimitService.updateDataLimit(request, 1L, FamilyRole.CHILD))
                 .isInstanceOf(ApplicationException.class)
                 .hasFieldOrPropertyWithValue("code", AuthErrorCode.ACCESS_DENIED);
+
+        verify(eventPublisher, times(0)).publishEvent(any());
     }
 
     @Test
@@ -167,6 +175,7 @@ class UpdateDataLimitServiceImplTest {
         // then
         assertThat(response.dataLimit()).isEqualTo(unlimitedGb);
         verify(familySubscriptionRepository, times(1)).updateDataLimit(eq(100L), eq(unlimitedGb));
+        verify(eventPublisher, times(0)).publishEvent(any());
     }
 
     @Test

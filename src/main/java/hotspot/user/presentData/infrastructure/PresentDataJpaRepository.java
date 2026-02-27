@@ -1,5 +1,6 @@
 package hotspot.user.presentData.infrastructure;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,9 +25,7 @@ public interface PresentDataJpaRepository extends JpaRepository<PresentDataEntit
             join ps.member m
         where pd.presentDataId in :giftIds
     """)
-    List<GiftGiverRow> findGiftGivers(
-            @Param("giftIds") List<Long> giftIds
-    );
+    List<GiftGiverRow> findGiftGivers(@Param("giftIds") List<Long> giftIds);
 
     @Query("""
         select p
@@ -47,4 +46,17 @@ public interface PresentDataJpaRepository extends JpaRepository<PresentDataEntit
         order by p.createdTime desc
     """)
     List<PresentDataEntity> findAllByProviderSubId(@Param("subId") Long subId);
+
+    @Query("""
+        select coalesce(sum(p.dataAmount), 0)
+        from PresentDataEntity p
+        where p.provideSubscription.subId = :providerSubId
+          and p.createdTime >= :start
+          and p.createdTime < :end
+    """)
+    long sumMonthlySentKb(
+            @Param("providerSubId") Long providerSubId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
 }
