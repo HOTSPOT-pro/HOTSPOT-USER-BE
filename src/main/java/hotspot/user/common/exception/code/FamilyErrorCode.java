@@ -28,6 +28,7 @@ public enum FamilyErrorCode implements BaseErrorCode {
     DUPLICATE_FAMILY_APPLY(HttpStatus.CONFLICT, "FAMILY_015", "이미 처리 대기 중인 신청이 존재합니다."),
     CANNOT_CHANGE_OWNER_ROLE(HttpStatus.BAD_REQUEST, "FAMILY_016", "가족 관리자(OWNER) 본인의 역할은 변경할 수 없습니다."),
     CANNOT_ASSIGN_OWNER_ROLE(HttpStatus.BAD_REQUEST, "FAMILY_017", "타인에게 OWNER 역할을 부여할 수 없습니다."),
+    DATA_LIMIT_EXCEEDS_FAMILY_AMOUNT(HttpStatus.BAD_REQUEST, "FAMILY_018", "설정하려는 한도가 가족 전체 데이터 양을 초과합니다."),
     ;
 
     private final HttpStatus httpStatus;

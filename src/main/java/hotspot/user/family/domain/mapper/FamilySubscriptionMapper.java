@@ -1,5 +1,6 @@
 package hotspot.user.family.domain.mapper;
 
+import hotspot.user.common.util.redis.RedisUsageCalculator;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
 import hotspot.user.family.controller.response.UpdateFamilyRoleResponse;
 import hotspot.user.family.domain.FamilySubDataLimit;
@@ -19,7 +20,7 @@ public class FamilySubscriptionMapper {
         return UpdateDataLimitResponse.builder()
                 .familyId(dataLimit.getFamilyId())
                 .subId(subId)
-                .dataLimit(dataLimit.getDataLimit())
+                .dataLimit(RedisUsageCalculator.kbToGb(dataLimit.getDataLimit()))
                 .isLocked(dataLimit.getIsLocked())
                 .build();
     }

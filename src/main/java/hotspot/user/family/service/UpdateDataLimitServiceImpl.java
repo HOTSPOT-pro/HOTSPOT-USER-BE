@@ -56,6 +56,12 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
                 ? FamilyConstant.UNLIMITED_DATA_LIMIT
                 : request.dataLimit() * 1024L * 1024L;
 
+        // 가족 전체 데이터 양 초과 여부 검증 (무제한 설정은 제외)
+        if (dataLimitKb != FamilyConstant.UNLIMITED_DATA_LIMIT &&
+            dataLimitKb > familySub.getFamily().getFamilyDataAmount()) {
+            throw new ApplicationException(FamilyErrorCode.DATA_LIMIT_EXCEEDS_FAMILY_AMOUNT);
+        }
+
         familySubscriptionRepository.updateDataLimit(request.subId(), dataLimitKb);
 
         // 5. 차단 여부 업데이트
