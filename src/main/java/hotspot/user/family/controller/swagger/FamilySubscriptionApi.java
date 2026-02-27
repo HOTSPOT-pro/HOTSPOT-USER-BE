@@ -34,14 +34,18 @@ public interface FamilySubscriptionApi {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "수정 성공"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"
                                          + "- COMMON_002: 입력값 유효성 검증 실패\n"
-                                         + "- FAMILY_004: 데이터 한도 범위 오류 (-1 미만)",
+                                         + "- FAMILY_004: 데이터 한도는 -1(무한대) 이상이어야 합니다.",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패\n"
+                                         + "- AUTH_002: 유효하지 않은 토큰\n"
+                                         + "- AUTH_006: 토큰 만료",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
-                                         + "- AUTH_004: OWNER 권한이 아님\n"
-                                         + "- FAMILY_003: 동일 가족 구성원이 아님",
+                                         + "- AUTH_004: 해당 요청에 대한 접근 권한이 없습니다. (OWNER 권한이 아님)\n"
+                                         + "- FAMILY_003: 해당 구성원은 동일한 가족 그룹에 속해 있지 않습니다.",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "찾을 수 없음\n"
-                                         + "- FAMILY_002: 해당 회선(Subscription)이 가족에 등록되어 있지 않음",
+                                         + "- FAMILY_002: 가족에 가입된 회선 정보를 찾을 수 없습니다.",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<ApiResponse<UpdateDataLimitResponse>> updateDataLimit(

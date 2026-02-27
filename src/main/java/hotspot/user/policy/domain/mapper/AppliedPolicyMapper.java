@@ -2,6 +2,7 @@ package hotspot.user.policy.domain.mapper;
 
 import java.util.List;
 
+import hotspot.user.common.util.redis.RedisUsageCalculator;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
@@ -24,7 +25,7 @@ public class AppliedPolicyMapper {
                 .memberId(familySub.getSubscription().getMember().getId())
                 .memberName(familySub.getSubscription().getMember().getName())
                 .subId(familySub.getSubscription().getId())
-                .dataLimit(familySub.getDataLimit())
+                .dataLimit(RedisUsageCalculator.kbToGb(familySub.getDataLimit()))
                 .priority(familySub.getPriority())
                 .blockPolicyResponseList(policySubs.stream()
                         .map(BlockPolicyMapper::toBlockPolicyResponse)
@@ -43,7 +44,7 @@ public class AppliedPolicyMapper {
         return FamilyAppliedPolicyResponse.builder()
                 .familyId(family.getId())
                 .familyNum(family.getFamilyNum())
-                .familyDataAmount(family.getFamilyDataAmount())
+                .familyDataAmount(RedisUsageCalculator.kbToGb(family.getFamilyDataAmount()))
                 .priorityType(family.getPriorityType())
                 .memberPolicies(memberPolicies)
                 .build();

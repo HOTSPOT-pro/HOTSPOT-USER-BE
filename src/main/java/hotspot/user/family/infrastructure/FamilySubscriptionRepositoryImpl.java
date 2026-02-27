@@ -52,6 +52,11 @@ public class FamilySubscriptionRepositoryImpl implements FamilySubscriptionRepos
         }
     }
 
+    @Override
+    public void updateDataLimit(Long subId, long dataLimit) {
+        jpaRepository.updateDataLimit(subId, dataLimit);
+    }
+
     // 구성원별 데이터 한도 조회
     @Override
     public FamilySubDataLimit findDataLimitBySubId(Long subId) {

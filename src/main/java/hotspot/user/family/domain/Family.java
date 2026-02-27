@@ -13,7 +13,7 @@ import lombok.Getter;
 public class Family {
     private Long id;
     private int familyNum;
-    private int familyDataAmount;
+    private long familyDataAmount;
     private PriorityType priorityType;
 
     // 우선순위 정책 타입 업데이트

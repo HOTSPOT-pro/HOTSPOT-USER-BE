@@ -43,6 +43,11 @@ public class SubscriptionRepositoryImpl implements SubscriptionRepository {
     }
 
     @Override
+    public void updateLockedStatus(Long subId, boolean isLocked) {
+        subscriptionJpaRepository.updateLockedStatus(subId, isLocked);
+    }
+
+    @Override
     public Map<Long, DataPeriod> findDataPeriodsBySubIds(List<Long> subIds) {
 
         if (subIds == null || subIds.isEmpty()) {

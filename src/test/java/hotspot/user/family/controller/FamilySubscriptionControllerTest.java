@@ -88,11 +88,11 @@ class FamilySubscriptionControllerTest {
     void updateDataLimitSuccess() throws Exception {
         // given
         setAuthentication(1L, 100L, FamilyRole.OWNER);
-        UpdateDataLimitRequest request = new UpdateDataLimitRequest(100L, 1L, 5000);
+        UpdateDataLimitRequest request = new UpdateDataLimitRequest(100L, 1L, 5L, false);
         UpdateDataLimitResponse response = UpdateDataLimitResponse.builder()
                 .familyId(100L)
                 .subId(1L)
-                .dataLimit(5000)
+                .dataLimit(5L)
                 .build();
 
         given(updateDataLimitService.updateDataLimit(any(UpdateDataLimitRequest.class), eq(100L), eq(FamilyRole.OWNER)))
@@ -104,7 +104,7 @@ class FamilySubscriptionControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
-                .andExpect(jsonPath("$.data.dataLimit").value(5000));
+                .andExpect(jsonPath("$.data.dataLimit").value(5));
     }
 
     @Test
@@ -112,7 +112,7 @@ class FamilySubscriptionControllerTest {
     void updateDataLimitFailByChild() throws Exception {
         // given
         setAuthentication(1L, 100L, FamilyRole.CHILD);
-        UpdateDataLimitRequest request = new UpdateDataLimitRequest(100L, 1L, 5000);
+        UpdateDataLimitRequest request = new UpdateDataLimitRequest(100L, 1L, 5L, false);
 
         // 서비스가 호출되기 전 컨트롤러의 권한 체크 로직에서 예외가 발생함
         given(updateDataLimitService.updateDataLimit(any(UpdateDataLimitRequest.class), eq(100L), eq(FamilyRole.CHILD)))

@@ -57,7 +57,7 @@ public class FamilySubscriptionEntity {
 
     @Column(nullable = false)
     @Builder.Default
-    private int dataLimit = FamilyConstant.UNLIMITED_DATA_LIMIT;
+    private long dataLimit = FamilyConstant.UNLIMITED_DATA_LIMIT;
 
     public static FamilySubscriptionEntity domainToEntity(FamilySubscription familySubscription) {
         return FamilySubscriptionEntity.builder()
