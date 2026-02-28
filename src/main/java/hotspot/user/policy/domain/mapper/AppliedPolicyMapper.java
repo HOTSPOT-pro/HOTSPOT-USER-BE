@@ -1,6 +1,7 @@
 package hotspot.user.policy.domain.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import hotspot.user.common.util.redis.RedisUsageCalculator;
 import hotspot.user.family.domain.Family;
@@ -10,8 +11,6 @@ import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.policy.domain.PolicySub;
-
-import java.util.Map;
 
 /**
  * 구성원별 적용된 정책 <-> Dto 변환하는 매퍼 클래스
