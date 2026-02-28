@@ -44,6 +44,8 @@ public class BlockPolicyEntity extends BaseEntity {
     @Column(length = 20, nullable = false)
     private String policyName;
 
+    private Long familyId; // null이면 관리자 정책, 아니면 가족이 만든 정책
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PolicyType policyType;
@@ -51,6 +53,12 @@ public class BlockPolicyEntity extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb") // PostgreSQL
     private PolicySnapshot policySnapshot;
+
+    @Column(nullable = false)
+    private String policyDescription;
+
+    @Column(nullable = false)
+    private Boolean isActive; // 활성화 여부
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default

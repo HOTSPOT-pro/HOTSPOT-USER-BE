@@ -13,7 +13,11 @@ import lombok.Getter;
 public class BlockPolicy {
     private final Long id;
     private final String name;
+    private final Long familyId;
     private final PolicyType policyType;
-    private final PolicySnapshot policySnapshot;
+    private PolicySnapshot policySnapshot;
+    private String policyDescription;
+    private boolean isActive;
+    private boolean isDeleted;
 
 }
