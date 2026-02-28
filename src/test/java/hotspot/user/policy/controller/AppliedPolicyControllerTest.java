@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import hotspot.user.common.exception.code.PolicyErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,5 +166,49 @@ class AppliedPolicyControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.familyId").value(100L))
                 .andExpect(jsonPath("$.data.blockedPolicyIdList[0]").value(1L));
+    }
+
+    @Test
+    @DisplayName("구성원별 정책 업데이트 실패: 타 가족의 정책을 적용하려 할 때 (POLICY_ACCESS_DENIED)")
+    void updatePolicySubFailByAccessDenied() throws Exception {
+        // given
+        setAuthentication(FamilyRole.OWNER);
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(999L));
+
+        given(updatePolicySubService.updatePolicySub(any(), any(), any()))
+                .willThrow(new ApplicationException(PolicyErrorCode.POLICY_ACCESS_DENIED));
+
+        // when & then
+        mockMvc.perform(put("/api/v1/policies/apply")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(result -> {
+                    assertThat(result.getResolvedException())
+                            .isInstanceOf(ApplicationException.class)
+                            .hasMessage(PolicyErrorCode.POLICY_ACCESS_DENIED.getMessage());
+                });
+    }
+
+    @Test
+    @DisplayName("구성원별 정책 업데이트 실패: 비활성화된 정책을 적용하려 할 때 (INACTIVE_POLICY_CANNOT_APPLY)")
+    void updatePolicySubFailByInactivePolicy() throws Exception {
+        // given
+        setAuthentication(FamilyRole.OWNER);
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L));
+
+        given(updatePolicySubService.updatePolicySub(any(), any(), any()))
+                .willThrow(new ApplicationException(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY));
+
+        // when & then
+        mockMvc.perform(put("/api/v1/policies/apply")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> {
+                    assertThat(result.getResolvedException())
+                            .isInstanceOf(ApplicationException.class)
+                            .hasMessage(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY.getMessage());
+                });
     }
 }
