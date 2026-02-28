@@ -21,8 +21,10 @@ public class PolicySubMapper {
         return BlockPolicyResponse.builder()
                 .id(policySub.getId())
                 .name(blockPolicy.getName())
+                .familyId(blockPolicy.getFamilyId())
                 .policyType(blockPolicy.getPolicyType())
                 .policySnapshot(blockPolicy.getPolicySnapshot())
+                .policyDescription(blockPolicy.getPolicyDescription())
                 .isActive(policySub.isActive())
                 .build();
     }

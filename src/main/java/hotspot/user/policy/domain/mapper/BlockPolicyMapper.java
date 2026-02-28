@@ -28,24 +28,4 @@ public class BlockPolicyMapper {
                 .isActive(blockPolicy.isActive())
                 .build();
     }
-
-    // PolicySub(적용된 시간 정책) 도메인을 BlockPolicyResponse DTO로 변환
-    public static BlockPolicyResponse toBlockPolicyResponse(PolicySub policySub) {
-        return BlockPolicyResponse.builder()
-                .id(policySub.getId())
-                .name(policySub.getDateSnapshot().getPolicyName())
-                .policyType(policySub.getDateSnapshot().getPolicyType())
-                .policySnapshot(policySub.getDateSnapshot().getData())
-                .build();
-    }
-
-    // 구성원별 정책 업데이트response dto로 변환
-    public static UpdatePolicySubResponse toUpdatePolicySubResponse(
-            Long familyId, Long subId, List<Long> blockedPolicyIdList) {
-        return UpdatePolicySubResponse.builder()
-                .familyId(familyId)
-                .subId(subId)
-                .blockedPolicyIdList(blockedPolicyIdList)
-                .build();
-    }
 }
