@@ -40,7 +40,7 @@ public class BlockPolicyMapper {
     }
 
     // 구성원별 정책 업데이트response dto로 변환
-    public static UpdatePolicySubResponse toUpdateBlockPolicyResponse(
+    public static UpdatePolicySubResponse toUpdatePolicySubResponse(
             Long familyId, Long subId, List<Long> blockedPolicyIdList) {
         return UpdatePolicySubResponse.builder()
                 .familyId(familyId)

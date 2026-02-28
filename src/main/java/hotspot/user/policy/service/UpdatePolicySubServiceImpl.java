@@ -42,7 +42,7 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
     private final NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
 
     @Override
-    public UpdatePolicySubResponse updateBlockPolicy(
+    public UpdatePolicySubResponse updatePolicySub(
             UpdatePolicySubRequest request,
             Long requesterFamilyId,
             FamilyRole requesterRole) {
@@ -95,7 +95,7 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
         publishPolicyAppliedAlerts(targetPolicies, request.subId(), requesterFamilyId);
         publishPolicyReleasedAlerts(activeMap.values(), request.subId(), requesterFamilyId);
 
-        return BlockPolicyMapper.toUpdateBlockPolicyResponse(
+        return BlockPolicyMapper.toUpdatePolicySubResponse(
                 requesterFamilyId,
                 request.subId(),
                 targetIdsList

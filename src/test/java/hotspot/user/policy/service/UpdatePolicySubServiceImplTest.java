@@ -37,7 +37,7 @@ import hotspot.user.policy.service.port.PolicySubRepository;
 class UpdatePolicySubServiceImplTest {
 
     @InjectMocks
-    private UpdatePolicySubServiceImpl updateBlockPolicyService;
+    private UpdatePolicySubServiceImpl updatePolicySubService;
 
     @Mock
     private PolicySubRepository policySubRepository;
@@ -53,7 +53,7 @@ class UpdatePolicySubServiceImplTest {
 
     @Test
     @DisplayName("성공: 유효한 요청일 경우 구성원에게 적용된 정책이 업데이트된다")
-    void updateBlockPolicySuccess() {
+    void updatePolicySubSuccess() {
         // given
         Long familyId = 100L;
         Long subId = 1L;
@@ -66,7 +66,7 @@ class UpdatePolicySubServiceImplTest {
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>());
 
         // when
-        UpdatePolicySubResponse response = updateBlockPolicyService.updateBlockPolicy(
+        UpdatePolicySubResponse response = updatePolicySubService.updatePolicySub(
                 request,
                 familyId,
                 FamilyRole.OWNER);
@@ -78,7 +78,7 @@ class UpdatePolicySubServiceImplTest {
 
     @Test
     @DisplayName("성공: 기존 정책이 교체되고 새로운 정책이 추가된다")
-    void updateBlockPolicySuccessWithReplacement() {
+    void updatePolicySubSuccessWithReplacement() {
         // given
         Long familyId = 100L;
         Long subId = 1L;
@@ -95,7 +95,7 @@ class UpdatePolicySubServiceImplTest {
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(newPolicy));
 
         // when
-        UpdatePolicySubResponse response = updateBlockPolicyService.updateBlockPolicy(
+        UpdatePolicySubResponse response = updatePolicySubService.updatePolicySub(
                 request,
                 familyId,
                 FamilyRole.OWNER);
@@ -108,7 +108,7 @@ class UpdatePolicySubServiceImplTest {
 
     @Test
     @DisplayName("성공: 요청 목록에 없는 기존 정책은 삭제된다")
-    void updateBlockPolicySuccessWithDeletion() {
+    void updatePolicySubSuccessWithDeletion() {
         // given
         Long familyId = 100L;
         Long subId = 1L;
@@ -121,7 +121,7 @@ class UpdatePolicySubServiceImplTest {
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of());
 
         // when
-        updateBlockPolicyService.updateBlockPolicy(request, familyId, FamilyRole.OWNER);
+        updatePolicySubService.updatePolicySub(request, familyId, FamilyRole.OWNER);
 
         // then
         assertThat(existingSub.isDeleted()).isTrue();
@@ -130,26 +130,26 @@ class UpdatePolicySubServiceImplTest {
 
     @Test
     @DisplayName("실패: OWNER 권한이 아닌 경우 예외가 발생한다")
-    void updateBlockPolicyFailByRole() {
+    void updatePolicySubFailByRole() {
         // given
         UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L));
 
         // when & then
-        assertThatThrownBy(() -> updateBlockPolicyService.updateBlockPolicy(request, 100L, FamilyRole.CHILD))
+        assertThatThrownBy(() -> updatePolicySubService.updatePolicySub(request, 100L, FamilyRole.CHILD))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(AuthErrorCode.ACCESS_DENIED.getMessage());
     }
 
     @Test
     @DisplayName("실패: 요청한 정책 중 일부가 존재하지 않으면 예외가 발생한다")
-    void updateBlockPolicyFailByPolicyNotFound() {
+    void updatePolicySubFailByPolicyNotFound() {
         // given
         UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L, 2L));
         setAuthMock(100L, 1L);
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(BlockPolicy.builder().id(1L).build()));
 
         // when & then
-        assertThatThrownBy(() -> updateBlockPolicyService.updateBlockPolicy(request, 100L, FamilyRole.OWNER))
+        assertThatThrownBy(() -> updatePolicySubService.updatePolicySub(request, 100L, FamilyRole.OWNER))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(PolicyErrorCode.POLICY_NOT_FOUND.getMessage());
     }

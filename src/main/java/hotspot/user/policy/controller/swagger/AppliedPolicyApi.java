@@ -54,7 +54,7 @@ public interface AppliedPolicyApi {
                                          + "- POLICY_001: 정책 정보를 찾을 수 없음",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<ApiResponse<UpdatePolicySubResponse>> updateBlockPolicy(
+    ResponseEntity<ApiResponse<UpdatePolicySubResponse>> updatePolicySub(
             @Valid @RequestBody UpdatePolicySubRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principalDetails
     );

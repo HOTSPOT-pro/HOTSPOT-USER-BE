@@ -68,12 +68,12 @@ public class AppliedPolicyController implements AppliedPolicyApi {
     // 구성원별 앱 차단 설정 업데이트
     @Override
     @PutMapping("/apply")
-    public ResponseEntity<ApiResponse<UpdatePolicySubResponse>> updateBlockPolicy(
+    public ResponseEntity<ApiResponse<UpdatePolicySubResponse>> updatePolicySub(
             @Valid @RequestBody UpdatePolicySubRequest request,
             @AuthenticationPrincipal PrincipalDetails principalDetails
             ) {
 
-        UpdatePolicySubResponse response = updatePolicySubService.updateBlockPolicy(
+        UpdatePolicySubResponse response = updatePolicySubService.updatePolicySub(
                 request,
                 principalDetails.getFamilyId(),
                 principalDetails.getRole()

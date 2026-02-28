@@ -142,7 +142,7 @@ class AppliedPolicyControllerTest {
 
     @Test
     @DisplayName("구성원별 정책 업데이트 성공: OWNER 권한일 때")
-    void updateBlockPolicySuccess() throws Exception {
+    void updatePolicySubSuccess() throws Exception {
         // given
         setAuthentication(FamilyRole.OWNER);
         UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L, 2L));
@@ -152,7 +152,7 @@ class AppliedPolicyControllerTest {
                 .blockedPolicyIdList(List.of(1L, 2L))
                 .build();
 
-        given(updatePolicySubService.updateBlockPolicy(
+        given(updatePolicySubService.updatePolicySub(
                 any(UpdatePolicySubRequest.class),
                 eq(100L),
                 eq(FamilyRole.OWNER)))

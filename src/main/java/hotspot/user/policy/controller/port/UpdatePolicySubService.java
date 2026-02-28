@@ -8,7 +8,7 @@ import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
  * 구성원별 정책 업데이트 서비스 코드
  */
 public interface UpdatePolicySubService {
-    UpdatePolicySubResponse updateBlockPolicy(
+    UpdatePolicySubResponse updatePolicySub(
             UpdatePolicySubRequest request,
             Long requesterFamilyId,
             FamilyRole requesterRole);

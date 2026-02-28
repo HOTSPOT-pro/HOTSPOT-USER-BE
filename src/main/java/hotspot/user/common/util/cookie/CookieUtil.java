@@ -11,7 +11,7 @@ public class CookieUtil {
 
     public static ResponseCookie createCookie(String name, String value, long maxAge) {
     return ResponseCookie.from(name, value)
-            .domain(".hotspot.pics")
+//            .domain(".hotspot.pics")
             .path("/")
             .sameSite("None")
             .httpOnly(true)
