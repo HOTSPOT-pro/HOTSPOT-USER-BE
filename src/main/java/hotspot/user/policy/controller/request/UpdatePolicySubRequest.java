@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotNull;
  * @param subId
  * @param blockPolicyIdList
  */
-public record UpdateBlockPolicyRequest(
+public record UpdatePolicySubRequest(
         @NotNull Long familyId,
         @NotNull Long subId,
         @NotNull List<Long> blockPolicyIdList

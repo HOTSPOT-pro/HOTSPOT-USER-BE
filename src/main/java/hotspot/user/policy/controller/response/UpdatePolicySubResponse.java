@@ -12,7 +12,7 @@ import lombok.Builder;
  */
 
 @Builder
-public record UpdateBlockPolicyResponse(
+public record UpdatePolicySubResponse(
         Long familyId,
         Long subId,
         List<Long> blockedPolicyIdList

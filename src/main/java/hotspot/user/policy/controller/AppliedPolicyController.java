@@ -18,9 +18,9 @@ import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
-import hotspot.user.policy.controller.port.UpdateBlockPolicyService;
-import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
-import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
+import hotspot.user.policy.controller.port.UpdatePolicySubService;
+import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
+import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 import hotspot.user.policy.controller.swagger.AppliedPolicyApi;
 import lombok.RequiredArgsConstructor;
 
@@ -34,7 +34,7 @@ public class AppliedPolicyController implements AppliedPolicyApi {
 
     private final FindMemberAppliedPolicyService findMemberAppliedPolicyService; // 구성원별 적용 정책 조회
     private final FindFamilyAppliedPolicyService findFamilyAppliedPolicyService; // 가족 구성원 전체 적용 정책 조회
-    private final UpdateBlockPolicyService updateBlockPolicyService; // 구성원 별 정책 업데이트 (적용)
+    private final UpdatePolicySubService updatePolicySubService; // 구성원 별 정책 업데이트 (적용)
 
     /**
      * 적용된 정책 목록을 조회 API
@@ -68,12 +68,12 @@ public class AppliedPolicyController implements AppliedPolicyApi {
     // 구성원별 앱 차단 설정 업데이트
     @Override
     @PutMapping("/apply")
-    public ResponseEntity<ApiResponse<UpdateBlockPolicyResponse>> updateBlockPolicy(
-            @Valid @RequestBody UpdateBlockPolicyRequest request,
+    public ResponseEntity<ApiResponse<UpdatePolicySubResponse>> updateBlockPolicy(
+            @Valid @RequestBody UpdatePolicySubRequest request,
             @AuthenticationPrincipal PrincipalDetails principalDetails
             ) {
 
-        UpdateBlockPolicyResponse response = updateBlockPolicyService.updateBlockPolicy(
+        UpdatePolicySubResponse response = updatePolicySubService.updateBlockPolicy(
                 request,
                 principalDetails.getFamilyId(),
                 principalDetails.getRole()

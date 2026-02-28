@@ -16,9 +16,9 @@ import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.policy.controller.port.UpdateBlockPolicyService;
-import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
-import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
+import hotspot.user.policy.controller.port.UpdatePolicySubService;
+import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
+import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.DateSnapshot;
 import hotspot.user.policy.domain.PolicySub;
@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class UpdateBlockPolicyServiceImpl implements UpdateBlockPolicyService {
+public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
 
     private final PolicySubRepository policySubRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
@@ -42,8 +42,8 @@ public class UpdateBlockPolicyServiceImpl implements UpdateBlockPolicyService {
     private final NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
 
     @Override
-    public UpdateBlockPolicyResponse updateBlockPolicy(
-            UpdateBlockPolicyRequest request,
+    public UpdatePolicySubResponse updateBlockPolicy(
+            UpdatePolicySubRequest request,
             Long requesterFamilyId,
             FamilyRole requesterRole) {
 

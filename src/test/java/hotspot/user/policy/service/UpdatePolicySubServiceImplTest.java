@@ -26,18 +26,18 @@ import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
-import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
+import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
+import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
 
 @ExtendWith(MockitoExtension.class)
-class UpdateBlockPolicyServiceImplTest {
+class UpdatePolicySubServiceImplTest {
 
     @InjectMocks
-    private UpdateBlockPolicyServiceImpl updateBlockPolicyService;
+    private UpdatePolicySubServiceImpl updateBlockPolicyService;
 
     @Mock
     private PolicySubRepository policySubRepository;
@@ -57,7 +57,7 @@ class UpdateBlockPolicyServiceImplTest {
         // given
         Long familyId = 100L;
         Long subId = 1L;
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(familyId, subId, List.of(1L));
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(familyId, subId, List.of(1L));
 
         setAuthMock(familyId, subId);
 
@@ -66,7 +66,7 @@ class UpdateBlockPolicyServiceImplTest {
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>());
 
         // when
-        UpdateBlockPolicyResponse response = updateBlockPolicyService.updateBlockPolicy(
+        UpdatePolicySubResponse response = updateBlockPolicyService.updateBlockPolicy(
                 request,
                 familyId,
                 FamilyRole.OWNER);
@@ -82,7 +82,7 @@ class UpdateBlockPolicyServiceImplTest {
         // given
         Long familyId = 100L;
         Long subId = 1L;
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(familyId, subId, List.of(2L));
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(familyId, subId, List.of(2L));
 
         setAuthMock(familyId, subId);
 
@@ -95,7 +95,7 @@ class UpdateBlockPolicyServiceImplTest {
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(newPolicy));
 
         // when
-        UpdateBlockPolicyResponse response = updateBlockPolicyService.updateBlockPolicy(
+        UpdatePolicySubResponse response = updateBlockPolicyService.updateBlockPolicy(
                 request,
                 familyId,
                 FamilyRole.OWNER);
@@ -112,7 +112,7 @@ class UpdateBlockPolicyServiceImplTest {
         // given
         Long familyId = 100L;
         Long subId = 1L;
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(familyId, subId, List.of()); // 요청은 비어있음
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(familyId, subId, List.of()); // 요청은 비어있음
 
         setAuthMock(familyId, subId);
 
@@ -132,7 +132,7 @@ class UpdateBlockPolicyServiceImplTest {
     @DisplayName("실패: OWNER 권한이 아닌 경우 예외가 발생한다")
     void updateBlockPolicyFailByRole() {
         // given
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L));
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L));
 
         // when & then
         assertThatThrownBy(() -> updateBlockPolicyService.updateBlockPolicy(request, 100L, FamilyRole.CHILD))
@@ -144,7 +144,7 @@ class UpdateBlockPolicyServiceImplTest {
     @DisplayName("실패: 요청한 정책 중 일부가 존재하지 않으면 예외가 발생한다")
     void updateBlockPolicyFailByPolicyNotFound() {
         // given
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L, 2L));
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L, 2L));
         setAuthMock(100L, 1L);
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(BlockPolicy.builder().id(1L).build()));
 

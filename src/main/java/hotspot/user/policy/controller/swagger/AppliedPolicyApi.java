@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ErrorResponse;
 import hotspot.user.common.security.PrincipalDetails;
-import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
-import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
+import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
+import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -54,8 +54,8 @@ public interface AppliedPolicyApi {
                                          + "- POLICY_001: 정책 정보를 찾을 수 없음",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<ApiResponse<UpdateBlockPolicyResponse>> updateBlockPolicy(
-            @Valid @RequestBody UpdateBlockPolicyRequest request,
+    ResponseEntity<ApiResponse<UpdatePolicySubResponse>> updateBlockPolicy(
+            @Valid @RequestBody UpdatePolicySubRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principalDetails
     );
 }
