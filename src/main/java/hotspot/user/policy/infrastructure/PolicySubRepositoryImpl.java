@@ -22,6 +22,13 @@ public class PolicySubRepositoryImpl implements PolicySubRepository {
                 .toList();
     }
 
+    @Override
+    public List<PolicySub> findActiveBySubId(Long subId) {
+        return policySubJpaRepository.findBySubscriptionSubIdAndIsActiveTrue(subId).stream()
+                .map(PolicySubEntity::entityToDomain)
+                .toList();
+    }
+
 
     // 정책-회선 매핑 리스트 저장
     // 새로운 INSERT, 기존 isActive 업데이트 분리해서 진행 (N+1 방지)
