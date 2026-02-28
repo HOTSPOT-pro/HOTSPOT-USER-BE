@@ -20,10 +20,8 @@ import hotspot.user.policy.controller.port.UpdatePolicySubService;
 import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
 import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 import hotspot.user.policy.domain.BlockPolicy;
-import hotspot.user.policy.domain.DateSnapshot;
 import hotspot.user.policy.domain.PolicySub;
-import hotspot.user.policy.domain.PolicyType;
-import hotspot.user.policy.domain.mapper.BlockPolicyMapper;
+import hotspot.user.policy.domain.mapper.PolicySubMapper;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,44 +56,56 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
             throw new ApplicationException(PolicyErrorCode.POLICY_NOT_FOUND);
         }
 
-        // 현재 활성 정책 매핑을 policyId 기준으로 정리한다.
-        List<PolicySub> activeSubs = policySubRepository.findBySubId(request.subId());
-        Map<Long, PolicySub> activeMap = activeSubs.stream()
-                .collect(Collectors.toMap(PolicySub::getPolicyId, sub -> sub));
+        // 해당 회선의 모든 정책 매핑 정보를 조회한다. (활성 + 비활성 포함)
+        List<PolicySub> existingSubs = policySubRepository.findBySubId(request.subId());
+        Map<Long, PolicySub> existingMap = existingSubs.stream()
+                .collect(Collectors.toMap(PolicySub::getBlockPolicyId, sub -> sub));
 
         List<PolicySub> domainsToSave = new ArrayList<>();
+        List<BlockPolicy> appliedAlertPolicies = new ArrayList<>();
+        List<PolicySub> releasedAlertSubs = new ArrayList<>();
 
-        // 요청 정책은 기존 매핑을 soft-delete하고 스냅샷 기반 새 매핑을 추가한다.
+        // 1. 요청된 정책들을 순회하며 신규 추가 또는 활성화 처리
         for (BlockPolicy policy : targetPolicies) {
-            DateSnapshot newSnapshot = createSnapshotFrom(policy);
-
-            if (activeMap.containsKey(policy.getId())) {
-                PolicySub oldSub = activeMap.get(policy.getId());
-                oldSub.delete();
-                domainsToSave.add(oldSub);
-                activeMap.remove(policy.getId());
+            if (existingMap.containsKey(policy.getId())) {
+                PolicySub sub = existingMap.get(policy.getId());
+                // 비활성 상태인 경우에만 활성화 및 알림 대상 추가
+                if (!sub.isActive()) {
+                    sub.updateIsActive(true);
+                    domainsToSave.add(sub);
+                    appliedAlertPolicies.add(policy);
+                }
+                // 처리 완료된 항목은 Map에서 제거 (나머지는 삭제 대상)
+                existingMap.remove(policy.getId());
+            } else {
+                // DB에 아예 없는 경우 신규 생성 및 알림 대상 추가
+                PolicySub newSub = PolicySub.builder()
+                        .subId(request.subId())
+                        .blockPolicyId(policy.getId())
+                        .isActive(true)
+                        .build();
+                domainsToSave.add(newSub);
+                appliedAlertPolicies.add(policy);
             }
-
-            PolicySub newSub = PolicySub.builder()
-                    .subId(request.subId())
-                    .policyId(policy.getId())
-                    .dateSnapshot(newSnapshot)
-                    .isDeleted(false)
-                    .build();
-            domainsToSave.add(newSub);
         }
 
-        // 요청에서 제외된 기존 활성 매핑은 soft-delete 처리한다.
-        for (PolicySub remainingSub : activeMap.values()) {
-            remainingSub.delete();
-            domainsToSave.add(remainingSub);
+        // 2. 요청에 없는데 DB에는 활성 상태로 남아있는 정책들을 비활성화 처리
+        for (PolicySub remainingSub : existingMap.values()) {
+            if (remainingSub.isActive()) {
+                remainingSub.updateIsActive(false);
+                domainsToSave.add(remainingSub);
+                releasedAlertSubs.add(remainingSub);
+            }
         }
 
-        policySubRepository.saveAll(domainsToSave);
-        publishPolicyAppliedAlerts(targetPolicies, request.subId(), requesterFamilyId);
-        publishPolicyReleasedAlerts(activeMap.values(), request.subId(), requesterFamilyId);
+        // 변경 사항이 있는 경우에만 저장 및 알림 발송
+        if (!domainsToSave.isEmpty()) {
+            policySubRepository.saveAll(domainsToSave);
+            publishPolicyAppliedAlerts(appliedAlertPolicies, request.subId(), requesterFamilyId);
+            publishPolicyReleasedAlerts(releasedAlertSubs, request.subId(), requesterFamilyId);
+        }
 
-        return BlockPolicyMapper.toUpdatePolicySubResponse(
+        return PolicySubMapper.toUpdatePolicySubResponse(
                 requesterFamilyId,
                 request.subId(),
                 targetIdsList
@@ -116,15 +126,6 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
         }
     }
 
-    // 정책-회선 매핑에 저장할 스냅샷을 생성한다.
-    private DateSnapshot createSnapshotFrom(BlockPolicy policy) {
-        return DateSnapshot.builder()
-                .policyName(policy.getName())
-                .policyType(policy.getPolicyType())
-                .data(policy.getPolicySnapshot())
-                .build();
-    }
-
     // 적용된 정책에 대한 알림 outbox 이벤트를 발행한다.
     private void publishPolicyAppliedAlerts(List<BlockPolicy> policies, Long subId, Long familyId) {
         for (BlockPolicy policy : policies) {
@@ -138,17 +139,25 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
     }
 
     // 해제된 정책에 대한 알림 outbox 이벤트를 발행한다.
-    private void publishPolicyReleasedAlerts(Iterable<PolicySub> removedPolicies, Long subId, Long familyId) {
+    private void publishPolicyReleasedAlerts(List<PolicySub> removedPolicies, Long subId, Long familyId) {
+        if (removedPolicies.isEmpty()) {
+            return;
+        }
+
+        List<Long> policyIds = removedPolicies.stream().map(PolicySub::getBlockPolicyId).toList();
+        Map<Long, BlockPolicy> policyMap = blockPolicyRepository.findAllById(policyIds).stream()
+                .collect(Collectors.toMap(BlockPolicy::getId, p -> p));
+
         for (PolicySub removedPolicy : removedPolicies) {
-            DateSnapshot snapshot = removedPolicy.getDateSnapshot();
-            String policyName = snapshot != null ? snapshot.getPolicyName() : "policy";
-            PolicyType policyType = snapshot != null ? snapshot.getPolicyType() : null;
-            userAlertOutboxPublisher.publishPolicyReleased(
-                    subId,
-                    familyId,
-                    policyName,
-                    policyType
-            );
+            BlockPolicy policy = policyMap.get(removedPolicy.getBlockPolicyId());
+            if (policy != null) {
+                userAlertOutboxPublisher.publishPolicyReleased(
+                        subId,
+                        familyId,
+                        policy.getName(),
+                        policy.getPolicyType()
+                );
+            }
         }
     }
 }
