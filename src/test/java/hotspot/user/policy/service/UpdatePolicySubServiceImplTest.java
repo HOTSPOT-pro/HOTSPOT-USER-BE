@@ -61,9 +61,12 @@ class UpdatePolicySubServiceImplTest {
 
         setAuthMock(familyId, subId);
 
-        BlockPolicy policy = BlockPolicy.builder().id(1L).name("Test Policy").isActive(true).build(); // 활성 상태
-        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(policy));
+        // 1. 기존 매핑 조회 (비어있음)
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>());
+
+        // 2. 통합 정책 상세 조회 (요청한 1L 조회)
+        BlockPolicy policy = BlockPolicy.builder().id(1L).name("Test Policy").isActive(true).build();
+        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(policy));
 
         // when
         UpdatePolicySubResponse response = updatePolicySubService.updatePolicySub(
@@ -86,11 +89,11 @@ class UpdatePolicySubServiceImplTest {
 
         setAuthMock(familyId, subId);
 
-        // 기존 비활성 매핑
+        // 1. 기존 비활성 매핑 (ID: 1L)
         PolicySub existingSub = PolicySub.builder().id(10L).blockPolicyId(1L).isActive(false).build();
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>(List.of(existingSub)));
 
-        // 요청된 활성 정책
+        // 2. 통합 정책 상세 조회 (기존/요청 1L 조회)
         BlockPolicy policy = BlockPolicy.builder().id(1L).name("Test Policy").isActive(true).build();
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(policy));
 
@@ -112,9 +115,13 @@ class UpdatePolicySubServiceImplTest {
 
         setAuthMock(familyId, subId);
 
+        // 1. 기존 활성 매핑 (ID: 1L)
         PolicySub existingSub = PolicySub.builder().id(10L).blockPolicyId(1L).isActive(true).build();
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>(List.of(existingSub)));
-        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of());
+
+        // 2. 통합 정책 상세 조회 (기존 1L 조회)
+        BlockPolicy existingPolicy = BlockPolicy.builder().id(1L).name("Existing Policy").isActive(true).build();
+        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(existingPolicy));
 
         // when
         updatePolicySubService.updatePolicySub(request, familyId, FamilyRole.OWNER);
@@ -134,7 +141,10 @@ class UpdatePolicySubServiceImplTest {
 
         setAuthMock(myFamilyId, 1L);
 
-        // 타 가족의 정책
+        // 1. 기존 매핑 조회 (비어있음)
+        given(policySubRepository.findBySubId(1L)).willReturn(new ArrayList<>());
+
+        // 2. 통합 정책 상세 조회 (타 가족의 정책)
         BlockPolicy otherPolicy = BlockPolicy.builder().id(1L).familyId(otherFamilyId).build();
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(otherPolicy));
 
@@ -153,7 +163,10 @@ class UpdatePolicySubServiceImplTest {
 
         setAuthMock(familyId, 1L);
 
-        // 비활성 상태인 정책
+        // 1. 기존 매핑 조회 (비어있음)
+        given(policySubRepository.findBySubId(1L)).willReturn(new ArrayList<>());
+
+        // 2. 통합 정책 상세 조회 (비활성 정책)
         BlockPolicy inactivePolicy = BlockPolicy.builder().id(1L).isActive(false).build();
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(inactivePolicy));
 
@@ -181,6 +194,11 @@ class UpdatePolicySubServiceImplTest {
         // given
         UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L, 2L));
         setAuthMock(100L, 1L);
+
+        // 1. 기존 매핑 조회 (비어있음)
+        given(policySubRepository.findBySubId(1L)).willReturn(new ArrayList<>());
+
+        // 2. 통합 정책 상세 조회 (1L만 존재하고 2L은 누락됨)
         given(blockPolicyRepository.findAllById(anyList())).willReturn(
                 List.of(BlockPolicy.builder()
                         .id(1L)
