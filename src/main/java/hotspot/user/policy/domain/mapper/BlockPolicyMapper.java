@@ -21,8 +21,11 @@ public class BlockPolicyMapper {
         return BlockPolicyResponse.builder()
                 .id(blockPolicy.getId())
                 .name(blockPolicy.getName())
+                .familyId(blockPolicy.getFamilyId())
                 .policyType(blockPolicy.getPolicyType())
                 .policySnapshot(blockPolicy.getPolicySnapshot())
+                .policyDescription(blockPolicy.getPolicyDescription())
+                .isActive(blockPolicy.isActive())
                 .build();
     }
 

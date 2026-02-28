@@ -69,8 +69,12 @@ public class BlockPolicyEntity extends BaseEntity {
         return BlockPolicyEntity.builder()
                 .blockPolicyId(blockPolicy.getId())
                 .policyName(blockPolicy.getName())
+                .familyId(blockPolicy.getFamilyId())
                 .policyType(blockPolicy.getPolicyType())
                 .policySnapshot(blockPolicy.getPolicySnapshot())
+                .policyDescription(blockPolicy.getPolicyDescription())
+                .isActive(blockPolicy.isActive())
+                .isDeleted(blockPolicy.isDeleted())
                 .build();
     }
 
@@ -78,8 +82,12 @@ public class BlockPolicyEntity extends BaseEntity {
         return BlockPolicy.builder()
                 .id(this.blockPolicyId)
                 .name(this.policyName)
+                .familyId(this.familyId)
                 .policyType(this.policyType)
                 .policySnapshot(this.policySnapshot)
+                .policyDescription(this.policyDescription)
+                .isActive(this.isActive)
+                .isDeleted(this.isDeleted)
                 .build();
     }
 }
