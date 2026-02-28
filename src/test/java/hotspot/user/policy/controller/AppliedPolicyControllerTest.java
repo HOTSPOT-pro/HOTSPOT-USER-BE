@@ -34,11 +34,11 @@ import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
-import hotspot.user.policy.controller.port.UpdateBlockPolicyService;
-import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
+import hotspot.user.policy.controller.port.UpdatePolicySubService;
+import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
-import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
+import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 
 @WebMvcTest(AppliedPolicyController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -57,7 +57,7 @@ class AppliedPolicyControllerTest {
     private FindFamilyAppliedPolicyService findFamilyAppliedPolicyService;
 
     @MockBean
-    private UpdateBlockPolicyService updateBlockPolicyService;
+    private UpdatePolicySubService updatePolicySubService;
 
     @MockBean
     private JwtFilter jwtFilter;
@@ -145,15 +145,15 @@ class AppliedPolicyControllerTest {
     void updateBlockPolicySuccess() throws Exception {
         // given
         setAuthentication(FamilyRole.OWNER);
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L, 2L));
-        UpdateBlockPolicyResponse response = UpdateBlockPolicyResponse.builder()
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L, 2L));
+        UpdatePolicySubResponse response = UpdatePolicySubResponse.builder()
                 .familyId(100L)
                 .subId(1L)
                 .blockedPolicyIdList(List.of(1L, 2L))
                 .build();
 
-        given(updateBlockPolicyService.updateBlockPolicy(
-                any(UpdateBlockPolicyRequest.class),
+        given(updatePolicySubService.updateBlockPolicy(
+                any(UpdatePolicySubRequest.class),
                 eq(100L),
                 eq(FamilyRole.OWNER)))
                 .willReturn(response);
