@@ -45,41 +45,43 @@ public class PolicySubEntity extends BaseEntity {
     @JoinColumn(name = "sub_id")
     private SubscriptionEntity subscription;
 
-    @Column(name = "policy_id")
-    private Long policyId;
+    @Column(name = "sub_id", nullable = false, insertable = false, updatable = false)
+    private Long subId; // 조회용
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb") // PostgreSQL
-    private DateSnapshot dateSnapshot;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "block_policy_id")
+    private BlockPolicyEntity blockPolicy;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(name = "block_policy_id", nullable = false, insertable = false, updatable = false)
+    private Long blockPolicyId; // 조회용
+
+    @Column(name = "is_active", nullable = false)
     @Builder.Default
-    private boolean isDeleted = false;
+    private Boolean isActive = true;
 
     public PolicySub entityToDomain() {
         return PolicySub.builder()
                 .id(this.policySubId)
-                .policyId(this.policyId)
-                .subId(this.subscription != null ? this.subscription.getSubId() : null)
-                .dateSnapshot(this.dateSnapshot)
-                .isDeleted(this.isDeleted)
+                .subId(this.subId)
+                .blockPolicyId(this.blockPolicyId)
+                .isActive(this.isActive)
                 .build();
     }
 
     public static PolicySubEntity domainToEntity(PolicySub policySub) {
 
-        // 연관관계(FK) 매핑을 위한 프록시(가짜) 엔티티 생성
-        // DB에서 전체 데이터를 읽어올 필요 없이, 외래키로 쓸 ID값만 세팅
-        SubscriptionEntity subscriptionProxy = SubscriptionEntity.builder()
-                .subId(policySub.getSubId()) // 도메인이 들고 있는 ID만 주입
-                .build();
+        // 연관관계(FK) 매핑을 위한 프록시 엔티티 생성
+        SubscriptionEntity subscriptionProxy = policySub.getSubId() != null ?
+                SubscriptionEntity.builder().subId(policySub.getSubId()).build() : null;
+
+        BlockPolicyEntity blockPolicyProxy = policySub.getBlockPolicyId() != null ?
+                BlockPolicyEntity.builder().blockPolicyId(policySub.getBlockPolicyId()).build() : null;
 
         return PolicySubEntity.builder()
                 .policySubId(policySub.getId())
-                .policyId(policySub.getPolicyId())
                 .subscription(subscriptionProxy)
-                .dateSnapshot(policySub.getDateSnapshot())
-                .isDeleted(policySub.isDeleted())
+                .blockPolicy(blockPolicyProxy)
+                .isActive(policySub.isActive())
                 .build();
     }
 }
