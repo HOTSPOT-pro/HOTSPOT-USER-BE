@@ -17,7 +17,7 @@ public class PolicySub {
     private boolean isActive;
 
     // 논리 삭제 메서드
-    public void delete() {
-        isActive = false;
+    public void updateIsActive(boolean isActive) {
+        this.isActive = isActive;
     }
 }
