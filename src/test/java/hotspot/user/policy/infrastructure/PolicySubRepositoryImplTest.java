@@ -17,8 +17,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.member.infrastructure.entity.MemberEntity;
 import hotspot.user.plan.infrastructure.entity.PlanEntity;
-import hotspot.user.policy.domain.DateSnapshot;
+import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.PolicySub;
+import hotspot.user.policy.infrastructure.entity.BlockPolicyEntity;
 import hotspot.user.policy.infrastructure.entity.PolicySubEntity;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 
@@ -36,23 +37,22 @@ class PolicySubRepositoryImplTest {
     private PolicySubRepositoryImpl repository;
 
     @Test
-    @DisplayName("회선 ID로 적용된 시간 정책 목록 조회 성공")
+    @DisplayName("회선 ID로 적용된 정책 목록 조회 성공")
     void findBySubIdSuccess() {
         // given
         Long subId = 100L;
         SubscriptionEntity subEntity = SubscriptionEntity.builder()
                 .subId(subId)
-                .member(MemberEntity.builder().id(1L).build())
-                .plan(PlanEntity.builder().planId(1L).build())
                 .build();
-        DateSnapshot snapshot = DateSnapshot.builder()
-                .policyName("수면 모드")
+        BlockPolicyEntity policyEntity = BlockPolicyEntity.builder()
+                .blockPolicyId(1L)
                 .build();
 
         PolicySubEntity entity = PolicySubEntity.builder()
                 .policySubId(10L)
                 .subscription(subEntity)
-                .dateSnapshot(snapshot)
+                .blockPolicy(policyEntity)
+                .isActive(true)
                 .build();
 
         given(jpaRepository.findBySubscriptionSubId(subId)).willReturn(List.of(entity));
@@ -62,14 +62,15 @@ class PolicySubRepositoryImplTest {
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getDateSnapshot().getPolicyName()).isEqualTo("수면 모드");
+        assertThat(result.get(0).getBlockPolicyId()).isEqualTo(1L);
+        assertThat(result.get(0).isActive()).isTrue();
     }
 
     @Test
     @DisplayName("성공: 신규 PolicySub 정보를 저장한다")
     void saveAllSuccessWithNewEntities() {
         // given
-        PolicySub domain = PolicySub.builder().id(null).subId(1L).policyId(1L).build();
+        PolicySub domain = PolicySub.builder().id(null).subId(1L).blockPolicyId(1L).isActive(true).build();
         PolicySubEntity entity = PolicySubEntity.builder().policySubId(1L).build();
         given(jpaRepository.saveAll(anyList())).willReturn(List.of(entity));
 
@@ -82,10 +83,10 @@ class PolicySubRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("성공: 기존 PoliySub row를 논리 삭제(업데이트)한다")
-    void saveAllSuccessWithUpdateEntities() {
+    @DisplayName("성공: 기존 PolicySub를 비활성화(Soft Delete)한다")
+    void saveAllSuccessWithDeactivate() {
         // given
-        PolicySub domain = PolicySub.builder().id(10L).subId(1L).policyId(1L).isDeleted(true).build();
+        PolicySub domain = PolicySub.builder().id(10L).subId(1L).blockPolicyId(1L).isActive(false).build();
 
         // when
         List<PolicySub> result = repository.saveAll(List.of(domain));
@@ -93,5 +94,19 @@ class PolicySubRepositoryImplTest {
         // then
         assertThat(result).isEmpty();
         verify(jpaRepository, times(1)).bulkSoftDelete(anyList());
+    }
+
+    @Test
+    @DisplayName("성공: 기존 비활성화된 PolicySub를 다시 활성화한다")
+    void saveAllSuccessWithActivate() {
+        // given
+        PolicySub domain = PolicySub.builder().id(10L).subId(1L).blockPolicyId(1L).isActive(true).build();
+
+        // when
+        List<PolicySub> result = repository.saveAll(List.of(domain));
+
+        // then
+        assertThat(result).isEmpty();
+        verify(jpaRepository, times(1)).bulkActivate(anyList());
     }
 }

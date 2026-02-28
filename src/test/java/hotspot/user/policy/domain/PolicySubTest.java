@@ -7,18 +7,18 @@ import org.junit.jupiter.api.Test;
 
 class PolicySubTest {
     @Test
-    @DisplayName("성공: PolicySub 논리 삭제 시 isDeleted 필드가 true가 된다")
-    void deleteSuccess() {
+    @DisplayName("성공: PolicySub 상태 변경 시 isActive 필드가 업데이트된다")
+    void updateIsActiveSuccess() {
         // given
         PolicySub policySub = PolicySub.builder()
                 .id(1L)
-                .isDeleted(false)
+                .isActive(true)
                 .build();
 
         // when
-        policySub.delete();
+        policySub.updateIsActive(false);
 
         // then
-        assertThat(policySub.isDeleted()).isTrue();
+        assertThat(policySub.isActive()).isFalse();
     }
 }
