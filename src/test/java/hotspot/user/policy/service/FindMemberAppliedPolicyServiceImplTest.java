@@ -24,14 +24,10 @@ import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.policy.domain.PolicySub;
-import hotspot.user.policy.domain.mapper.AppliedPolicyMapper;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
 import hotspot.user.subscription.domain.Subscription;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * 구성원 1명 적용 정책 조회 Service 단위 테스트

@@ -181,7 +181,11 @@ class UpdatePolicySubServiceImplTest {
         // given
         UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L, 2L));
         setAuthMock(100L, 1L);
-        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(BlockPolicy.builder().id(1L).isActive(true).build()));
+        given(blockPolicyRepository.findAllById(anyList())).willReturn(
+                List.of(BlockPolicy.builder()
+                        .id(1L)
+                        .isActive(true)
+                        .build()));
 
         // when & then
         assertThatThrownBy(() -> updatePolicySubService.updatePolicySub(request, 100L, FamilyRole.OWNER))

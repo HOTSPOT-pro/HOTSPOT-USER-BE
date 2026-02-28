@@ -34,7 +34,7 @@ class BlockPolicyRepositoryImplTest {
     @DisplayName("전체 정책 목록 조회 성공: 활성 상태의 시스템 관리자 정책(familyId=null)만 조회한다")
     void findAllSuccess() {
         // given
-        PolicySnapshot snapshot = new PolicySnapshot(); 
+        PolicySnapshot snapshot = new PolicySnapshot();
         BlockPolicyEntity entity = BlockPolicyEntity.builder()
                 .blockPolicyId(1L)
                 .policyName("기본 차단")
