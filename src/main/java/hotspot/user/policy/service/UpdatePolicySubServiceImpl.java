@@ -56,6 +56,13 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
             throw new ApplicationException(PolicyErrorCode.POLICY_NOT_FOUND);
         }
 
+        // 정책 접근 권한 검증: 관리자 정책 또는 우리 가족 정책인지 확인
+        for (BlockPolicy policy : targetPolicies) {
+            if (!policy.isAllowedTo(requesterFamilyId)) {
+                throw new ApplicationException(PolicyErrorCode.POLICY_ACCESS_DENIED);
+            }
+        }
+
         // 해당 회선의 모든 정책 매핑 정보를 조회한다. (활성 + 비활성 포함)
         List<PolicySub> existingSubs = policySubRepository.findBySubId(request.subId());
         Map<Long, PolicySub> existingMap = existingSubs.stream()
