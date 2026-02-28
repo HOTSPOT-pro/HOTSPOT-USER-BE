@@ -1,14 +1,6 @@
 package hotspot.user.policy.infrastructure.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import hotspot.user.common.BaseEntity;
 import hotspot.user.policy.domain.PolicySub;
@@ -27,7 +19,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "policy_sub")
+// (subId, policyId)에 Unique Key 걸어서 같은 정책이 회선에 2번 적재되지 않도록 방지
+@Table(
+    name = "policy_sub",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_policy_sub_composite",
+            columnNames = {"sub_id", "block_policy_id"}
+        )
+    }
+)
 public class PolicySubEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
