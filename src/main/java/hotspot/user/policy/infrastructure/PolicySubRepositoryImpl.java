@@ -24,7 +24,7 @@ public class PolicySubRepositoryImpl implements PolicySubRepository {
 
 
     // 정책-회선 매핑 리스트 저장
-    // 새로운 INSERT, 기존 isDeleted=true 분리해서 진행 (N+1 방지)
+    // 새로운 INSERT, 기존 isActive=false 분리해서 진행 (N+1 방지)
     @Override
     public List<PolicySub> saveAll(List<PolicySub> policySubList) {
         List<PolicySubEntity> entitiesToInsert = new ArrayList<>();
@@ -34,7 +34,7 @@ public class PolicySubRepositoryImpl implements PolicySubRepository {
         policySubList.forEach(domain -> {
             if (domain.getId() == null) {
                 entitiesToInsert.add(PolicySubEntity.domainToEntity(domain));
-            } else if (domain.isDeleted()) {
+            } else if (!domain.isActive()) {
                 idsToUpdate.add(domain.getId());
             }
         });
@@ -46,7 +46,7 @@ public class PolicySubRepositoryImpl implements PolicySubRepository {
             savedEntities = policySubJpaRepository.saveAll(entitiesToInsert);
         }
 
-        // 2. 벌크 Soft Delete 실행
+        // 2. 벌크 Soft Delete 실행 (isActive = false로 변경)
         if (!idsToUpdate.isEmpty()) {
             policySubJpaRepository.bulkSoftDelete(idsToUpdate);
         }
