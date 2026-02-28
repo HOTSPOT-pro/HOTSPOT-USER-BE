@@ -16,7 +16,7 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
 
     @Override
     public List<BlockPolicy> findAll() {
-        return blockPolicyJpaRepository.findAllByIsActiveTrue().stream()
+        return blockPolicyJpaRepository.findAllByIsActiveTrueAndFamilyIdIsNull().stream()
                 .map(BlockPolicyEntity::entityToDomain)
                 .toList();
     }
