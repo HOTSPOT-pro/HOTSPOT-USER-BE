@@ -61,6 +61,11 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
             if (!policy.isAllowedTo(requesterFamilyId)) {
                 throw new ApplicationException(PolicyErrorCode.POLICY_ACCESS_DENIED);
             }
+
+            // 정책 상태 검증: 활성 상태인 정책만 적용 가능
+            if (!policy.isActive()) {
+                throw new ApplicationException(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY);
+            }
         }
 
         // 해당 회선의 모든 정책 매핑 정보를 조회한다. (활성 + 비활성 포함)
