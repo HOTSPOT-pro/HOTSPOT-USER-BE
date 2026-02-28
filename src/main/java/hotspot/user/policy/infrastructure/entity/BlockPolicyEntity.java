@@ -58,7 +58,8 @@ public class BlockPolicyEntity extends BaseEntity {
     private String policyDescription;
 
     @Column(nullable = false)
-    private Boolean isActive; // 활성화 여부
+    @Builder.Default
+    private Boolean isActive = true; // 활성화 여부
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
