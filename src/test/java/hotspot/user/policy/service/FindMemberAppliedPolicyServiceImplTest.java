@@ -21,12 +21,17 @@ import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.Member;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.domain.AppBlockedService;
+import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.BlockedServiceSub;
-import hotspot.user.policy.domain.DateSnapshot;
 import hotspot.user.policy.domain.PolicySub;
+import hotspot.user.policy.domain.mapper.AppliedPolicyMapper;
+import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
 import hotspot.user.subscription.domain.Subscription;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * 구성원 1명 적용 정책 조회 Service 단위 테스트
@@ -40,6 +45,8 @@ class FindMemberAppliedPolicyServiceImplTest {
     private PolicySubRepository policySubRepository;
     @Mock
     private BlockedServiceSubRepository blockedServiceSubRepository;
+    @Mock
+    private BlockPolicyRepository blockPolicyRepository;
 
     @InjectMocks
     private FindMemberAppliedPolicyServiceImpl findMemberAppliedPolicyService;
@@ -50,6 +57,7 @@ class FindMemberAppliedPolicyServiceImplTest {
         // given
         Long memberId = 1L;
         Long subId = 100L;
+        Long policyId = 50L;
 
         Member member = Member.builder().id(memberId).name("홍길동").build();
         Subscription sub = Subscription.builder().id(subId).member(member).build();
@@ -59,15 +67,18 @@ class FindMemberAppliedPolicyServiceImplTest {
                 .priority(1)
                 .build();
 
-        DateSnapshot snapshot = DateSnapshot.builder().policyName("수면 모드").build();
-        PolicySub policySub = PolicySub.builder().id(10L).dateSnapshot(snapshot).build();
+        // 활성 정책 매핑
+        PolicySub policySub = PolicySub.builder().id(10L).blockPolicyId(policyId).isActive(true).build();
+        // 정책 상세 정보
+        BlockPolicy blockPolicy = BlockPolicy.builder().id(policyId).name("수면 모드").build();
 
         AppBlockedService app = AppBlockedService.builder().name("YouTube").serviceCode("YOUTUBE").build();
         BlockedServiceSub blockedSub = BlockedServiceSub.builder().id(20L).appBlockedService(app).build();
 
         given(familySubscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(familySub));
-        given(policySubRepository.findBySubId(subId)).willReturn(List.of(policySub));
+        given(policySubRepository.findActiveBySubId(subId)).willReturn(List.of(policySub));
         given(blockedServiceSubRepository.findBySubId(subId)).willReturn(List.of(blockedSub));
+        given(blockPolicyRepository.findAllById(List.of(policyId))).willReturn(List.of(blockPolicy));
 
         // when
         AppliedPolicyResponse response = findMemberAppliedPolicyService.findByMemberId(memberId);

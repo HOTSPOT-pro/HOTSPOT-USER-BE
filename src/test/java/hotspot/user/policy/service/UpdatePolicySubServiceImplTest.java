@@ -52,8 +52,8 @@ class UpdatePolicySubServiceImplTest {
     private NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
 
     @Test
-    @DisplayName("성공: 유효한 요청일 경우 구성원에게 적용된 정책이 업데이트된다")
-    void updatePolicySubSuccess() {
+    @DisplayName("성공: 신규 정책 추가 - DB에 매핑이 없을 경우 새로 생성된다")
+    void updatePolicySubSuccessWithNew() {
         // given
         Long familyId = 100L;
         Long subId = 1L;
@@ -61,7 +61,7 @@ class UpdatePolicySubServiceImplTest {
 
         setAuthMock(familyId, subId);
 
-        BlockPolicy policy = BlockPolicy.builder().id(1L).name("Test Policy").build();
+        BlockPolicy policy = BlockPolicy.builder().id(1L).name("Test Policy").isActive(true).build(); // 활성 상태
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(policy));
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>());
 
@@ -77,38 +77,34 @@ class UpdatePolicySubServiceImplTest {
     }
 
     @Test
-    @DisplayName("성공: 기존 정책이 교체되고 새로운 정책이 추가된다")
-    void updatePolicySubSuccessWithReplacement() {
+    @DisplayName("성공: 기존 비활성 정책 재활용 - 이미 매핑이 있지만 비활성인 경우 활성화된다")
+    void updatePolicySubSuccessWithActivation() {
         // given
         Long familyId = 100L;
         Long subId = 1L;
-        UpdatePolicySubRequest request = new UpdatePolicySubRequest(familyId, subId, List.of(2L));
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(familyId, subId, List.of(1L));
 
         setAuthMock(familyId, subId);
 
-        // 기존에 활성화된 정책 (ID: 1L)
-        PolicySub existingSub = PolicySub.builder().id(10L).policyId(1L).isDeleted(false).build();
+        // 기존 비활성 매핑
+        PolicySub existingSub = PolicySub.builder().id(10L).blockPolicyId(1L).isActive(false).build();
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>(List.of(existingSub)));
 
-        // 요청된 새로운 정책 (ID: 2L)
-        BlockPolicy newPolicy = BlockPolicy.builder().id(2L).name("New Policy").build();
-        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(newPolicy));
+        // 요청된 활성 정책
+        BlockPolicy policy = BlockPolicy.builder().id(1L).name("Test Policy").isActive(true).build();
+        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(policy));
 
         // when
-        UpdatePolicySubResponse response = updatePolicySubService.updatePolicySub(
-                request,
-                familyId,
-                FamilyRole.OWNER);
+        updatePolicySubService.updatePolicySub(request, familyId, FamilyRole.OWNER);
 
         // then
-        assertThat(response.blockedPolicyIdList()).containsExactly(2L);
-        assertThat(existingSub.isDeleted()).isTrue(); // 기존 정책은 삭제됨
+        assertThat(existingSub.isActive()).isTrue(); // 다시 활성화됨
         verify(policySubRepository, times(1)).saveAll(anyList());
     }
 
     @Test
-    @DisplayName("성공: 요청 목록에 없는 기존 정책은 삭제된다")
-    void updatePolicySubSuccessWithDeletion() {
+    @DisplayName("성공: 요청 목록에 없는 기존 정책은 비활성화된다")
+    void updatePolicySubSuccessWithDeactivation() {
         // given
         Long familyId = 100L;
         Long subId = 1L;
@@ -116,7 +112,7 @@ class UpdatePolicySubServiceImplTest {
 
         setAuthMock(familyId, subId);
 
-        PolicySub existingSub = PolicySub.builder().id(10L).policyId(1L).isDeleted(false).build();
+        PolicySub existingSub = PolicySub.builder().id(10L).blockPolicyId(1L).isActive(true).build();
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>(List.of(existingSub)));
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of());
 
@@ -124,8 +120,47 @@ class UpdatePolicySubServiceImplTest {
         updatePolicySubService.updatePolicySub(request, familyId, FamilyRole.OWNER);
 
         // then
-        assertThat(existingSub.isDeleted()).isTrue();
+        assertThat(existingSub.isActive()).isFalse(); // 비활성화됨
         verify(policySubRepository, times(1)).saveAll(anyList());
+    }
+
+    @Test
+    @DisplayName("실패: 타 가족의 정책을 적용하려 하면 예외가 발생한다")
+    void updatePolicySubFailByPolicyAccessDenied() {
+        // given
+        Long myFamilyId = 100L;
+        Long otherFamilyId = 200L;
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(myFamilyId, 1L, List.of(1L));
+
+        setAuthMock(myFamilyId, 1L);
+
+        // 타 가족의 정책
+        BlockPolicy otherPolicy = BlockPolicy.builder().id(1L).familyId(otherFamilyId).build();
+        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(otherPolicy));
+
+        // when & then
+        assertThatThrownBy(() -> updatePolicySubService.updatePolicySub(request, myFamilyId, FamilyRole.OWNER))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(PolicyErrorCode.POLICY_ACCESS_DENIED.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패: 현재 비활성 상태인 정책을 적용하려 하면 예외가 발생한다")
+    void updatePolicySubFailByInactivePolicy() {
+        // given
+        Long familyId = 100L;
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(familyId, 1L, List.of(1L));
+
+        setAuthMock(familyId, 1L);
+
+        // 비활성 상태인 정책
+        BlockPolicy inactivePolicy = BlockPolicy.builder().id(1L).isActive(false).build();
+        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(inactivePolicy));
+
+        // when & then
+        assertThatThrownBy(() -> updatePolicySubService.updatePolicySub(request, familyId, FamilyRole.OWNER))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY.getMessage());
     }
 
     @Test
@@ -146,7 +181,7 @@ class UpdatePolicySubServiceImplTest {
         // given
         UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L, 2L));
         setAuthMock(100L, 1L);
-        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(BlockPolicy.builder().id(1L).build()));
+        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(BlockPolicy.builder().id(1L).isActive(true).build()));
 
         // when & then
         assertThatThrownBy(() -> updatePolicySubService.updatePolicySub(request, 100L, FamilyRole.OWNER))
