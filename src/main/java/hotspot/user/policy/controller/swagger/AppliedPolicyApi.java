@@ -45,7 +45,7 @@ public interface AppliedPolicyApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "정책 업데이트 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"
                                          + "- COMMON_002: 입력값 유효성 검증 실패 (null 등)\n"
-                                         + "- POLICY_003: 현재 비활성화된 정책은 회선에 적용할 수 없습니다.",
+                                         + "- POLICY_003: 현재 비활성화된 정책은 적용할 수 없습니다.",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
                                          + "- AUTH_004: 해당 요청에 대한 접근 권한이 없습니다.\n"
