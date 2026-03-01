@@ -190,7 +190,7 @@ class BlockPolicyControllerTest {
         doNothing().when(deleteFamilyBlockPolicyService).delete(anyList(), anyLong(), anyLong());
 
         // when & then
-        mockMvc.perform(delete("/api/v1/policies")
+        mockMvc.perform(delete("/api/v1/policies/families")
                         .param("policyIdList", "1", "2")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
