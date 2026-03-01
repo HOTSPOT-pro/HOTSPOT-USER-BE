@@ -3,6 +3,7 @@ package hotspot.user.policy.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,7 +35,9 @@ import hotspot.user.policy.controller.port.FindBlockPolicyService;
 import hotspot.user.policy.controller.port.FindFamilyBlockPolicyService;
 import hotspot.user.policy.controller.port.UpdateFamilyBlockPolicyStatusService;
 import hotspot.user.policy.controller.request.UpdateFamilyBlockPolicyStatusRequest;
+import hotspot.user.policy.controller.response.BlockPolicyResponse;
 import hotspot.user.policy.controller.response.UpdateFamilyBlockPolicyStatusResponse;
+import hotspot.user.policy.domain.PolicyType;
 
 @WebMvcTest(BlockPolicyController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -82,6 +85,53 @@ class BlockPolicyControllerTest {
                 null,
                 principal.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
+    @Test
+    @DisplayName("성공: 전체 정책 목록 조회 시 200 OK와 목록을 반환한다")
+    void getAllPoliciesSuccess() throws Exception {
+        // given
+        BlockPolicyResponse policy = BlockPolicyResponse.builder()
+                .id(1L)
+                .name("Admin Policy")
+                .policyType(PolicyType.SCHEDULED)
+                .isActive(true)
+                .build();
+        given(findBlockPolicyService.findAll()).willReturn(List.of(policy));
+
+        // when & then
+        mockMvc.perform(get("/api/v1/policies")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].id").value(1L))
+                .andExpect(jsonPath("$.data[0].name").value("Admin Policy"));
+    }
+
+    @Test
+    @DisplayName("성공: 우리 가족 정책 목록 조회 시 200 OK와 목록을 반환한다")
+    void getFamilyPoliciesSuccess() throws Exception {
+        // given
+        BlockPolicyResponse policy = BlockPolicyResponse.builder()
+                .id(10L)
+                .name("Family Policy")
+                .familyId(FAMILY_ID)
+                .policyType(PolicyType.SCHEDULED)
+                .isActive(true)
+                .build();
+        given(findFamilyBlockPolicyService.findAllByFamilyId(anyLong(), anyLong()))
+                .willReturn(List.of(policy));
+
+        // when & then
+        mockMvc.perform(get("/api/v1/policies/families")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].id").value(10L))
+                .andExpect(jsonPath("$.data[0].familyId").value(FAMILY_ID))
+                .andExpect(jsonPath("$.data[0].name").value("Family Policy"));
     }
 
     @Test
