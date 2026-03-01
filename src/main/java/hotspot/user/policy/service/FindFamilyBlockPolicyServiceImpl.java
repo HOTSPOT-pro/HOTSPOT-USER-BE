@@ -1,5 +1,10 @@
 package hotspot.user.policy.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
@@ -11,10 +16,6 @@ import hotspot.user.policy.controller.response.BlockPolicyResponse;
 import hotspot.user.policy.domain.mapper.BlockPolicyMapper;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * 우리 가족이 생성한 정책 조회 서비스 구현체
@@ -37,7 +38,7 @@ public class FindFamilyBlockPolicyServiceImpl implements FindFamilyBlockPolicySe
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
 
         // 실제 구성된 familyId 일치 여부 확인
-        if(!familySub.getFamily().getId().equals(familyId)) {
+        if (!familySub.getFamily().getId().equals(familyId)) {
             throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
         }
 
