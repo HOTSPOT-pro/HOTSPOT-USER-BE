@@ -17,11 +17,17 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
+import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.member.domain.Status;
 import hotspot.user.policy.controller.port.FindBlockPolicyService;
+import hotspot.user.policy.controller.port.FindFamilyBlockPolicyService;
 import hotspot.user.policy.controller.response.BlockPolicyResponse;
 import hotspot.user.policy.domain.PolicyType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * 정책 Controller 테스트 코드
@@ -38,6 +44,9 @@ class BlockPolicyControllerTest {
     private FindBlockPolicyService findBlockPolicyService;
 
     @MockBean
+    private FindFamilyBlockPolicyService findFamilyBlockPolicyService;
+
+    @MockBean
     private JwtFilter jwtFilter;
 
     @MockBean
@@ -45,6 +54,20 @@ class BlockPolicyControllerTest {
 
     @MockBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+
+    private void setAuthentication() {
+        PrincipalDetails principal = PrincipalDetails.builder()
+                .id(1L)
+                .email("test@test.com")
+                .familyId(100L)
+                .role(FamilyRole.OWNER)
+                .status(Status.APPROVED)
+                .build();
+
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                principal, null, principal.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
 
     @Test
     @DisplayName("전체 정책 목록 조회 API 성공")
@@ -65,5 +88,27 @@ class BlockPolicyControllerTest {
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.data[0].name").value("기본 정책"))
                 .andExpect(jsonPath("$.data[0].policyType").value("ONCE"));
+    }
+
+    @Test
+    @DisplayName("우리 가족 정책 목록 조회 API 성공")
+    void getFamilyPoliciesSuccess() throws Exception {
+        // given
+        setAuthentication();
+        BlockPolicyResponse response = BlockPolicyResponse.builder()
+                .id(10L)
+                .name("가족 정책")
+                .familyId(100L)
+                .build();
+
+        given(findFamilyBlockPolicyService.findAllByFamilyId(1L, 100L)).willReturn(List.of(response));
+
+        // when & then
+        mockMvc.perform(get("/api/v1/policies/families")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data[0].name").value("가족 정책"))
+                .andExpect(jsonPath("$.data[0].familyId").value(100L));
     }
 }

@@ -70,4 +70,26 @@ class BlockPolicyRepositoryImplTest {
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getId()).isEqualTo(1L);
     }
+
+    @Test
+    @DisplayName("성공: 특정 가족 ID로 해당 가족이 생성한 정책 목록을 조회한다")
+    void findAllByFamilyIdSuccess() {
+        // given
+        Long familyId = 100L;
+        BlockPolicyEntity entity = BlockPolicyEntity.builder()
+                .blockPolicyId(10L)
+                .policyName("우리가족 정책")
+                .familyId(familyId)
+                .build();
+
+        given(blockPolicyJpaRepository.findAllByFamilyId(familyId)).willReturn(List.of(entity));
+
+        // when
+        List<BlockPolicy> result = blockPolicyRepository.findAllByFamilyId(familyId);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getFamilyId()).isEqualTo(familyId);
+        assertThat(result.get(0).getName()).isEqualTo("우리가족 정책");
+    }
 }
