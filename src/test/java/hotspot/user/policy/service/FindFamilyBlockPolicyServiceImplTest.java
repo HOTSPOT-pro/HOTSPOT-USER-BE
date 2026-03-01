@@ -67,6 +67,32 @@ class FindFamilyBlockPolicyServiceImplTest {
     }
 
     @Test
+    @DisplayName("성공: PARENT 권한을 가진 사용자가 본인 가족의 정책 목록을 조회한다")
+    void findFamilyPoliciesSuccessWithParentRole() {
+        // given
+        Long memberId = 1L;
+        Long familyId = 100L;
+
+        Family family = Family.builder().id(familyId).build();
+        FamilySubscription familySub = FamilySubscription.builder()
+                .family(family)
+                .familyRole(FamilyRole.PARENT) // PARENT 역할
+                .build();
+
+        BlockPolicy policy = BlockPolicy.builder().id(10L).name("가족 정책").familyId(familyId).build();
+
+        given(familySubscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(familySub));
+        given(blockPolicyRepository.findAllByFamilyId(familyId)).willReturn(List.of(policy));
+
+        // when
+        List<BlockPolicyResponse> result = findFamilyBlockPolicyService.findAllByFamilyId(memberId, familyId);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).name()).isEqualTo("가족 정책");
+    }
+
+    @Test
     @DisplayName("실패: 가족 서비스에 가입되지 않은 회원이 조회 시도 시 예외가 발생한다")
     void findFamilyPoliciesFailByNotSubscribed() {
         // given
