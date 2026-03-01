@@ -9,7 +9,6 @@ import jakarta.validation.constraints.NotNull;
  * 정책 생성 / 수정 request dto
  */
 public record BlockPolicyRequest(
-        Long id,
         @NotBlank(message = "정책 이름은 필수입니다.")
         String name,
         @NotNull(message = "정책 타입은 필수입니다.")
