@@ -37,6 +37,7 @@ public class BlockPolicyController implements BlockPolicyApi {
     }
 
     // 우리가족 정책 조회
+    @Override
     @GetMapping("/families")
     public ResponseEntity<ApiResponse<List<BlockPolicyResponse>>> getFamilyPolicies(
             @AuthenticationPrincipal PrincipalDetails principal) {
