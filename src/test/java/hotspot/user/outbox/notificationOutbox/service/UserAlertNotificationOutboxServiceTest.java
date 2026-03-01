@@ -1,4 +1,4 @@
-package hotspot.user.kafka.outbox;
+package hotspot.user.outbox.notificationOutbox.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.then;
@@ -12,50 +12,71 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.kafka.dto.UserAlertEvent;
-import hotspot.user.outbox.notificationOutbox.service.NotificationOutboxEventAppender;
+import hotspot.user.outbox.notificationOutbox.domain.event.AlertAction;
+import hotspot.user.outbox.notificationOutbox.domain.event.PolicyAlertOutboxEvent;
+import hotspot.user.outbox.notificationOutbox.domain.event.PresentDataGiftedOutboxEvent;
+import hotspot.user.outbox.notificationOutbox.domain.event.ServiceAccessAlertOutboxEvent;
 import hotspot.user.policy.domain.PolicyType;
 
 @ExtendWith(MockitoExtension.class)
-class NotificationUserAlertOutboxEventPublisherTest {
+class UserAlertNotificationOutboxServiceTest {
 
     @Mock
     private NotificationOutboxEventAppender outboxEventAppender;
 
     @InjectMocks
-    private NotificationUserAlertOutboxPublisher publisher;
+    private UserAlertNotificationOutboxService userAlertNotificationOutboxService;
 
     @Test
-    @DisplayName("publishPolicyApplied emits TIME_WINDOW_POLICY event")
-    void publishPolicyAppliedWithScheduledType() {
-        publisher.publishPolicyApplied(101L, 11L, "study-time", PolicyType.SCHEDULED);
+    @DisplayName("appendPolicyAlert emits TIME_WINDOW_POLICY event")
+    void appendPolicyAlertWithScheduledType() {
+        userAlertNotificationOutboxService.appendPolicyAlert(
+                new PolicyAlertOutboxEvent(101L, 11L, "study-time", PolicyType.SCHEDULED, AlertAction.APPLIED)
+        );
 
-        assertOutbox("101", "POLICY_APPLIED", "TIME_WINDOW_POLICY", "APPLIED", "study-time", null, null, null, null);
+        assertOutbox(
+                "101",
+                "TIME_WINDOW_POLICY",
+                "TIME_WINDOW_POLICY",
+                "APPLIED",
+                "study-time",
+                null,
+                null,
+                null,
+                null
+        );
     }
 
     @Test
-    @DisplayName("publishPolicyReleased emits IMMEDIATE_BLOCK event")
-    void publishPolicyReleasedWithImmediateType() {
-        publisher.publishPolicyReleased(202L, 22L, "night-block", PolicyType.ONCE);
+    @DisplayName("appendPolicyAlert emits IMMEDIATE_BLOCK event")
+    void appendPolicyAlertWithImmediateType() {
+        userAlertNotificationOutboxService.appendPolicyAlert(
+                new PolicyAlertOutboxEvent(202L, 22L, "night-block", PolicyType.ONCE, AlertAction.RELEASED)
+        );
 
-        assertOutbox("202", "POLICY_RELEASED", "IMMEDIATE_BLOCK", "RELEASED", "night-block", null, null, null, null);
+        assertOutbox("202", "IMMEDIATE_BLOCK", "IMMEDIATE_BLOCK", "RELEASED", "night-block", null, null, null, null);
     }
 
     @Test
-    @DisplayName("publishServiceAccessApplied emits service access applied event")
-    void publishServiceAccessApplied() {
-        publisher.publishServiceAccessApplied(303L, 33L, "YouTube");
+    @DisplayName("appendServiceAccessAlert emits service access applied event")
+    void appendServiceAccessAlertApplied() {
+        userAlertNotificationOutboxService.appendServiceAccessAlert(
+                new ServiceAccessAlertOutboxEvent(303L, 33L, "YouTube", AlertAction.APPLIED)
+        );
 
-        assertOutbox("303", "SERVICE_ACCESS_APPLIED", "SERVICE_ACCESS", "APPLIED", null, "YouTube", null, null, null);
+        assertOutbox("303", "SERVICE_ACCESS", "SERVICE_ACCESS", "APPLIED", null, "YouTube", null, null, null);
     }
 
     @Test
-    @DisplayName("publishServiceAccessReleased uses familyId as aggregateId when subId missing")
-    void publishServiceAccessReleasedUsesFamilyIdAsAggregateIdWhenSubIdMissing() {
-        publisher.publishServiceAccessReleased(null, 44L, "Instagram");
+    @DisplayName("appendServiceAccessAlert uses familyId as aggregateId when subId missing")
+    void appendServiceAccessAlertReleasedUsesFamilyIdAsAggregateIdWhenSubIdMissing() {
+        userAlertNotificationOutboxService.appendServiceAccessAlert(
+                new ServiceAccessAlertOutboxEvent(null, 44L, "Instagram", AlertAction.RELEASED)
+        );
 
         assertOutbox(
                 "44",
-                "SERVICE_ACCESS_RELEASED",
+                "SERVICE_ACCESS",
                 "SERVICE_ACCESS",
                 "RELEASED",
                 null,
@@ -67,11 +88,13 @@ class NotificationUserAlertOutboxEventPublisherTest {
     }
 
     @Test
-    @DisplayName("publishPresentDataGifted emits present data event")
-    void publishPresentDataGifted() {
-        publisher.publishPresentDataGifted(505L, 55L, "Alice", "1GB", "gift-1");
+    @DisplayName("appendPresentDataGiftedAlert emits present data event")
+    void appendPresentDataGiftedAlert() {
+        userAlertNotificationOutboxService.appendPresentDataGiftedAlert(
+                new PresentDataGiftedOutboxEvent(505L, 55L, "Alice", "1GB", "gift-1")
+        );
 
-        assertOutbox("505", "PRESENT_DATA_GIFTED", "PRESENT_DATA", "GIFTED", null, null, "Alice", "1GB", "gift-1");
+        assertOutbox("505", "PRESENT_DATA", "PRESENT_DATA", "GIFTED", null, null, "Alice", "1GB", "gift-1");
     }
 
     private void assertOutbox(
