@@ -19,7 +19,7 @@ public class PolicySubMapper {
         }
 
         return BlockPolicyResponse.builder()
-                .id(policySub.getId())
+                .id(blockPolicy.getId()) // policy_sub_id 대신 실제 block_policy_id 사용
                 .name(blockPolicy.getName())
                 .familyId(blockPolicy.getFamilyId())
                 .policyType(blockPolicy.getPolicyType())
