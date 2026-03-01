@@ -21,7 +21,7 @@ import hotspot.user.policy.service.port.BlockPolicyRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 관리자 정책 조회 서비스 구현체
+ * 정책 생성 서비스 구현체
  */
 
 @Service
