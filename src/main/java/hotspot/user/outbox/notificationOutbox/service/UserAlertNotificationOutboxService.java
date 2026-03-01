@@ -75,9 +75,14 @@ public class UserAlertNotificationOutboxService implements UserAlertNotification
     // subId/familyId 기반으로 aggregateId를 결정해 Outbox에 저장하고 예외를 래핑 처리한다.
     private void append(String type, UserAlertEvent event) {
         try {
-            String aggregateId = event.subId() != null
-                    ? String.valueOf(event.subId())
-                    : event.familyId() != null ? String.valueOf(event.familyId()) : event.alertId();
+            String aggregateId;
+            if (event.subId() != null) {
+                aggregateId = String.valueOf(event.subId());
+            } else if (event.familyId() != null) {
+                aggregateId = String.valueOf(event.familyId());
+            } else {
+                aggregateId = event.alertId();
+            }
 
             outboxEventAppender.append(
                     AGGREGATE_TYPE,
