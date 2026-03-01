@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -63,18 +64,46 @@ public class PolicySnapshot {
 
     // 정책 타입에 따른 유효성 검증 (강화된 로직)
     public void validate(PolicyType type) {
-        // 요일 중복 체크 (SCHEDULED 정책의 경우)
-        if (type == PolicyType.SCHEDULED && days != null && !days.isEmpty()) {
+        // 1. 시간 형식 검증 (HH:mm)
+        validateTimeFormat(startTime);
+        validateTimeFormat(endTime);
+
+        // 2. 타입별 불필요 필드 및 필수 필드 검증
+        if (type == PolicyType.SCHEDULED) {
+            if (durationMinutes != null) {
+                throw new ApplicationException(PolicyErrorCode.UNNECESSARY_SNAPSHOT_FIELD);
+            }
+            validateScheduledPolicy();
+        } else if (type == PolicyType.ONCE) {
+            if (days != null && !days.isEmpty()) {
+                throw new ApplicationException(PolicyErrorCode.UNNECESSARY_SNAPSHOT_FIELD);
+            }
+            validateOncePolicy();
+        }
+    }
+
+    private void validateTimeFormat(String time) {
+        if (time != null && !Pattern.matches("^([01][0-9]|2[0-3]):[0-5][0-9]$", time)) {
+            throw new ApplicationException(PolicyErrorCode.INVALID_TIME_FORMAT);
+        }
+    }
+
+    private void validateScheduledPolicy() {
+        // 요일 중복 체크
+        if (days != null && !days.isEmpty()) {
             Set<DayOfWeek> uniqueDays = new HashSet<>(days);
             if (uniqueDays.size() != days.size()) {
                 throw new ApplicationException(PolicyErrorCode.DUPLICATE_DAY_OF_WEEK);
             }
         }
 
-        if (type == PolicyType.SCHEDULED && !isScheduledPolicy()) {
+        if (!isScheduledPolicy()) {
             throw new ApplicationException(PolicyErrorCode.INVALID_POLICY_FORMAT);
         }
-        if (type == PolicyType.ONCE && !isOncePolicy()) {
+    }
+
+    private void validateOncePolicy() {
+        if (!isOncePolicy()) {
             throw new ApplicationException(PolicyErrorCode.INVALID_POLICY_FORMAT);
         }
     }

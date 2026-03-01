@@ -17,6 +17,8 @@ public enum PolicyErrorCode implements BaseErrorCode {
     INVALID_POLICY_FORMAT(HttpStatus.BAD_REQUEST, "POLICY_004", "정책 타입에 유효하지 않은 스냅샷 형식입니다."),
     DUPLICATE_DAY_OF_WEEK(HttpStatus.BAD_REQUEST, "POLICY_005", "중복된 요일이 포함되어 있습니다."),
     ALREADY_DELETED_POLICY(HttpStatus.BAD_REQUEST, "POLICY_006", "이미 삭제된 정책은 수정할 수 없습니다."),
+    INVALID_TIME_FORMAT(HttpStatus.BAD_REQUEST, "POLICY_007", "유효하지 않은 시간 형식입니다. (HH:mm)"),
+    UNNECESSARY_SNAPSHOT_FIELD(HttpStatus.BAD_REQUEST, "POLICY_008", "해당 정책 타입에 불필요한 필드가 포함되어 있습니다."),
     ;
 
     private final HttpStatus httpStatus;
