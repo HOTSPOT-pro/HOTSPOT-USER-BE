@@ -3,6 +3,7 @@ package hotspot.user.policy.service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -90,7 +91,7 @@ public class UpdateFamilyBlockPolicyStatusServiceImpl implements UpdateFamilyBlo
         MemberDetailInfo memberDetail = memberRepository.findDetailByIdAndEmail(memberId, null)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        if (!memberDetail.getFamilyId().equals(requesterFamilyId)) {
+        if (!Objects.equals(memberDetail.getFamilyId(), requesterFamilyId)) {
             throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
         }
 

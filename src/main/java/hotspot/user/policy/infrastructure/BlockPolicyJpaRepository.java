@@ -22,4 +22,9 @@ public interface BlockPolicyJpaRepository extends JpaRepository<BlockPolicyEntit
     @Modifying(clearAutomatically = true)
     @Query("UPDATE BlockPolicyEntity b SET b.isActive = true WHERE b.blockPolicyId IN :ids")
     void bulkActivate(@Param("ids") List<Long> ids);
+
+    // N+1 SELECT를 방지하기 위한 벌크 Delete 쿼리 (isDeleted = true)
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE BlockPolicyEntity b SET b.isDeleted = true, b.isActive = false WHERE b.blockPolicyId IN :ids")
+    void bulkDelete(@Param("ids") List<Long> ids);
 }
