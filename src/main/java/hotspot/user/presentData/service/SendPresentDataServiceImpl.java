@@ -17,8 +17,9 @@ import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.PresentDataErrorCode;
 import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.domain.FamilySubscription;
-import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.gift.GiftReceivedEvent;
+import hotspot.user.outbox.notificationOutbox.domain.event.PresentDataGiftedOutboxEvent;
+import hotspot.user.outbox.notificationOutbox.service.port.UserAlertNotificationOutboxPort;
 import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.presentData.controller.port.SendPresentDataService;
 import hotspot.user.presentData.controller.request.SendPresentDataRequest;
@@ -48,7 +49,7 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
     private final ApplicationEventPublisher eventPublisher;
 
     private final Clock clock;
-    private final NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
+    private final UserAlertNotificationOutboxPort userAlertNotificationOutboxPort;
 
     @Override
     @Transactional
@@ -178,12 +179,12 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
                 .map(member -> member.getName())
                 .orElse(DEFAULT_SENDER_NAME);
 
-        userAlertOutboxPublisher.publishPresentDataGifted(
+        userAlertNotificationOutboxPort.appendPresentDataGiftedAlert(new PresentDataGiftedOutboxEvent(
                 sentPresentData.getTargetSubscription().getId(),
                 providerFamilySub.getFamily().getId(),
                 senderName,
                 requestAmountGb + "GB",
                 String.valueOf(sentPresentData.getPresentDataId())
-        );
+        ));
     }
 }

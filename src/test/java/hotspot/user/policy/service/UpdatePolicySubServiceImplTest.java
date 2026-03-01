@@ -24,8 +24,8 @@ import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.outbox.notificationOutbox.service.port.UserAlertNotificationOutboxPort;
 import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
 import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 import hotspot.user.policy.domain.BlockPolicy;
@@ -49,7 +49,7 @@ class UpdatePolicySubServiceImplTest {
     private BlockPolicyRepository blockPolicyRepository;
 
     @Mock
-    private NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
+    private UserAlertNotificationOutboxPort userAlertNotificationOutboxPort;
 
     @Test
     @DisplayName("성공: 신규 정책 추가 - DB에 매핑이 없을 경우 새로 생성된다")

@@ -15,8 +15,10 @@ import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.outbox.notificationOutbox.domain.event.AlertAction;
+import hotspot.user.outbox.notificationOutbox.domain.event.PolicyAlertOutboxEvent;
+import hotspot.user.outbox.notificationOutbox.service.port.UserAlertNotificationOutboxPort;
 import hotspot.user.policy.controller.port.UpdatePolicySubService;
 import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
 import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
@@ -38,7 +40,7 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
     private final PolicySubRepository policySubRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final BlockPolicyRepository blockPolicyRepository;
-    private final NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
+    private final UserAlertNotificationOutboxPort userAlertNotificationOutboxPort;
 
     @Override
     public UpdatePolicySubResponse updatePolicySub(
@@ -158,24 +160,26 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
     // 적용된 정책에 대한 알림 outbox 이벤트를 발행한다.
     private void publishPolicyAppliedAlerts(List<BlockPolicy> policies, Long subId, Long familyId) {
         for (BlockPolicy policy : policies) {
-            userAlertOutboxPublisher.publishPolicyApplied(
+            userAlertNotificationOutboxPort.appendPolicyAlert(new PolicyAlertOutboxEvent(
                     subId,
                     familyId,
                     policy.getName(),
-                    policy.getPolicyType()
-            );
+                    policy.getPolicyType(),
+                    AlertAction.APPLIED
+            ));
         }
     }
 
     // 해제된 정책에 대한 알림 outbox 이벤트를 발행한다.
     private void publishPolicyReleasedAlerts(List<BlockPolicy> policies, Long subId, Long familyId) {
         for (BlockPolicy policy : policies) {
-            userAlertOutboxPublisher.publishPolicyReleased(
+            userAlertNotificationOutboxPort.appendPolicyAlert(new PolicyAlertOutboxEvent(
                     subId,
                     familyId,
                     policy.getName(),
-                    policy.getPolicyType()
-            );
+                    policy.getPolicyType(),
+                    AlertAction.RELEASED
+            ));
         }
     }
 }

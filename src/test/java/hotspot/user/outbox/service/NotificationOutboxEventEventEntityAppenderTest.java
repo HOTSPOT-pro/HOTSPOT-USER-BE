@@ -20,15 +20,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.OutboxErrorCode;
-import hotspot.user.outbox.notificationOutbox.infrastructure.NotificationOutboxEventJpaRepository;
-import hotspot.user.outbox.notificationOutbox.infrastructure.entity.NotificationOutboxEventEntity;
+import hotspot.user.outbox.notificationOutbox.domain.NotificationOutboxEvent;
 import hotspot.user.outbox.notificationOutbox.service.NotificationOutboxEventAppender;
+import hotspot.user.outbox.notificationOutbox.service.port.NotificationOutboxEventRepository;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationOutboxEventEventEntityAppenderTest {
 
     @Mock
-    private NotificationOutboxEventJpaRepository outboxEventJpaRepository;
+    private NotificationOutboxEventRepository notificationOutboxEventRepository;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -44,16 +44,15 @@ class NotificationOutboxEventEventEntityAppenderTest {
 
         appender.append("user-alert", "101", "POLICY_APPLIED", payload);
 
-        ArgumentCaptor<NotificationOutboxEventEntity> captor =
-                ArgumentCaptor.forClass(NotificationOutboxEventEntity.class);
-        then(outboxEventJpaRepository).should().save(captor.capture());
+        ArgumentCaptor<NotificationOutboxEvent> captor = ArgumentCaptor.forClass(NotificationOutboxEvent.class);
+        then(notificationOutboxEventRepository).should().save(captor.capture());
 
-        NotificationOutboxEventEntity entity = captor.getValue();
-        assertThat(entity.getId()).isNotNull();
-        assertThat(entity.getAggregateType()).isEqualTo("user-alert");
-        assertThat(entity.getAggregateId()).isEqualTo("101");
-        assertThat(entity.getType()).isEqualTo("POLICY_APPLIED");
-        assertThat(entity.getPayload()).isEqualTo("{\"key\":\"value\"}");
+        NotificationOutboxEvent event = captor.getValue();
+        assertThat(event.id()).isNotNull();
+        assertThat(event.aggregateType()).isEqualTo("user-alert");
+        assertThat(event.aggregateId()).isEqualTo("101");
+        assertThat(event.type()).isEqualTo("POLICY_APPLIED");
+        assertThat(event.payload()).isEqualTo("{\"key\":\"value\"}");
     }
 
     @Test
@@ -68,6 +67,6 @@ class NotificationOutboxEventEventEntityAppenderTest {
                 .satisfies(ex -> assertThat(((ApplicationException) ex).getCode())
                         .isEqualTo(OutboxErrorCode.OUTBOX_PAYLOAD_SERIALIZATION_FAILED));
 
-        then(outboxEventJpaRepository).shouldHaveNoInteractions();
+        then(notificationOutboxEventRepository).shouldHaveNoInteractions();
     }
 }
