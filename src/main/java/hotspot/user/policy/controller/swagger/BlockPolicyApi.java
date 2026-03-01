@@ -127,6 +127,9 @@ public interface BlockPolicyApi {
     @Operation(summary = "우리 가족 정책 생성", description = "우리 가족만의 새로운 정책을 생성합니다. OWNER 권한이 필요합니다.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "생성 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"
+                    + "- POLICY_004: 정책 타입에 유효하지 않은 스냅샷 형식입니다.",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
                     + "- AUTH_004: 해당 요청에 대한 접근 권한이 없습니다.",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
@@ -144,6 +147,9 @@ public interface BlockPolicyApi {
     @Operation(summary = "우리 가족 정책 수정", description = "기존에 생성한 우리 가족 정책을 수정합니다. OWNER 권한이 필요합니다.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "수정 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"
+                    + "- POLICY_004: 정책 타입에 유효하지 않은 스냅샷 형식입니다.",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
                     + "- AUTH_004: 해당 요청에 대한 접근 권한이 없습니다.\n"
                     + "- POLICY_002: 관리자 또는 우리 가족이 직접 만든 정책만 사용할 수 있습니다.",
