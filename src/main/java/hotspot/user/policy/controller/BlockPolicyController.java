@@ -2,6 +2,7 @@ package hotspot.user.policy.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,10 +57,11 @@ public class BlockPolicyController implements BlockPolicyApi {
                 .body(ApiResponse.success(policiesList));
     }
 
+    // 가족 정책 isActive 업데이트
     @Override
     @PatchMapping("/families")
     public ResponseEntity<ApiResponse<UpdateFamilyBlockPolicyStatusResponse>> updateFamilyBlockPolicies(
-            @RequestBody UpdateFamilyBlockPolicyStatusRequest request,
+            @RequestBody @Valid UpdateFamilyBlockPolicyStatusRequest request,
             @AuthenticationPrincipal PrincipalDetails principal) {
 
         Long memberId = principal.getId();
