@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
-import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.MemberDetailInfo;
@@ -46,8 +45,8 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
     @InjectMocks
     private UpdateFamilyBlockPolicyStatusServiceImpl service;
 
-    private final Long MEMBER_ID = 1L;
-    private final Long FAMILY_ID = 100L;
+    private static final Long MEMBER_ID = 1L;
+    private static final Long FAMILY_ID = 100L;
 
     @Test
     @DisplayName("성공: 가족 소유 정책 상태를 일괄 동기화한다")
@@ -55,7 +54,8 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
         // given
         // 1. 요청: 정책 1, 2를 활성화하고 싶음 (기존 3은 목록에 없음 -> 비활성화 대상)
         List<Long> requestActiveIds = List.of(1L, 2L);
-        UpdateFamilyBlockPolicyStatusRequest request = new UpdateFamilyBlockPolicyStatusRequest(FAMILY_ID, requestActiveIds);
+        UpdateFamilyBlockPolicyStatusRequest request = new UpdateFamilyBlockPolicyStatusRequest(
+                FAMILY_ID, requestActiveIds);
 
         // 2. 권한 검증용 Mock
         MemberDetailInfo memberDetail = MemberDetailInfo.builder()
@@ -71,7 +71,8 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
         given(blockPolicyRepository.findAllByFamilyId(FAMILY_ID)).willReturn(List.of(p1, p2, p3));
 
         // when
-        UpdateFamilyBlockPolicyStatusResponse response = service.updateFamilyBlockPolicyStatus(request, MEMBER_ID, FAMILY_ID);
+        UpdateFamilyBlockPolicyStatusResponse response = service
+                .updateFamilyBlockPolicyStatus(request, MEMBER_ID, FAMILY_ID);
 
         // then
         // - p2는 켜져야 함 (Activate)
@@ -89,7 +90,8 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
     @DisplayName("실패: 요청자가 가족의 OWNER가 아니면 예외가 발생한다")
     void validateOwnerAuthorityFailNotOwner() {
         // given
-        UpdateFamilyBlockPolicyStatusRequest request = new UpdateFamilyBlockPolicyStatusRequest(FAMILY_ID, List.of(1L));
+        UpdateFamilyBlockPolicyStatusRequest request = new UpdateFamilyBlockPolicyStatusRequest(
+                FAMILY_ID, List.of(1L));
         MemberDetailInfo memberDetail = MemberDetailInfo.builder()
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.PARENT) // PARENT는 권한 없음
@@ -106,7 +108,8 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
     @DisplayName("실패: 요청자의 가족 ID와 회원의 소속 가족 ID가 다르면 예외가 발생한다")
     void validateOwnerAuthorityFailDifferentFamily() {
         // given
-        UpdateFamilyBlockPolicyStatusRequest request = new UpdateFamilyBlockPolicyStatusRequest(FAMILY_ID, List.of(1L));
+        UpdateFamilyBlockPolicyStatusRequest request = new UpdateFamilyBlockPolicyStatusRequest(
+                FAMILY_ID, List.of(1L));
         MemberDetailInfo memberDetail = MemberDetailInfo.builder()
                 .familyId(200L) // 다른 가족
                 .role(FamilyRole.OWNER)
@@ -125,7 +128,8 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
         // given
         // 요청에는 1번(가족꺼), 999번(타인꺼) 포함
         List<Long> requestActiveIds = List.of(1L, 999L);
-        UpdateFamilyBlockPolicyStatusRequest request = new UpdateFamilyBlockPolicyStatusRequest(FAMILY_ID, requestActiveIds);
+        UpdateFamilyBlockPolicyStatusRequest request = new UpdateFamilyBlockPolicyStatusRequest(
+                FAMILY_ID, requestActiveIds);
 
         MemberDetailInfo memberDetail = MemberDetailInfo.builder()
                 .familyId(FAMILY_ID)
@@ -149,7 +153,8 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
     void updateNoChangesNoBulkCall() {
         // given
         List<Long> requestActiveIds = List.of(1L);
-        UpdateFamilyBlockPolicyStatusRequest request = new UpdateFamilyBlockPolicyStatusRequest(FAMILY_ID, requestActiveIds);
+        UpdateFamilyBlockPolicyStatusRequest request = new UpdateFamilyBlockPolicyStatusRequest(
+                FAMILY_ID, requestActiveIds);
 
         MemberDetailInfo memberDetail = MemberDetailInfo.builder()
                 .familyId(FAMILY_ID)

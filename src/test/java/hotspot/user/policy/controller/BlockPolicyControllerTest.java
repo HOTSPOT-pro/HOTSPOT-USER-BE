@@ -95,7 +95,8 @@ class BlockPolicyControllerTest {
                 .blockedPolicyIdList(activeIds)
                 .build();
 
-        given(updateFamilyBlockPolicyStatusService.updateFamilyBlockPolicyStatus(any(UpdateFamilyBlockPolicyStatusRequest.class), anyLong(), anyLong()))
+        given(updateFamilyBlockPolicyStatusService.updateFamilyBlockPolicyStatus(
+                any(UpdateFamilyBlockPolicyStatusRequest.class), anyLong(), anyLong()))
                 .willReturn(mockResponse);
 
         // when & then
