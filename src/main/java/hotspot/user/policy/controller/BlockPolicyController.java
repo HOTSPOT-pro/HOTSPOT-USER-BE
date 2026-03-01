@@ -11,6 +11,7 @@ import hotspot.user.policy.controller.port.UpdateFamilyBlockPolicyStatusService;
 import hotspot.user.policy.controller.request.BlockPolicyRequest;
 import jakarta.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -125,7 +126,7 @@ public class BlockPolicyController implements BlockPolicyApi {
         BlockPolicyResponse response = createBlockPolicyService.
                 create(request, principal.getId(), principal.getFamilyId());
 
-        return ResponseEntity.ok()
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response));
     }
 
