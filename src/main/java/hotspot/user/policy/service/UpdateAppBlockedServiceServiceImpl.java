@@ -44,7 +44,7 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
     private final AppBlockedServiceRepository appBlockedServiceRepository;
     private final UserAlertNotificationOutboxPort userAlertNotificationOutboxPort;
 
-    // ✅ 정책 동기화 outbox(스냅샷 이벤트)
+    // 정책 동기화 outbox(스냅샷 이벤트)
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
