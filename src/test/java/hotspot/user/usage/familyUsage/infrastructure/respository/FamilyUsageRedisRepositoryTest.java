@@ -6,7 +6,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -98,8 +97,7 @@ class FamilyUsageRedisRepositoryTest {
     @DisplayName("가족 사용량 정상 조회")
     void shouldReturnFamilyUsageSuccessfully() {
 
-        String yyyyMM = LocalDate.now()
-                .format(DateTimeFormatter.ofPattern("yyyyMM"));
+        String yyyyMM = "202602";
 
         // 가족 한도 20GB
         redisTemplate.opsForHash().put(
