@@ -18,6 +18,6 @@ public record BlockPolicyRequest(
         PolicySnapshot policySnapshot,
         @NotBlank(message = "정책 설명은 필수입니다.")
         String policyDescription,
-        boolean isActive
+        Boolean isActive
 ) {
 }
