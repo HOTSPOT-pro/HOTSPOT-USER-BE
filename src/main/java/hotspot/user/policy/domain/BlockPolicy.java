@@ -34,4 +34,18 @@ public class BlockPolicy {
         this.isActive = isActive;
     }
 
+    public BlockPolicy update(String name, String description, PolicyType policyType,
+                              PolicySnapshot snapshot, Boolean isActive) {
+        return BlockPolicy.builder()
+                .id(this.id)
+                .familyId(this.familyId)
+                .policyType(policyType != null ? policyType : this.policyType)
+                .name(name != null ? name : this.name)
+                .policyDescription(description != null ? description : this.policyDescription)
+                .policySnapshot(snapshot != null ? snapshot : this.policySnapshot)
+                .isActive(isActive != null ? isActive : this.isActive)
+                .isDeleted(this.isDeleted)
+                .build();
+    }
+
 }

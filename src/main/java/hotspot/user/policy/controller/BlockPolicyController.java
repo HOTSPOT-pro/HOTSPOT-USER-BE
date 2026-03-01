@@ -7,6 +7,7 @@ import hotspot.user.policy.controller.port.DeleteFamilyBlockPolicyService;
 import hotspot.user.policy.controller.port.FindBlockPolicyService;
 import hotspot.user.policy.controller.port.FindFamilyBlockPolicyService;
 import hotspot.user.policy.controller.port.FindSingleBlockPolicyService;
+import hotspot.user.policy.controller.port.UpdateBlockPolicyService;
 import hotspot.user.policy.controller.port.UpdateFamilyBlockPolicyStatusService;
 import hotspot.user.policy.controller.request.BlockPolicyRequest;
 import jakarta.validation.Valid;
@@ -46,6 +47,7 @@ public class BlockPolicyController implements BlockPolicyApi {
     private final DeleteFamilyBlockPolicyService deleteFamilyBlockPolicyService; // 우리 가족 정책 삭제
     private final FindSingleBlockPolicyService findSingleBlockPolicyService; // 단일 정책 조회
     private final CreateBlockPolicyService createBlockPolicyService; // 정책 생성
+    private final UpdateBlockPolicyService updateBlockPolicyService; // 정책 수정
 
     @Override
     @GetMapping
@@ -138,8 +140,14 @@ public class BlockPolicyController implements BlockPolicyApi {
             @RequestBody @Valid BlockPolicyRequest request,
             @AuthenticationPrincipal PrincipalDetails principal) {
 
+        BlockPolicyResponse response = updateBlockPolicyService.update(
+                request,
+                blockPolicyId,
+                principal.getId(),
+                principal.getFamilyId());
+
         return ResponseEntity.ok()
-                .body(ApiResponse.success());
+                .body(ApiResponse.success(response));
     }
 
 }
