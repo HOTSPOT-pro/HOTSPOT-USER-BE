@@ -31,18 +31,20 @@ class BlockPolicyRepositoryImplTest {
     private BlockPolicyRepositoryImpl blockPolicyRepository;
 
     @Test
-    @DisplayName("전체 정책 목록 조회 성공: 엔티티를 도메인 객체(Snapshot 포함)로 변환한다")
+    @DisplayName("전체 정책 목록 조회 성공: 활성 상태의 시스템 관리자 정책(familyId=null)만 조회한다")
     void findAllSuccess() {
         // given
-        PolicySnapshot snapshot = new PolicySnapshot(); // 실제 필드에 맞게 인스턴스화 필요
+        PolicySnapshot snapshot = new PolicySnapshot();
         BlockPolicyEntity entity = BlockPolicyEntity.builder()
                 .blockPolicyId(1L)
                 .policyName("기본 차단")
                 .policyType(PolicyType.SCHEDULED)
                 .policySnapshot(snapshot)
+                .isActive(true)
+                .familyId(null)
                 .build();
 
-        given(blockPolicyJpaRepository.findAll()).willReturn(List.of(entity));
+        given(blockPolicyJpaRepository.findAllByIsActiveTrueAndFamilyIdIsNull()).willReturn(List.of(entity));
 
         // when
         List<BlockPolicy> result = blockPolicyRepository.findAll();
@@ -50,7 +52,7 @@ class BlockPolicyRepositoryImplTest {
         // then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getName()).isEqualTo("기본 차단");
-        assertThat(result.get(0).getPolicyType()).isEqualTo(PolicyType.SCHEDULED);
+        assertThat(result.get(0).getFamilyId()).isNull();
     }
 
     @Test

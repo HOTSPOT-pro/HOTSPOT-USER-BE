@@ -12,13 +12,12 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PolicySub {
     private final Long id;
-    private final Long policyId;
     private final Long subId;
-    private final DateSnapshot dateSnapshot;
-    private boolean isDeleted;
+    private final Long blockPolicyId;
+    private boolean isActive;
 
     // 논리 삭제 메서드
-    public void delete() {
-        isDeleted = true;
+    public void updateIsActive(boolean isActive) {
+        this.isActive = isActive;
     }
 }

@@ -9,5 +9,8 @@ import hotspot.user.policy.domain.PolicySub;
  */
 public interface PolicySubRepository {
     List<PolicySub> findBySubId(Long subId);
+
+    List<PolicySub> findActiveBySubId(Long subId); // 활성화된 정책만 조회
+
     List<PolicySub> saveAll(List<PolicySub> policySubList);
 }
