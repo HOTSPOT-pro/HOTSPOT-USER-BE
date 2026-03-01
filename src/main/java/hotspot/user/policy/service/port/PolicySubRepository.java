@@ -13,4 +13,7 @@ public interface PolicySubRepository {
     List<PolicySub> findActiveBySubId(Long subId); // 활성화된 정책만 조회
 
     List<PolicySub> saveAll(List<PolicySub> policySubList);
+
+    // 비활성화된 정책이 적용되어 있는 policy_sub 모두 isActive = false로 만들기
+    void bulkDeActiveByBlockPolicyIds(List<Long> blockPolicyIds);
 }

@@ -11,4 +11,6 @@ public interface BlockPolicyRepository {
     List<BlockPolicy> findAll();
     List<BlockPolicy> findAllById(List<Long> idList);
     List<BlockPolicy> findAllByFamilyId(Long familyId);
+    void bulkActivate(List<Long> ids);
+    void bulkDeActive(List<Long> ids);
 }

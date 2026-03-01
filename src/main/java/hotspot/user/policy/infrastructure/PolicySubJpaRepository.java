@@ -24,4 +24,9 @@ public interface PolicySubJpaRepository extends JpaRepository<PolicySubEntity, L
     @Modifying(clearAutomatically = true)
     @Query("UPDATE PolicySubEntity p SET p.isActive = true WHERE p.policySubId IN :ids")
     void bulkActivate(@Param("ids") List<Long> ids);
+
+    // 정책(BlockPolicy)이 비활성화될 때 해당 정책을 적용 중인 모든 회선 매핑 정보를 비활성화 처리
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE PolicySubEntity p SET p.isActive = false WHERE p.blockPolicy.blockPolicyId IN :blockPolicyIds")
+    void bulkDeActiveByBlockPolicyIds(@Param("blockPolicyIds") List<Long> blockPolicyIds);
 }
