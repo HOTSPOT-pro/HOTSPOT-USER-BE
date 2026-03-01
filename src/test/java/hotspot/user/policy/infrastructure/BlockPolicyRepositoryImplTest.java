@@ -119,4 +119,17 @@ class BlockPolicyRepositoryImplTest {
         // then
         verify(blockPolicyJpaRepository).bulkDeActive(ids);
     }
+
+    @Test
+    @DisplayName("성공: 정책들을 일괄 삭제(Soft Delete)한다")
+    void bulkDeleteSuccess() {
+        // given
+        List<Long> ids = List.of(1L, 2L);
+
+        // when
+        blockPolicyRepository.bulkDelete(ids);
+
+        // then
+        verify(blockPolicyJpaRepository).bulkDelete(ids);
+    }
 }
