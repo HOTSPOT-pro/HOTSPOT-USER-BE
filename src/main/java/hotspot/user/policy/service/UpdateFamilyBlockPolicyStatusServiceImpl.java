@@ -1,6 +1,8 @@
 package hotspot.user.policy.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -49,18 +51,21 @@ public class UpdateFamilyBlockPolicyStatusServiceImpl implements UpdateFamilyBlo
 
         // 3. 요청받은 ID 리스트가 모두 우리 가족의 정책인지 검증한다.
         List<Long> requestActiveIds = request.blockPolicyIdList();
-        validateAllPoliciesBelongToFamily(requestActiveIds, allFamilyPolicies);
+        Set<Long> requestActiveIdsSet = new HashSet<>(requestActiveIds);
+        validateAllPoliciesBelongToFamily(requestActiveIdsSet, allFamilyPolicies);
 
         // 4. 활성화할 ID 리스트와 비활성화할 ID 리스트를 분류한다.
-        List<Long> toActivate = allFamilyPolicies.stream()
-                .filter(p -> requestActiveIds.contains(p.getId()))
+        // 단일 순회 및 O(1) 조회로 최적화하기 위해 Map으로 변경
+        Map<Boolean, List<BlockPolicy>> partitionedPolicies = allFamilyPolicies.stream()
+                .collect(Collectors.partitioningBy(p -> requestActiveIdsSet.contains(p.getId())));
+
+        List<Long> toActivate = partitionedPolicies.get(true).stream()
                 .filter(p -> !p.isActive()) // 현재 꺼져있는 것만 켬
                 .map(BlockPolicy::getId)
                 .collect(Collectors.toList());
 
-        List<Long> toDeactivate = allFamilyPolicies.stream()
-                .filter(p -> !requestActiveIds.contains(p.getId()))
-                .filter(p -> p.isActive()) // 현재 켜져있는 것만 끔
+        List<Long> toDeactivate = partitionedPolicies.get(false).stream()
+                .filter(BlockPolicy::isActive) // 현재 켜져있는 것만 끔
                 .map(BlockPolicy::getId)
                 .collect(Collectors.toList());
 
@@ -94,7 +99,7 @@ public class UpdateFamilyBlockPolicyStatusServiceImpl implements UpdateFamilyBlo
         }
     }
 
-    private void validateAllPoliciesBelongToFamily(List<Long> requestIds, List<BlockPolicy> familyPolicies) {
+    private void validateAllPoliciesBelongToFamily(Set<Long> requestIds, List<BlockPolicy> familyPolicies) {
         Set<Long> familyPolicyIds = familyPolicies.stream()
                 .map(BlockPolicy::getId)
                 .collect(Collectors.toSet());
