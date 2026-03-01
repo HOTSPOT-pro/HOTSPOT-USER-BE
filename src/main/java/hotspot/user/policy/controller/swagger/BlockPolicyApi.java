@@ -93,7 +93,7 @@ public interface BlockPolicyApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @DeleteMapping
-    ResponseEntity<Void> deleteFamilyBlockPolicies(
+    ResponseEntity<ApiResponse<Void>> deleteFamilyBlockPolicies(
             @Parameter(description = "삭제할 정책 ID 리스트")
             @RequestParam List<Long> policyIdList,
             @Parameter(hidden = true)
