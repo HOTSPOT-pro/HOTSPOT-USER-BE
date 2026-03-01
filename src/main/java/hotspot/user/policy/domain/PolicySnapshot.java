@@ -62,6 +62,9 @@ public class PolicySnapshot {
         return (durationMinutes != null && durationMinutes > 0) || (startTime != null && endTime != null);
     }
 
+    @JsonIgnore
+    private static final Pattern TIME_PATTERN = Pattern.compile("^([01][0-9]|2[0-3]):[0-5][0-9]$");
+
     // 정책 타입에 따른 유효성 검증 (강화된 로직)
     public void validate(PolicyType type) {
         // 1. 시간 형식 검증 (HH:mm)
@@ -83,7 +86,7 @@ public class PolicySnapshot {
     }
 
     private void validateTimeFormat(String time) {
-        if (time != null && !Pattern.matches("^([01][0-9]|2[0-3]):[0-5][0-9]$", time)) {
+        if (time != null && !TIME_PATTERN.matcher(time).matches()) {
             throw new ApplicationException(PolicyErrorCode.INVALID_TIME_FORMAT);
         }
     }
