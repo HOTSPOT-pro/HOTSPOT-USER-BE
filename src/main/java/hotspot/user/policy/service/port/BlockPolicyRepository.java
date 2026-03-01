@@ -13,4 +13,5 @@ public interface BlockPolicyRepository {
     List<BlockPolicy> findAllByFamilyId(Long familyId);
     void bulkActivate(List<Long> ids);
     void bulkDeActive(List<Long> ids);
+    void bulkDelete(List<Long> ids);
 }

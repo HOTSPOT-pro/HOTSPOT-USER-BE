@@ -46,4 +46,10 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
     public void bulkDeActive(List<Long> ids) {
         blockPolicyJpaRepository.bulkDeActive(ids);
     }
+
+    // 가족 정책 삭제
+    @Override
+    public void bulkDelete(List<Long> ids) {
+        blockPolicyJpaRepository.bulkDelete(ids);
+    }
 }
