@@ -23,6 +23,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.springframework.web.bind.annotation.PathVariable;
+
 @Tag(name = "Policy", description = "차단 정책 관련 API")
 public interface BlockPolicyApi {
 
@@ -96,6 +98,25 @@ public interface BlockPolicyApi {
     ResponseEntity<ApiResponse<Void>> deleteFamilyBlockPolicies(
             @Parameter(description = "삭제할 정책 ID 리스트")
             @RequestParam List<Long> policyIdList,
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal PrincipalDetails principal
+    );
+    @Operation(summary = "정책 단일 조회",
+            description = "특정 정책의 상세 정보를 조회합니다. OWNER 권한이 필요하며, 관리자 정책 또는 본인 가족의 정책만 조회 가능합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
+                    + "- AUTH_004: 해당 요청에 대한 접근 권한이 없습니다.\n"
+                    + "- POLICY_002: 관리자 또는 우리 가족이 직접 만든 정책만 사용할 수 있습니다.",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "찾을 수 없음\n"
+                    + "- POLICY_001: 해당 정책을 찾을 수 없습니다.\n"
+                    + "- MEMBER_001: 회원 정보를 찾을 수 없습니다.",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/{blockPolicyId}")
+    ResponseEntity<ApiResponse<BlockPolicyResponse>> getBlockPolicy(
+            @PathVariable Long blockPolicyId,
             @Parameter(hidden = true)
             @AuthenticationPrincipal PrincipalDetails principal
     );
