@@ -1,5 +1,10 @@
 package hotspot.user.policy.service;
 
+import java.util.Objects;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
@@ -14,10 +19,6 @@ import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.mapper.BlockPolicyMapper;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 /**
  * 관리자 정책 조회 서비스 구현체

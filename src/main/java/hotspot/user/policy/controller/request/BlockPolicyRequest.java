@@ -1,9 +1,10 @@
 package hotspot.user.policy.controller.request;
 
-import hotspot.user.policy.domain.PolicySnapshot;
-import hotspot.user.policy.domain.PolicyType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import hotspot.user.policy.domain.PolicySnapshot;
+import hotspot.user.policy.domain.PolicyType;
 
 /**
  * 정책 생성 / 수정 request dto

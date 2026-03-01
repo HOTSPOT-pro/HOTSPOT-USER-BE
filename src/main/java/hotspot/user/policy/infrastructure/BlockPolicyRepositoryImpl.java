@@ -2,10 +2,10 @@ package hotspot.user.policy.infrastructure;
 
 import java.util.List;
 
-import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.PolicyErrorCode;
 import org.springframework.stereotype.Repository;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.infrastructure.entity.BlockPolicyEntity;
 import hotspot.user.policy.service.port.BlockPolicyRepository;

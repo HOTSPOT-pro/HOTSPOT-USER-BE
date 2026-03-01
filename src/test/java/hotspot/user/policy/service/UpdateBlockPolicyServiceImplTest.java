@@ -25,7 +25,6 @@ import hotspot.user.member.service.port.MemberRepository;
 import hotspot.user.policy.controller.request.BlockPolicyRequest;
 import hotspot.user.policy.controller.response.BlockPolicyResponse;
 import hotspot.user.policy.domain.BlockPolicy;
-import hotspot.user.policy.domain.PolicySnapshot;
 import hotspot.user.policy.domain.PolicyType;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 
