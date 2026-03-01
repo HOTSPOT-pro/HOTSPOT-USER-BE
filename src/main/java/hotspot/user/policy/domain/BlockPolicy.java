@@ -1,5 +1,7 @@
 package hotspot.user.policy.domain;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.PolicyErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,6 +38,10 @@ public class BlockPolicy {
 
     public BlockPolicy update(String name, String description, PolicyType policyType,
                               PolicySnapshot snapshot, Boolean isActive) {
+        if (this.isDeleted) {
+            throw new ApplicationException(PolicyErrorCode.ALREADY_DELETED_POLICY);
+        }
+
         return BlockPolicy.builder()
                 .id(this.id)
                 .familyId(this.familyId)

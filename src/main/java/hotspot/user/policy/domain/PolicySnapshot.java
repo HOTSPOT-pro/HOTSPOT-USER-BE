@@ -2,7 +2,9 @@ package hotspot.user.policy.domain;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -61,6 +63,14 @@ public class PolicySnapshot {
 
     // 정책 타입에 따른 유효성 검증 (강화된 로직)
     public void validate(PolicyType type) {
+        // 요일 중복 체크 (SCHEDULED 정책의 경우)
+        if (type == PolicyType.SCHEDULED && days != null && !days.isEmpty()) {
+            Set<DayOfWeek> uniqueDays = new HashSet<>(days);
+            if (uniqueDays.size() != days.size()) {
+                throw new ApplicationException(PolicyErrorCode.DUPLICATE_DAY_OF_WEEK);
+            }
+        }
+
         if (type == PolicyType.SCHEDULED && !isScheduledPolicy()) {
             throw new ApplicationException(PolicyErrorCode.INVALID_POLICY_FORMAT);
         }
