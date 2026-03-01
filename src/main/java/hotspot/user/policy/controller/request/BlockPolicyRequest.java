@@ -9,7 +9,6 @@ import hotspot.user.policy.domain.PolicyType;
 public record BlockPolicyRequest(
         Long id,
         String name,
-        Long familyId,
         PolicyType policyType,
         PolicySnapshot policySnapshot,
         String policyDescription,
