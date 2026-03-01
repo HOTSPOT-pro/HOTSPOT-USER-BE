@@ -29,4 +29,9 @@ public class BlockPolicy {
         return this.familyId == null || this.familyId.equals(requesterFamilyId);
     }
 
+    // 정책 상태 업데이트
+    public void updateIsActive(boolean isActive) {
+        this.isActive = isActive;
+    }
+
 }

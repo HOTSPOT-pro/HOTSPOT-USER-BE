@@ -36,4 +36,14 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
                 .map(BlockPolicyEntity::entityToDomain)
                 .toList();
     }
+
+    @Override
+    public void bulkActivate(List<Long> ids) {
+        blockPolicyJpaRepository.bulkActivate(ids);
+    }
+
+    @Override
+    public void bulkDeActive(List<Long> ids) {
+        blockPolicyJpaRepository.bulkDeActive(ids);
+    }
 }

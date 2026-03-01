@@ -2,9 +2,13 @@ package hotspot.user.policy.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,7 +16,10 @@ import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.policy.controller.port.FindBlockPolicyService;
 import hotspot.user.policy.controller.port.FindFamilyBlockPolicyService;
+import hotspot.user.policy.controller.port.UpdateFamilyBlockPolicyStatusService;
+import hotspot.user.policy.controller.request.UpdateFamilyBlockPolicyStatusRequest;
 import hotspot.user.policy.controller.response.BlockPolicyResponse;
+import hotspot.user.policy.controller.response.UpdateFamilyBlockPolicyStatusResponse;
 import hotspot.user.policy.controller.swagger.BlockPolicyApi;
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +33,7 @@ public class BlockPolicyController implements BlockPolicyApi {
 
     private final FindBlockPolicyService findBlockPolicyService;
     private final FindFamilyBlockPolicyService findFamilyBlockPolicyService; // 우리 가족이 생성한 정책 조회
+    private final UpdateFamilyBlockPolicyStatusService updateFamilyBlockPolicyStatusService; // 우리 가족의 정책 상태 업데이트(비/활성화)
 
     @Override
     @GetMapping
@@ -45,6 +53,23 @@ public class BlockPolicyController implements BlockPolicyApi {
         Long familyId = principal.getFamilyId();
 
         List<BlockPolicyResponse> policiesList = findFamilyBlockPolicyService.findAllByFamilyId(memberId, familyId);
+
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(policiesList));
+    }
+
+    // 가족 정책 isActive 업데이트
+    @Override
+    @PatchMapping("/families")
+    public ResponseEntity<ApiResponse<UpdateFamilyBlockPolicyStatusResponse>> updateFamilyBlockPolicies(
+            @RequestBody @Valid UpdateFamilyBlockPolicyStatusRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        Long memberId = principal.getId();
+        Long familyId = principal.getFamilyId();
+
+        UpdateFamilyBlockPolicyStatusResponse policiesList = updateFamilyBlockPolicyStatusService
+                .updateFamilyBlockPolicyStatus(request, memberId, familyId);
 
         return ResponseEntity.ok()
                 .body(ApiResponse.success(policiesList));

@@ -100,6 +100,19 @@ class PolicySubRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("성공: 정책 ID 리스트로 해당 정책을 적용 중인 모든 회선 매핑 정보를 벌크 비활성화한다")
+    void bulkDeActiveByBlockPolicyIdsSuccess() {
+        // given
+        List<Long> blockPolicyIds = List.of(50L, 60L);
+
+        // when
+        repository.bulkDeActiveByBlockPolicyIds(blockPolicyIds);
+
+        // then
+        verify(jpaRepository).bulkDeActiveByBlockPolicyIds(blockPolicyIds);
+    }
+
+    @Test
     @DisplayName("성공: 신규 데이터만 있는 경우 벌크 업데이트는 호출되지 않는다")
     void saveAllOnlyNewSuccess() {
         // given
