@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,10 +24,11 @@ import hotspot.user.common.exception.code.PresentDataErrorCode;
 import hotspot.user.family.controller.port.FindFamilySubscriptionService;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
-import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.Member;
 import hotspot.user.member.domain.Status;
 import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.gift.GiftReceivedEvent;
+import hotspot.user.outbox.notificationOutbox.domain.event.PresentDataGiftedOutboxEvent;
+import hotspot.user.outbox.notificationOutbox.service.port.UserAlertNotificationOutboxPort;
 import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.plan.domain.Plan;
 import hotspot.user.presentData.controller.request.SendPresentDataRequest;
@@ -45,7 +45,7 @@ class SendPresentDataServiceImplTest {
     private PresentDataRepository presentDataRepository;
     private FindFamilySubscriptionService findFamilySubscriptionService;
     private SubscriptionUsageRepository subscriptionUsageRepository;
-    private NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
+    private UserAlertNotificationOutboxPort userAlertNotificationOutboxPort;
     private ApplicationEventPublisher eventPublisher;
 
     private SendPresentDataServiceImpl sendPresentDataService;
@@ -66,7 +66,7 @@ class SendPresentDataServiceImplTest {
         presentDataRepository = mock(PresentDataRepository.class);
         findFamilySubscriptionService = mock(FindFamilySubscriptionService.class);
         subscriptionUsageRepository = mock(SubscriptionUsageRepository.class);
-        userAlertOutboxPublisher = mock(NotificationUserAlertOutboxPublisher.class);
+        userAlertNotificationOutboxPort = mock(UserAlertNotificationOutboxPort.class);
         eventPublisher = mock(ApplicationEventPublisher.class);
 
         Clock fixedClock = Clock.fixed(
@@ -80,7 +80,7 @@ class SendPresentDataServiceImplTest {
                 subscriptionUsageRepository,
                 eventPublisher,
                 fixedClock,
-                userAlertOutboxPublisher
+                userAlertNotificationOutboxPort
         );
 
         memberId = 1L;
@@ -159,13 +159,15 @@ class SendPresentDataServiceImplTest {
         assertThat(response.dataAmount()).isEqualTo(ONE_GB_IN_KB);
 
         // ===== 알림 Publisher 검증 =====
-        verify(userAlertOutboxPublisher).publishPresentDataGifted(
-                eq(targetSubId),
-                eq(family.getId()),
-                eq("Alice"),
-                eq("1GB"),
-                eq("99")
-        );
+        ArgumentCaptor<PresentDataGiftedOutboxEvent> alertEventCaptor =
+                ArgumentCaptor.forClass(PresentDataGiftedOutboxEvent.class);
+        verify(userAlertNotificationOutboxPort).appendPresentDataGiftedAlert(alertEventCaptor.capture());
+        PresentDataGiftedOutboxEvent alertEvent = alertEventCaptor.getValue();
+        assertThat(alertEvent.targetSubId()).isEqualTo(targetSubId);
+        assertThat(alertEvent.familyId()).isEqualTo(family.getId());
+        assertThat(alertEvent.senderName()).isEqualTo("Alice");
+        assertThat(alertEvent.presentAmount()).isEqualTo("1GB");
+        assertThat(alertEvent.giftId()).isEqualTo("99");
 
         // ===== 이벤트 payload 정확 검증 =====
         ArgumentCaptor<GiftReceivedEvent> captor =
