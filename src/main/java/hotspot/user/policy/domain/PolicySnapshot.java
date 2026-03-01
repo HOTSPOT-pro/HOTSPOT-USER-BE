@@ -7,6 +7,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.PolicyErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -55,5 +57,15 @@ public class PolicySnapshot {
     @JsonIgnore
     public boolean isOncePolicy() {
         return (durationMinutes != null && durationMinutes > 0) || (startTime != null && endTime != null);
+    }
+
+    // 정책 타입에 따른 유효성 검증 (강화된 로직)
+    public void validate(PolicyType type) {
+        if (type == PolicyType.SCHEDULED && !isScheduledPolicy()) {
+            throw new ApplicationException(PolicyErrorCode.INVALID_POLICY_FORMAT);
+        }
+        if (type == PolicyType.ONCE && !isOncePolicy()) {
+            throw new ApplicationException(PolicyErrorCode.INVALID_POLICY_FORMAT);
+        }
     }
 }
