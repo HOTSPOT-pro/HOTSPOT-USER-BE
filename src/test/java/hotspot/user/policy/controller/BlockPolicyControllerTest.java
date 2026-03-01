@@ -1,8 +1,11 @@
 package hotspot.user.policy.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -31,6 +34,7 @@ import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
+import hotspot.user.policy.controller.port.DeleteFamilyBlockPolicyService;
 import hotspot.user.policy.controller.port.FindBlockPolicyService;
 import hotspot.user.policy.controller.port.FindFamilyBlockPolicyService;
 import hotspot.user.policy.controller.port.UpdateFamilyBlockPolicyStatusService;
@@ -57,6 +61,9 @@ class BlockPolicyControllerTest {
 
     @MockBean
     private UpdateFamilyBlockPolicyStatusService updateFamilyBlockPolicyStatusService;
+
+    @MockBean
+    private DeleteFamilyBlockPolicyService deleteFamilyBlockPolicyService;
 
     @MockBean
     private JwtFilter jwtFilter;
@@ -173,5 +180,20 @@ class BlockPolicyControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("성공: 우리 가족 정책 삭제 API 호출 시 200 OK를 반환한다")
+    void deleteFamilyBlockPoliciesSuccess() throws Exception {
+        // given
+        List<Long> policyIds = List.of(1L, 2L);
+        doNothing().when(deleteFamilyBlockPolicyService).delete(anyList(), anyLong(), anyLong());
+
+        // when & then
+        mockMvc.perform(delete("/api/v1/policies/families")
+                        .param("policyIdList", "1", "2")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 }
