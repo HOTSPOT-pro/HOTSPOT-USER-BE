@@ -1,6 +1,7 @@
 package hotspot.user.policy.service;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +50,7 @@ public class DeleteFamilyBlockPolicyServiceImpl implements DeleteFamilyBlockPoli
         MemberDetailInfo memberDetail = memberRepository.findDetailByIdAndEmail(memberId, null)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        if (!memberDetail.getFamilyId().equals(requesterFamilyId)) {
+        if (!Objects.equals(memberDetail.getFamilyId(), requesterFamilyId)) {
             throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
         }
 
@@ -65,7 +66,7 @@ public class DeleteFamilyBlockPolicyServiceImpl implements DeleteFamilyBlockPoli
         }
 
         boolean hasAnotherFamilyPolicy = targetPolicies.stream()
-                .anyMatch(p -> p.getFamilyId() == null || !p.getFamilyId().equals(familyId));
+                .anyMatch(p -> !Objects.equals(p.getFamilyId(), familyId));
 
         if (hasAnotherFamilyPolicy) {
             throw new ApplicationException(PolicyErrorCode.POLICY_ACCESS_DENIED);
