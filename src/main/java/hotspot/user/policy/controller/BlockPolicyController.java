@@ -2,18 +2,22 @@ package hotspot.user.policy.controller;
 
 import java.util.List;
 
-import hotspot.user.policy.controller.port.UpdateFamilyBlockPolicyStatusService;
-import hotspot.user.policy.controller.request.UpdateFamilyBlockPolicyStatusRequest;
-import hotspot.user.policy.controller.response.UpdateFamilyBlockPolicyStatusResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.policy.controller.port.FindBlockPolicyService;
 import hotspot.user.policy.controller.port.FindFamilyBlockPolicyService;
+import hotspot.user.policy.controller.port.UpdateFamilyBlockPolicyStatusService;
+import hotspot.user.policy.controller.request.UpdateFamilyBlockPolicyStatusRequest;
 import hotspot.user.policy.controller.response.BlockPolicyResponse;
+import hotspot.user.policy.controller.response.UpdateFamilyBlockPolicyStatusResponse;
 import hotspot.user.policy.controller.swagger.BlockPolicyApi;
 import lombok.RequiredArgsConstructor;
 
@@ -61,7 +65,8 @@ public class BlockPolicyController implements BlockPolicyApi {
         Long memberId = principal.getId();
         Long familyId = principal.getFamilyId();
 
-        UpdateFamilyBlockPolicyStatusResponse policiesList = updateFamilyBlockPolicyStatusService.updateFamilyBlockPolicyStatus(request, memberId, familyId);
+        UpdateFamilyBlockPolicyStatusResponse policiesList = updateFamilyBlockPolicyStatusService
+                .updateFamilyBlockPolicyStatus(request, memberId, familyId);
 
         return ResponseEntity.ok()
                 .body(ApiResponse.success(policiesList));
