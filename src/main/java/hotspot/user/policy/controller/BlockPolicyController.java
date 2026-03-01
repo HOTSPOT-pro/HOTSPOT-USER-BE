@@ -2,6 +2,7 @@ package hotspot.user.policy.controller;
 
 import java.util.List;
 
+import hotspot.user.policy.controller.port.CreateBlockPolicyService;
 import hotspot.user.policy.controller.port.DeleteFamilyBlockPolicyService;
 import hotspot.user.policy.controller.port.FindBlockPolicyService;
 import hotspot.user.policy.controller.port.FindFamilyBlockPolicyService;
@@ -43,6 +44,7 @@ public class BlockPolicyController implements BlockPolicyApi {
     private final UpdateFamilyBlockPolicyStatusService updateFamilyBlockPolicyStatusService; // 우리 가족의 정책 상태 업데이트(비/활성화)
     private final DeleteFamilyBlockPolicyService deleteFamilyBlockPolicyService; // 우리 가족 정책 삭제
     private final FindSingleBlockPolicyService findSingleBlockPolicyService; // 단일 정책 조회
+    private final CreateBlockPolicyService createBlockPolicyService; // 정책 생성
 
     @Override
     @GetMapping
@@ -114,20 +116,25 @@ public class BlockPolicyController implements BlockPolicyApi {
     }
 
     // 정책 생성
+    @Override
     @PostMapping
     public ResponseEntity<ApiResponse<BlockPolicyResponse>> createBlockPolicy(
-            @RequestBody BlockPolicyRequest request,
+            @RequestBody @Valid BlockPolicyRequest request,
             @AuthenticationPrincipal PrincipalDetails principal) {
 
+        BlockPolicyResponse response = createBlockPolicyService.
+                create(request, principal.getId(), principal.getFamilyId());
+
         return ResponseEntity.ok()
-                .body(ApiResponse.success());
+                .body(ApiResponse.success(response));
     }
 
     // 정책 수정
+    @Override
     @PatchMapping("/{blockPolicyId}")
     public ResponseEntity<ApiResponse<BlockPolicyResponse>> updateBlockPolicy(
             @PathVariable Long blockPolicyId,
-            @RequestBody BlockPolicyRequest request,
+            @RequestBody @Valid BlockPolicyRequest request,
             @AuthenticationPrincipal PrincipalDetails principal) {
 
         return ResponseEntity.ok()
