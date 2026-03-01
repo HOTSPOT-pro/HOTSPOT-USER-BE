@@ -3,6 +3,7 @@ package hotspot.user.policy.infrastructure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
@@ -91,5 +92,31 @@ class BlockPolicyRepositoryImplTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getFamilyId()).isEqualTo(familyId);
         assertThat(result.get(0).getName()).isEqualTo("우리가족 정책");
+    }
+
+    @Test
+    @DisplayName("성공: 정책들의 활성화 상태를 벌크 업데이트한다")
+    void bulkActivateSuccess() {
+        // given
+        List<Long> ids = List.of(1L, 2L);
+
+        // when
+        blockPolicyRepository.bulkActivate(ids);
+
+        // then
+        verify(blockPolicyJpaRepository).bulkActivate(ids);
+    }
+
+    @Test
+    @DisplayName("성공: 정책들의 비활성화 상태를 벌크 업데이트한다")
+    void bulkDeActiveSuccess() {
+        // given
+        List<Long> ids = List.of(1L, 2L);
+
+        // when
+        blockPolicyRepository.bulkDeActive(ids);
+
+        // then
+        verify(blockPolicyJpaRepository).bulkDeActive(ids);
     }
 }
