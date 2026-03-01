@@ -81,7 +81,7 @@ public interface BlockPolicyApi {
     @Operation(summary = "우리 가족 정책 삭제",
             description = "우리 가족이 생성한 정책들을 삭제(Soft Delete)합니다. OWNER 권한이 필요합니다.")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "삭제 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "삭제 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
                     + "- FAMILY_003: 해당 구성원은 동일한 가족 그룹에 속해 있지 않습니다.\n"
                     + "- AUTH_004: 해당 요청에 대한 접근 권한이 없습니다.\n"

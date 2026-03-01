@@ -81,7 +81,7 @@ public class BlockPolicyController implements BlockPolicyApi {
 
     // 우리 가족 정책 삭제 (단일, 일괄 모두 가능)
     @Override
-    @DeleteMapping
+    @DeleteMapping("/families")
     public ResponseEntity<ApiResponse<Void>> deleteFamilyBlockPolicies(
             @RequestParam List<Long> policyIdList,
             @AuthenticationPrincipal PrincipalDetails principal) {
