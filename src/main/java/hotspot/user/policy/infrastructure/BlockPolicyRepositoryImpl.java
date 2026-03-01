@@ -55,6 +55,13 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
         blockPolicyJpaRepository.bulkDelete(ids);
     }
 
+    @Override
+    public BlockPolicy save(BlockPolicy blockPolicy) {
+        BlockPolicyEntity entity = BlockPolicyEntity.domainToEntity(blockPolicy);
+        BlockPolicyEntity savedEntity = blockPolicyJpaRepository.save(entity);
+        return savedEntity.entityToDomain();
+    }
+
     // 단일 정책 조회
     @Override
     public BlockPolicy findByBlockPolicyId(Long blockPolicyId) {
