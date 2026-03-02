@@ -167,6 +167,28 @@ class SubscriptionRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("전화번호 해시 리스트로 여러 회선 정보 일괄 조회 성공")
+    void findAllByPhoneHashInSuccess() {
+        // given
+        List<String> hashes = List.of("hash1", "hash2");
+        SubscriptionEntity entity1 = SubscriptionEntity.builder()
+                .subId(100L).phoneHash("hash1").build();
+        SubscriptionEntity entity2 = SubscriptionEntity.builder()
+                .subId(101L).phoneHash("hash2").build();
+
+        given(subscriptionJpaRepository.findAllByPhoneHashIn(hashes))
+                .willReturn(List.of(entity1, entity2));
+
+        // when
+        List<Subscription> result = subscriptionRepository.findAllByPhoneHashIn(hashes);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getPhoneHash()).isEqualTo("hash1");
+        assertThat(result.get(1).getPhoneHash()).isEqualTo("hash2");
+    }
+
+    @Test
     @DisplayName("subIds가 비어있으면 빈 Map 반환")
     void findDataPeriodsBySubIdsEmpty() {
 

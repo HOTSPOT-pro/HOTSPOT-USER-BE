@@ -2,7 +2,6 @@ package hotspot.user.family.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 import org.junit.jupiter.api.DisplayName;
@@ -20,11 +19,14 @@ import hotspot.user.family.infrastructure.entity.FamilyApplyEntity;
 @ExtendWith(MockitoExtension.class)
 class FamilyApplyRepositoryImplTest {
 
+    @InjectMocks
+    private FamilyApplyRepositoryImpl familyApplyRepository;
+
     @Mock
     private FamilyApplyJpaRepository familyApplyJpaRepository;
 
-    @InjectMocks
-    private FamilyApplyRepositoryImpl familyApplyRepository;
+    @Mock
+    private FamilyApplyTargetJpaRepository familyApplyTargetJpaRepository;
 
     @Test
     @DisplayName("성공: 도메인 객체를 저장하고 다시 도메인으로 반환한다")
@@ -42,43 +44,34 @@ class FamilyApplyRepositoryImplTest {
 
         // then
         assertThat(result.getRequesterSubId()).isEqualTo(1L);
+        assertThat(result.getFamilyId()).isEqualTo(100L);
     }
 
     @Test
-    @DisplayName("성공: 대기 중인 신청이 존재하면 true를 반환한다")
+    @DisplayName("성공: 이미 대기 중인 신청이 있는지 확인한다 (존재함)")
     void existsPendingApplyTrue() {
         // given
-        Long requesterSubId = 1L;
         Long targetSubId = 2L;
-        Long familyId = 100L;
-
-        given(familyApplyJpaRepository
-                .existsByRequesterSubscriptionSubIdAndTargetSubscriptionSubIdAndFamilyFamilyIdAndStatus(
-                eq(requesterSubId), eq(targetSubId), eq(familyId), eq(ApplyStatus.PENDING)))
+        given(familyApplyTargetJpaRepository.existsByTargetSubIdAndFamilyApplyStatus(targetSubId, ApplyStatus.PENDING))
                 .willReturn(true);
 
         // when
-        boolean result = familyApplyRepository.existsPendingApply(requesterSubId, targetSubId, familyId);
+        boolean result = familyApplyRepository.existsPendingApply(1L, targetSubId, 100L);
 
         // then
         assertThat(result).isTrue();
     }
 
     @Test
-    @DisplayName("성공: 대기 중인 신청이 존재하지 않으면 false를 반환한다")
+    @DisplayName("성공: 이미 대기 중인 신청이 있는지 확인한다 (존재하지 않음)")
     void existsPendingApplyFalse() {
         // given
-        Long requesterSubId = 1L;
         Long targetSubId = 2L;
-        Long familyId = 100L;
-
-        given(familyApplyJpaRepository
-                .existsByRequesterSubscriptionSubIdAndTargetSubscriptionSubIdAndFamilyFamilyIdAndStatus(
-                eq(requesterSubId), eq(targetSubId), eq(familyId), eq(ApplyStatus.PENDING)))
+        given(familyApplyTargetJpaRepository.existsByTargetSubIdAndFamilyApplyStatus(targetSubId, ApplyStatus.PENDING))
                 .willReturn(false);
 
         // when
-        boolean result = familyApplyRepository.existsPendingApply(requesterSubId, targetSubId, familyId);
+        boolean result = familyApplyRepository.existsPendingApply(1L, targetSubId, 100L);
 
         // then
         assertThat(result).isFalse();
