@@ -3,11 +3,12 @@ package hotspot.user.family.domain.mapper;
 import java.util.List;
 import java.util.Map;
 
+import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
 import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
-import hotspot.user.family.controller.request.FamilyMemberRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
 import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
+import hotspot.user.family.controller.response.FamilyMemberResponse;
 import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.FamilyApply;
@@ -51,7 +52,7 @@ public class FamilyApplyMapper {
                 .build();
     }
 
-    // 단건 응답 변환 (기존 서비스 대응을 위해 targetSubId와 role을 인자로 받음)
+    // 단건 응답 변환
     public static CreateFamilyApplyResponse toCreateFamilyApplyResponse(FamilyApply familyApply, Long targetSubId, FamilyRole role) {
         return CreateFamilyApplyResponse.builder()
                 .targetSubId(targetSubId)
@@ -63,28 +64,30 @@ public class FamilyApplyMapper {
                 .build();
     }
 
-    // 다건 응답 변환 (AddFamilyMemberResponse 전용)
+    // 다건 응답 변환 (Domain -> Response)
     public static AddFamilyMemberResponse toAddFamilyMemberResponse(
             Long familyId,
             ApplyType applyType,
             List<FamilyApplyTarget> targets,
-            Map<Long, Subscription> subscriptionMap) {
+            Map<Long, Subscription> subscriptionMap,
+            PhoneDecryptor phoneDecryptor) {
 
-        List<FamilyMemberRequest> memberRequests = targets.stream()
+        List<FamilyMemberResponse> memberResponses = targets.stream()
                 .map(target -> {
                     Subscription sub = subscriptionMap.get(target.getTargetSubId());
-                    return new FamilyMemberRequest(
-                            sub.getMember().getName(),
-                            sub.getPhoneEnc(),
-                            target.getTargetFamilyRole()
-                    );
+                    String decryptedPhone = phoneDecryptor.decrypt(sub.getPhoneEnc());
+                    return FamilyMemberResponse.builder()
+                            .name(sub.getMember().getName())
+                            .phone(decryptedPhone)
+                            .targetFamilyRole(target.getTargetFamilyRole())
+                            .build();
                 })
                 .toList();
 
         return AddFamilyMemberResponse.builder()
                 .familyId(familyId)
                 .applyType(applyType)
-                .familyMemberList(memberRequests)
+                .familyMemberList(memberResponses)
                 .build();
     }
 }

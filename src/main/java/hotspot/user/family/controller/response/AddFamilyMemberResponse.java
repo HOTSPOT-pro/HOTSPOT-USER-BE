@@ -2,7 +2,6 @@ package hotspot.user.family.controller.response;
 
 import java.util.List;
 
-import hotspot.user.family.controller.request.FamilyMemberRequest;
 import hotspot.user.family.domain.ApplyType;
 import lombok.Builder;
 
@@ -16,6 +15,6 @@ import lombok.Builder;
 public record AddFamilyMemberResponse(
         Long familyId,
         ApplyType applyType,
-        List<FamilyMemberRequest> familyMemberList
+        List<FamilyMemberResponse> familyMemberList
 ) {
 }
