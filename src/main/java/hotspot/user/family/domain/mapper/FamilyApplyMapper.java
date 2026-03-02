@@ -61,16 +61,7 @@ public class FamilyApplyMapper {
             Map<Long, Subscription> subscriptionMap,
             Map<Long, String> subIdToPhoneMap) {
 
-        List<FamilyMemberResponse> memberResponses = targets.stream()
-                .map(target -> {
-                    Subscription sub = subscriptionMap.get(target.getTargetSubId());
-                    return FamilyMemberResponse.builder()
-                            .name(sub.getMember().getName())
-                            .phone(subIdToPhoneMap.get(sub.getId()))
-                            .targetFamilyRole(target.getTargetFamilyRole())
-                            .build();
-                })
-                .toList();
+        List<FamilyMemberResponse> memberResponses = toFamilyMemberResponses(targets, subscriptionMap, subIdToPhoneMap);
 
         return CreateNewFamilyResponse.builder()
                 .familyId(familyId)
@@ -89,7 +80,24 @@ public class FamilyApplyMapper {
             Map<Long, Subscription> subscriptionMap,
             Map<Long, String> subIdToPhoneMap) {
 
-        List<FamilyMemberResponse> memberResponses = targets.stream()
+        List<FamilyMemberResponse> memberResponses = toFamilyMemberResponses(targets, subscriptionMap, subIdToPhoneMap);
+
+        return AddFamilyMemberResponse.builder()
+                .familyId(familyId)
+                .applyType(applyType)
+                .familyMemberList(memberResponses)
+                .build();
+    }
+
+    /**
+     * 구성원 리스트 변환 공통 로직
+     */
+    private static List<FamilyMemberResponse> toFamilyMemberResponses(
+            List<FamilyApplyTarget> targets,
+            Map<Long, Subscription> subscriptionMap,
+            Map<Long, String> subIdToPhoneMap) {
+
+        return targets.stream()
                 .map(target -> {
                     Subscription sub = subscriptionMap.get(target.getTargetSubId());
                     return FamilyMemberResponse.builder()
@@ -99,11 +107,5 @@ public class FamilyApplyMapper {
                             .build();
                 })
                 .toList();
-
-        return AddFamilyMemberResponse.builder()
-                .familyId(familyId)
-                .applyType(applyType)
-                .familyMemberList(memberResponses)
-                .build();
     }
 }

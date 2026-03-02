@@ -26,8 +26,7 @@ class FamilyApplyMapperTest {
     @DisplayName("성공: CreateNewFamilyRequest를 FamilyApply 도메인으로 변환한다.")
     void toFamilyApplyFromCreateNewRequestSuccess() {
         // given
-        CreateNewFamilyRequest request = CreateNewFamilyRequest.builder()
-                .applyType(ApplyType.CREATE).docUrl("url").build();
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of());
 
         // when
         FamilyApply result = FamilyApplyMapper.toFamilyApply(10L, null, request);
