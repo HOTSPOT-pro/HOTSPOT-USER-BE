@@ -26,11 +26,14 @@ import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.family.controller.port.AddFamilyMemberService;
 import hotspot.user.family.controller.port.CreateNewFamilyService;
+import hotspot.user.family.controller.port.RemoveFamilyMemberService;
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
 import hotspot.user.family.controller.request.CreateNewFamilyRequest;
 import hotspot.user.family.controller.request.FamilyMemberRequest;
+import hotspot.user.family.controller.request.RemoveFamilyMemberRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
 import hotspot.user.family.controller.response.CreateNewFamilyResponse;
+import hotspot.user.family.controller.response.RemoveFamilyMemberResponse;
 import hotspot.user.family.domain.ApplyType;
 import hotspot.user.member.domain.FamilyRole;
 
@@ -45,6 +48,8 @@ class FamilyApplyControllerTest {
     private AddFamilyMemberService addFamilyMemberService;
     @MockBean
     private CreateNewFamilyService createNewFamilyService;
+    @MockBean
+    private RemoveFamilyMemberService removeFamilyMemberService;
     @MockBean
     private JwtFilter jwtFilter;
     @MockBean
@@ -127,5 +132,31 @@ class FamilyApplyControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("성공: 가족 구성원 삭제 신청 API 호출 시 200 OK를 반환한다")
+    void removeFamilyMemberSuccess() throws Exception {
+        // given
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(List.of(200L, 201L));
+
+        RemoveFamilyMemberResponse response = RemoveFamilyMemberResponse.builder()
+                .familyApplyId(1L)
+                .familyId(100L)
+                .subIdList(List.of(200L, 201L))
+                .status(hotspot.user.family.domain.DeleteStatus.SCHEDULED)
+                .build();
+
+        given(removeFamilyMemberService.removeFamilyMember(eq(1L), any(RemoveFamilyMemberRequest.class)))
+                .willReturn(response);
+
+        // when & then
+        mockMvc.perform(post("/api/v1/families/delete")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data.familyApplyId").value(1L));
     }
 }
