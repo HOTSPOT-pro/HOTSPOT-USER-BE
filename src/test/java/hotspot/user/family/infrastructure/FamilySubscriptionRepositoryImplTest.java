@@ -118,7 +118,8 @@ class FamilySubscriptionRepositoryImplTest {
                         .build())
                 .build();
 
-        given(familySubscriptionJpaRepository.findAllBySubscriptionSubIdIn(subIds)).willReturn(List.of(entity1, entity2));
+        given(familySubscriptionJpaRepository.findAllBySubscriptionSubIdIn(subIds))
+                .willReturn(List.of(entity1, entity2));
 
         // when
         List<FamilySubscription> result = familySubscriptionRepository.findAllBySubIdIn(subIds);

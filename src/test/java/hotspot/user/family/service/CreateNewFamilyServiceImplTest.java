@@ -144,7 +144,8 @@ class CreateNewFamilyServiceImplTest {
         // given
         Long requesterMemberId = 1L;
         given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.empty());
-        given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(Subscription.builder().id(100L).build()));
+        given(subscriptionRepository.findByMemberId(requesterMemberId))
+                .willReturn(Optional.of(Subscription.builder().id(100L).build()));
 
         FamilyMemberRequest memberReq = new FamilyMemberRequest("유령", "01012345678", FamilyRole.CHILD);
         CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of(memberReq));
