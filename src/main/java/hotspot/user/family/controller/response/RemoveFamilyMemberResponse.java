@@ -3,6 +3,7 @@ package hotspot.user.family.controller.response;
 import hotspot.user.family.domain.DeleteStatus;
 import lombok.Builder;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -10,11 +11,15 @@ import java.util.List;
  * @param familyApplyId
  * @param familyId
  * @param subIdList
+ * @param status
+ * @param schueduleDate
  */
 @Builder
 public record RemoveFamilyMemberResponse(
         Long familyApplyId,
         Long familyId,
-        List<Long> subIdList
+        List<Long> subIdList,
+        DeleteStatus status,
+        LocalDate schueduleDate
 ) {
 }
