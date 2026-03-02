@@ -20,6 +20,7 @@ import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
+import hotspot.user.common.exception.code.SubscriptionErrorCode;
 import hotspot.user.family.controller.request.CreateNewFamilyRequest;
 import hotspot.user.family.controller.request.FamilyMemberRequest;
 import hotspot.user.family.controller.response.CreateNewFamilyResponse;
@@ -67,25 +68,19 @@ class CreateNewFamilyServiceImplTest {
         String phone = "01011112222";
         String hash = "HASH";
 
-        // 1. 요청자(본인)는 가족에 속해있지 않음
         given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.empty());
 
         Subscription requesterSub = Subscription.builder()
-                .id(100L)
-                .phoneEnc("ENC_SELF")
-                .phoneHash("SELF_HASH")
+                .id(100L).phoneEnc("ENC_SELF").phoneHash("SELF_HASH")
                 .member(Member.builder().name("방장").build())
                 .build();
         given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
 
-        // 2. 피신청자 정보
         FamilyMemberRequest memberReq = new FamilyMemberRequest("구성원1", phone, FamilyRole.CHILD);
         CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of(memberReq));
 
         Subscription targetSub = Subscription.builder()
-                .id(200L)
-                .phoneHash(hash)
-                .phoneEnc("ENC_TARGET")
+                .id(200L).phoneHash(hash).phoneEnc("ENC_TARGET")
                 .member(Member.builder().name("구성원1").build())
                 .build();
 
@@ -107,7 +102,7 @@ class CreateNewFamilyServiceImplTest {
         CreateNewFamilyResponse response = createNewFamilyService.createNewFamily(requesterMemberId, request);
 
         // then
-        assertThat(response.familyId()).isNull(); // 신규 생성이므로 null
+        assertThat(response.familyId()).isNull();
         assertThat(response.familyMemberList()).hasSize(2);
         assertThat(response.familyMemberList().get(0).targetFamilyRole()).isEqualTo(FamilyRole.OWNER);
     }
@@ -135,11 +130,55 @@ class CreateNewFamilyServiceImplTest {
         Long requesterMemberId = 1L;
         given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.empty());
 
-        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.ADD, "url", List.of()); // ADD 타입
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.ADD, "url", List.of());
 
         // when & then
         assertThatThrownBy(() -> createNewFamilyService.createNewFamily(requesterMemberId, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(FamilyErrorCode.INVALID_APPLY_TYPE.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패: 피신청자 정보를 찾을 수 없으면 예외가 발생한다.")
+    void createNewFamilyFailSubscriptionNotFound() {
+        // given
+        Long requesterMemberId = 1L;
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.empty());
+        given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(Subscription.builder().id(100L).build()));
+
+        FamilyMemberRequest memberReq = new FamilyMemberRequest("유령", "01012345678", FamilyRole.CHILD);
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of(memberReq));
+
+        given(phoneHashIndexer.toHash(any())).willReturn("HASH");
+        given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of()); // 아무도 못찾음
+
+        // when & then
+        assertThatThrownBy(() -> createNewFamilyService.createNewFamily(requesterMemberId, request))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패: 피신청자에게 OWNER 역할을 부여하려 하면 예외가 발생한다.")
+    void createNewFamilyFailAssignOwner() {
+        // given
+        Long requesterMemberId = 1L;
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.empty());
+        Subscription requesterSub = Subscription.builder().id(100L).phoneHash("SELF").build();
+        given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
+
+        FamilyMemberRequest invalidReq = new FamilyMemberRequest("타인", "01011112222", FamilyRole.OWNER);
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of(invalidReq));
+
+        Subscription targetSub = Subscription.builder().id(200L).phoneHash("HASH").build();
+        given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of(targetSub));
+        given(phoneHashIndexer.toHash(any())).willReturn("HASH");
+        given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of());
+        given(familyApplyTargetRepository.findAllPendingByTargetSubIdIn(anyList())).willReturn(List.of());
+
+        // when & then
+        assertThatThrownBy(() -> createNewFamilyService.createNewFamily(requesterMemberId, request))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(FamilyErrorCode.CANNOT_ASSIGN_OWNER_ROLE.getMessage());
     }
 }

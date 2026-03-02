@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
+import hotspot.user.common.exception.code.SubscriptionErrorCode;
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
 import hotspot.user.family.controller.request.FamilyMemberRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
@@ -184,6 +186,56 @@ class AddFamilyMemberServiceImplTest {
         assertThatThrownBy(() -> addFamilyMemberService.addFamilyMember(requesterMemberId, familyId, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(FamilyErrorCode.TARGET_ALREADY_IN_FAMILY.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패: 이미 처리 대기 중인 신청이 있는 대상을 추가하면 예외가 발생한다.")
+    void addFamilyMemberFailDuplicateApply() {
+        // given
+        Long requesterMemberId = 1L;
+        Long familyId = 10L;
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId))
+                .willReturn(Optional.of(createRequesterFs(familyId, 100L, FamilyRole.OWNER)));
+
+        String phone = "01012345678";
+        String hash = "HASH";
+        FamilyMemberRequest memberReq = new FamilyMemberRequest("타겟", phone, FamilyRole.CHILD);
+        AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, "url", List.of(memberReq));
+
+        Subscription targetSub = Subscription.builder().id(200L).phoneHash(hash).build();
+        given(phoneHashIndexer.toHash(phone)).willReturn(hash);
+        given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of(targetSub));
+        given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of());
+
+        // 이미 대기 중인 신청 리스트에 포함
+        given(familyApplyTargetRepository.findAllPendingByTargetSubIdIn(anyList()))
+                .willReturn(List.of(FamilyApplyTarget.builder().targetSubId(200L).build()));
+
+        // when & then
+        assertThatThrownBy(() -> addFamilyMemberService.addFamilyMember(requesterMemberId, familyId, request))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(FamilyErrorCode.DUPLICATE_FAMILY_APPLY.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패: 피신청자 중 일부 회선 정보를 찾을 수 없으면 예외가 발생한다.")
+    void addFamilyMemberFailSubscriptionNotFound() {
+        // given
+        Long requesterMemberId = 1L;
+        Long familyId = 10L;
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId))
+                .willReturn(Optional.of(createRequesterFs(familyId, 100L, FamilyRole.OWNER)));
+
+        FamilyMemberRequest memberReq = new FamilyMemberRequest("모르는사람", "01012345678", FamilyRole.CHILD);
+        AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, "url", List.of(memberReq));
+
+        given(phoneHashIndexer.toHash(anyString())).willReturn("HASH");
+        given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of()); // 아무도 못찾음
+
+        // when & then
+        assertThatThrownBy(() -> addFamilyMemberService.addFamilyMember(requesterMemberId, familyId, request))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND.getMessage());
     }
 
     private FamilySubscription createRequesterFs(Long familyId, Long subId, FamilyRole role) {

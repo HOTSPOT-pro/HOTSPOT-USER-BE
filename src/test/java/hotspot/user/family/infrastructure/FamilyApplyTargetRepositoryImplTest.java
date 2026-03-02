@@ -1,6 +1,7 @@
 package hotspot.user.family.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 
@@ -29,6 +30,23 @@ class FamilyApplyTargetRepositoryImplTest {
     private FamilyApplyTargetJpaRepository familyApplyTargetJpaRepository;
 
     @Test
+    @DisplayName("성공: 단건 가족 신청 타겟을 저장한다.")
+    void saveSuccess() {
+        // given
+        FamilyApplyTarget target = FamilyApplyTarget.builder()
+                .familyApplyId(1L).targetSubId(10L).targetFamilyRole(FamilyRole.CHILD).build();
+
+        given(familyApplyTargetJpaRepository.save(any(FamilyApplyTargetEntity.class)))
+                .willReturn(FamilyApplyTargetEntity.domainToEntity(target));
+
+        // when
+        FamilyApplyTarget saved = familyApplyTargetRepository.save(target);
+
+        // then
+        assertThat(saved.getTargetSubId()).isEqualTo(10L);
+    }
+
+    @Test
     @DisplayName("성공: 여러 개의 가족 신청 타겟을 한꺼번에 저장한다.")
     void saveAllSuccess() {
         // given
@@ -51,6 +69,21 @@ class FamilyApplyTargetRepositoryImplTest {
         assertThat(savedTargets).hasSize(2);
         assertThat(savedTargets.get(0).getTargetSubId()).isEqualTo(10L);
         assertThat(savedTargets.get(1).getTargetSubId()).isEqualTo(11L);
+    }
+
+    @Test
+    @DisplayName("성공: 특정 회선 ID로 대기 중인 신청이 있는지 확인한다.")
+    void existsPendingApplyByTargetSubIdSuccess() {
+        // given
+        Long subId = 10L;
+        given(familyApplyTargetJpaRepository.existsByTargetSubIdAndFamilyApplyStatus(subId, ApplyStatus.PENDING))
+                .willReturn(true);
+
+        // when
+        boolean exists = familyApplyTargetRepository.existsPendingApplyByTargetSubId(subId);
+
+        // then
+        assertThat(exists).isTrue();
     }
 
     @Test
