@@ -10,9 +10,9 @@ import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ErrorResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
-import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
+import hotspot.user.family.controller.request.CreateNewFamilyRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
-import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
+import hotspot.user.family.controller.response.CreateNewFamilyResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,8 +40,8 @@ public interface FamilyApplyApi {
                                          + "- SUB_001: 회선 정보를 찾을 수 없음",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<ApiResponse<CreateFamilyApplyResponse>> manageFamilyMember(
-            @Valid @RequestBody CreateFamilyApplyRequest request,
+    ResponseEntity<ApiResponse<CreateNewFamilyResponse>> manageFamilyMember(
+            @Valid @RequestBody CreateNewFamilyRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
 
     @Operation(summary = "가족 구성원 추가 신청 (다건)",

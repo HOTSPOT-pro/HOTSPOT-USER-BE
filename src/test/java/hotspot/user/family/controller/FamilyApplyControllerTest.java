@@ -25,12 +25,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.family.controller.port.AddFamilyMemberService;
-import hotspot.user.family.controller.port.CreateFamilyApplyService;
+import hotspot.user.family.controller.port.CreateNewFamilyService;
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
-import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
+import hotspot.user.family.controller.request.CreateNewFamilyRequest;
 import hotspot.user.family.controller.request.FamilyMemberRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
-import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
+import hotspot.user.family.controller.response.CreateNewFamilyResponse;
 import hotspot.user.family.domain.ApplyType;
 import hotspot.user.member.domain.FamilyRole;
 
@@ -42,7 +42,7 @@ class FamilyApplyControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @MockBean
-    private CreateFamilyApplyService createFamilyApplyService;
+    private CreateNewFamilyService createNewFamilyService;
     @MockBean
     private AddFamilyMemberService addFamilyMemberService;
     @MockBean
@@ -57,19 +57,19 @@ class FamilyApplyControllerTest {
     void manageFamilyMemberSuccess() throws Exception {
         // given
         setAuthentication(1L, 100L, FamilyRole.OWNER);
-        CreateFamilyApplyRequest request = CreateFamilyApplyRequest.builder()
+        CreateNewFamilyRequest request = CreateNewFamilyRequest.builder()
                 .targetSubId(2L)
                 .applyType(ApplyType.ADD)
                 .targetFamilyRole(FamilyRole.CHILD)
                 .docUrl("http://doc.url")
                 .build();
 
-        CreateFamilyApplyResponse response = CreateFamilyApplyResponse.builder()
+        CreateNewFamilyResponse response = CreateNewFamilyResponse.builder()
                 .status(hotspot.user.family.domain.ApplyStatus.PENDING)
                 .build();
 
-        given(createFamilyApplyService.manage(
-                eq(1L), eq(100L), eq(FamilyRole.OWNER), any(CreateFamilyApplyRequest.class)))
+        given(createNewFamilyService.manage(
+                eq(1L), eq(100L), eq(FamilyRole.OWNER), any(CreateNewFamilyRequest.class)))
                 .willReturn(response);
 
         // when & then

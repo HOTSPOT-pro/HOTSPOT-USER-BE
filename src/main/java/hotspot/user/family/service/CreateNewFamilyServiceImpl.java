@@ -6,9 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
-import hotspot.user.family.controller.port.CreateFamilyApplyService;
-import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
-import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
+import hotspot.user.family.controller.port.CreateNewFamilyService;
+import hotspot.user.family.controller.request.CreateNewFamilyRequest;
+import hotspot.user.family.controller.response.CreateNewFamilyResponse;
 import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.FamilyApply;
 import hotspot.user.family.domain.FamilySubscription;
@@ -27,17 +27,17 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CreateFamilyApplyServiceImpl implements CreateFamilyApplyService {
+public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
     private final FamilyApplyRepository familyApplyRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
 
     @Override
-    public CreateFamilyApplyResponse manage(
+    public CreateNewFamilyResponse manage(
             Long requesterMemberId,
             Long familyId,
             FamilyRole requesterFamilyRole,
-            CreateFamilyApplyRequest request) {
+            CreateNewFamilyRequest request) {
 
         // 1. 신청자의 역할이 OWNER인지 확인
         if (requesterFamilyRole != FamilyRole.OWNER) {
@@ -68,10 +68,10 @@ public class CreateFamilyApplyServiceImpl implements CreateFamilyApplyService {
 
         FamilyApply savedFamilyApply = familyApplyRepository.save(familyApply);
 
-        return FamilyApplyMapper.toCreateFamilyApplyResponse(savedFamilyApply, targetSub.getId(), requesterFamilyRole);
+        return FamilyApplyMapper.toCreateNewFamilyResponse(savedFamilyApply, targetSub.getId(), requesterFamilyRole);
     }
 
-    private void validateApplyType(Long familyId, CreateFamilyApplyRequest request, Long targetSubId) {
+    private void validateApplyType(Long familyId, CreateNewFamilyRequest request, Long targetSubId) {
         FamilySubscription targetFamilySub = familySubscriptionRepository.findBySubId(targetSubId).orElse(null);
 
         if (request.applyType() == ApplyType.ADD) {

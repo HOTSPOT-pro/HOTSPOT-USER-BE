@@ -16,8 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
-import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
-import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
+import hotspot.user.family.controller.request.CreateNewFamilyRequest;
+import hotspot.user.family.controller.response.CreateNewFamilyResponse;
 import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilyApply;
@@ -29,10 +29,10 @@ import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
 
 @ExtendWith(MockitoExtension.class)
-class CreateFamilyApplyServiceImplTest {
+class CreateNewFamilyServiceImplTest {
 
     @InjectMocks
-    private CreateFamilyApplyServiceImpl createFamilyApplyService;
+    private CreateNewFamilyServiceImpl createNewFamilyService;
 
     @Mock
     private FamilyApplyRepository familyApplyRepository;
@@ -47,7 +47,7 @@ class CreateFamilyApplyServiceImplTest {
         // given
         Long memberId = 1L;
         Long familyId = 100L;
-        CreateFamilyApplyRequest request = CreateFamilyApplyRequest.builder()
+        CreateNewFamilyRequest request = CreateNewFamilyRequest.builder()
                 .targetSubId(2L)
                 .applyType(ApplyType.ADD)
                 .targetFamilyRole(FamilyRole.CHILD)
@@ -64,7 +64,7 @@ class CreateFamilyApplyServiceImplTest {
                 .willReturn(FamilyApply.builder().requesterSubId(10L).build());
 
         // when
-        CreateFamilyApplyResponse response = createFamilyApplyService.manage(
+        CreateNewFamilyResponse response = createNewFamilyService.manage(
                 memberId, familyId, FamilyRole.OWNER, request);
 
         // then
@@ -77,7 +77,7 @@ class CreateFamilyApplyServiceImplTest {
         // given
         Long memberId = 1L;
         Long familyId = 100L;
-        CreateFamilyApplyRequest request = CreateFamilyApplyRequest.builder()
+        CreateNewFamilyRequest request = CreateNewFamilyRequest.builder()
                 .targetSubId(2L)
                 .applyType(ApplyType.REMOVE)
                 .build();
@@ -94,7 +94,7 @@ class CreateFamilyApplyServiceImplTest {
         given(familyApplyRepository.save(any(FamilyApply.class))).willReturn(FamilyApply.builder().build());
 
         // when
-        CreateFamilyApplyResponse response = createFamilyApplyService.manage(
+        CreateNewFamilyResponse response = createNewFamilyService.manage(
                 memberId, familyId, FamilyRole.OWNER, request);
 
         // then
@@ -107,7 +107,7 @@ class CreateFamilyApplyServiceImplTest {
         // given
         Long memberId = 1L;
         Long familyId = 100L;
-        CreateFamilyApplyRequest request = CreateFamilyApplyRequest.builder()
+        CreateNewFamilyRequest request = CreateNewFamilyRequest.builder()
                 .targetSubId(2L)
                 .applyType(ApplyType.ADD)
                 .targetFamilyRole(FamilyRole.CHILD)
@@ -122,7 +122,7 @@ class CreateFamilyApplyServiceImplTest {
         given(familyApplyRepository.existsPendingApply(10L, 2L, familyId)).willReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> createFamilyApplyService.manage(memberId, familyId, FamilyRole.OWNER, request))
+        assertThatThrownBy(() -> createNewFamilyService.manage(memberId, familyId, FamilyRole.OWNER, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(FamilyErrorCode.DUPLICATE_FAMILY_APPLY.getMessage());
     }
@@ -130,13 +130,13 @@ class CreateFamilyApplyServiceImplTest {
     @Test
     @DisplayName("실패: OWNER 권한이 아니면 예외가 발생한다")
     void manageFailByRole() {
-        CreateFamilyApplyRequest request = CreateFamilyApplyRequest.builder()
+        CreateNewFamilyRequest request = CreateNewFamilyRequest.builder()
                 .targetSubId(2L)
                 .applyType(ApplyType.ADD)
                 .targetFamilyRole(FamilyRole.CHILD)
                 .docUrl("url")
                 .build();
-        assertThatThrownBy(() -> createFamilyApplyService.manage(1L, 100L, FamilyRole.CHILD, request))
+        assertThatThrownBy(() -> createNewFamilyService.manage(1L, 100L, FamilyRole.CHILD, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(FamilyErrorCode.ONLY_OWNER_CAN_MANAGE.getMessage());
     }
@@ -146,7 +146,7 @@ class CreateFamilyApplyServiceImplTest {
     void manageAddFailByNoDoc() {
         Long memberId = 1L;
         Long familyId = 100L;
-        CreateFamilyApplyRequest request = CreateFamilyApplyRequest.builder()
+        CreateNewFamilyRequest request = CreateNewFamilyRequest.builder()
                 .targetSubId(2L)
                 .applyType(ApplyType.ADD)
                 .targetFamilyRole(FamilyRole.CHILD)
@@ -159,7 +159,7 @@ class CreateFamilyApplyServiceImplTest {
                 .willReturn(Optional.of(Subscription.builder().id(2L).build()));
         given(familySubscriptionRepository.findBySubId(2L)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> createFamilyApplyService.manage(memberId, familyId, FamilyRole.OWNER, request))
+        assertThatThrownBy(() -> createNewFamilyService.manage(memberId, familyId, FamilyRole.OWNER, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(FamilyErrorCode.DOC_URL_REQUIRED.getMessage());
     }

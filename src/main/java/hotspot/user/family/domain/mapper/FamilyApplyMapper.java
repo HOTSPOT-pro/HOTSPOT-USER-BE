@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
-import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
+import hotspot.user.family.controller.request.CreateNewFamilyRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
-import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
+import hotspot.user.family.controller.response.CreateNewFamilyResponse;
 import hotspot.user.family.controller.response.FamilyMemberResponse;
 import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.domain.ApplyType;
@@ -20,8 +20,8 @@ import hotspot.user.subscription.domain.Subscription;
  */
 public class FamilyApplyMapper {
 
-    // 단건 신청용 (기존 CreateFamilyApplyRequest 대응)
-    public static FamilyApply toFamilyApply(Long requesterSubId, Long familyId, CreateFamilyApplyRequest request) {
+    // 단건 신청용 (기존 CreateNewFamilyRequest 대응)
+    public static FamilyApply toFamilyApply(Long requesterSubId, Long familyId, CreateNewFamilyRequest request) {
         return FamilyApply.builder()
                 .requesterSubId(requesterSubId)
                 .familyId(familyId)
@@ -52,11 +52,11 @@ public class FamilyApplyMapper {
     }
 
     // 단건 응답 변환
-    public static CreateFamilyApplyResponse toCreateFamilyApplyResponse(
+    public static CreateNewFamilyResponse toCreateNewFamilyResponse(
             FamilyApply familyApply,
             Long targetSubId,
             FamilyRole role) {
-        return CreateFamilyApplyResponse.builder()
+        return CreateNewFamilyResponse.builder()
                 .targetSubId(targetSubId)
                 .familyId(familyApply.getFamilyId())
                 .applyType(familyApply.getApplyType())

@@ -16,7 +16,7 @@ import lombok.Builder;
  * @param status
  */
 @Builder
-public record CreateFamilyApplyResponse(
+public record CreateNewFamilyResponse(
         Long requesterSubId,
         Long targetSubId,
         Long familyId,

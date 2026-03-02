@@ -12,7 +12,7 @@ import lombok.Builder;
  * @param docUrl
  */
 @Builder
-public record CreateFamilyApplyRequest(
+public record CreateNewFamilyRequest(
         Long targetSubId,
         ApplyType applyType,
         FamilyRole targetFamilyRole,
