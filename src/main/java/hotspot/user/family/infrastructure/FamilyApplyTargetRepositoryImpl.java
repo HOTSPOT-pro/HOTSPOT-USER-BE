@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.domain.FamilyApplyTarget;
 import hotspot.user.family.infrastructure.entity.FamilyApplyTargetEntity;
 import hotspot.user.family.service.port.FamilyApplyTargetRepository;
@@ -35,5 +36,10 @@ public class FamilyApplyTargetRepositoryImpl implements FamilyApplyTargetReposit
         return savedEntities.stream()
                 .map(FamilyApplyTargetEntity::entityToDomain)
                 .toList();
+    }
+
+    @Override
+    public boolean existsPendingApplyByTargetSubId(Long targetSubId) {
+        return familyApplyTargetJpaRepository.existsByTargetSubIdAndFamilyApplyStatus(targetSubId, ApplyStatus.PENDING);
     }
 }

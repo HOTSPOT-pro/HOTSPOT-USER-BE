@@ -11,4 +11,5 @@ import hotspot.user.family.domain.FamilyApplyTarget;
 public interface FamilyApplyTargetRepository {
     FamilyApplyTarget save(FamilyApplyTarget familyApplyTarget);
     List<FamilyApplyTarget> saveAll(List<FamilyApplyTarget> familyApplyTargetList);
+    boolean existsPendingApplyByTargetSubId(Long targetSubId);
 }
