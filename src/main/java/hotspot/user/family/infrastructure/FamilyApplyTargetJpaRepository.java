@@ -1,11 +1,11 @@
 package hotspot.user.family.infrastructure;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.infrastructure.entity.FamilyApplyTargetEntity;
-
-import java.util.List;
 
 /**
  * 가족 생성 / 구성원 추가 / 신청 타겟 Jpa Repository
