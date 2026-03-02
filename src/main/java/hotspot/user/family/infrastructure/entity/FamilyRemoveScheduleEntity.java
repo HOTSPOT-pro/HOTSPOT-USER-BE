@@ -2,12 +2,7 @@ package hotspot.user.family.infrastructure.entity;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import hotspot.user.common.BaseEntity;
 import hotspot.user.family.domain.DeleteStatus;
@@ -38,8 +33,11 @@ public class FamilyRemoveScheduleEntity extends BaseEntity {
     private Long targetSubId;
     private Long familyId;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private DeleteStatus status = DeleteStatus.SCHEDULED;
+
     private LocalDate scheduleDate;
 
     public static FamilyRemoveScheduleEntity domainToEntity(FamilyRemoveSchedule familyRemoveSchedule) {
