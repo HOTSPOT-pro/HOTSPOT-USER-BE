@@ -13,6 +13,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.KafkaErrorCode;
 import hotspot.user.kafka.domain.NotificationType;
 import hotspot.user.kafka.dto.UserAlertEvent;
+import hotspot.user.kafka.mapper.registry.UserAlertEventMappingStrategyRegistry;
 import hotspot.user.kafka.mapper.strategy.appservice.AppServiceAlertEventMappingStrategy;
 import hotspot.user.kafka.mapper.strategy.family.FamilyMemberApplyAlertEventMappingStrategy;
 import hotspot.user.kafka.mapper.strategy.policy.PolicyAlertEventMappingStrategy;
@@ -22,13 +23,15 @@ import hotspot.user.notification.domain.Notification;
 
 class UserAlertEventNotificationMapperTest {
 
-    private final UserAlertEventNotificationMapper mapper = new UserAlertEventNotificationMapper(List.of(
-            new UsageThresholdAlertEventMappingStrategy(),
-            new PolicyAlertEventMappingStrategy(),
-            new AppServiceAlertEventMappingStrategy(),
-            new PresentDataAlertEventMappingStrategy(),
-            new FamilyMemberApplyAlertEventMappingStrategy()
-    ));
+    private final UserAlertEventNotificationMapper mapper = new UserAlertEventNotificationMapper(
+            new UserAlertEventMappingStrategyRegistry(List.of(
+                    new UsageThresholdAlertEventMappingStrategy(),
+                    new PolicyAlertEventMappingStrategy(),
+                    new AppServiceAlertEventMappingStrategy(),
+                    new PresentDataAlertEventMappingStrategy(),
+                    new FamilyMemberApplyAlertEventMappingStrategy()
+            ))
+    );
 
     @Test
     @DisplayName("routes event type to mapped notification type")
