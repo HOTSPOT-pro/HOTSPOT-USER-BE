@@ -63,7 +63,7 @@ public class FamilyApplyEntity extends BaseEntity {
         return FamilyApplyEntity.builder()
                 .familyApplyId(familyApply.getId())
                 .requesterSubscription(requesterSub)
-                .familyId(familyApply.getId())
+                .familyId(familyApply.getFamilyId())
                 .applyType(familyApply.getApplyType())
                 .docUrl(familyApply.getDocUrl())
                 .status(familyApply.getStatus() != null ? familyApply.getStatus() : ApplyStatus.PENDING)
