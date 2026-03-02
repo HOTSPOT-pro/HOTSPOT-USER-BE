@@ -42,4 +42,12 @@ public class FamilyApplyTargetRepositoryImpl implements FamilyApplyTargetReposit
     public boolean existsPendingApplyByTargetSubId(Long targetSubId) {
         return familyApplyTargetJpaRepository.existsByTargetSubIdAndFamilyApplyStatus(targetSubId, ApplyStatus.PENDING);
     }
+
+    @Override
+    public List<FamilyApplyTarget> findAllPendingByTargetSubIdIn(List<Long> subIds) {
+        return familyApplyTargetJpaRepository.findAllByTargetSubIdInAndFamilyApplyStatus(subIds, ApplyStatus.PENDING)
+                .stream()
+                .map(FamilyApplyTargetEntity::entityToDomain)
+                .toList();
+    }
 }

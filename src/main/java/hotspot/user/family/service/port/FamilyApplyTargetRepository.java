@@ -12,4 +12,5 @@ public interface FamilyApplyTargetRepository {
     FamilyApplyTarget save(FamilyApplyTarget familyApplyTarget);
     List<FamilyApplyTarget> saveAll(List<FamilyApplyTarget> familyApplyTargetList);
     boolean existsPendingApplyByTargetSubId(Long targetSubId);
+    List<FamilyApplyTarget> findAllPendingByTargetSubIdIn(List<Long> subIds);
 }
