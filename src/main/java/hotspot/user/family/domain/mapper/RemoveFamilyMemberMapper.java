@@ -53,7 +53,7 @@ public class RemoveFamilyMemberMapper {
                 .familyId(familyApply.getFamilyId())
                 .subIdList(subIdList)
                 .status(status)
-                .schueduleDate(scheduleDate)
+                .scheduleDate(scheduleDate)
                 .build();
     }
 }
