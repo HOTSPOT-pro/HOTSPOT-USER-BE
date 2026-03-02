@@ -16,7 +16,6 @@ import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.FamilyApply;
 import hotspot.user.family.infrastructure.entity.FamilyApplyEntity;
-import hotspot.user.member.domain.FamilyRole;
 
 @ExtendWith(MockitoExtension.class)
 class FamilyApplyRepositoryImplTest {
@@ -32,8 +31,8 @@ class FamilyApplyRepositoryImplTest {
     void saveSuccess() {
         // given
         FamilyApply domain = FamilyApply.builder()
-                .requesterSubId(1L).targetSubId(2L).familyId(100L)
-                .applyType(ApplyType.ADD).targetFamilyRole(FamilyRole.CHILD).build();
+                .requesterSubId(1L).familyId(100L)
+                .applyType(ApplyType.ADD).build();
 
         FamilyApplyEntity entity = FamilyApplyEntity.domainToEntity(domain);
         given(familyApplyJpaRepository.save(any(FamilyApplyEntity.class))).willReturn(entity);
