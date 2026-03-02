@@ -48,7 +48,7 @@ public class RemoveFamilyMemberServiceImpl implements RemoveFamilyMemberService 
         }
 
         Long familyId = requesterFs.getFamily().getId();
-        
+
         // 2. 요청 리스트 중복 제거 및 데이터 준비
         List<Long> targetSubIds = request.targetSubIdList().stream()
                 .distinct()
@@ -56,7 +56,7 @@ public class RemoveFamilyMemberServiceImpl implements RemoveFamilyMemberService 
 
         // 3. 삭제 대상자들의 가족 소속 확인 및 중복 신청 여부 확인 (N+1 방지)
         List<FamilySubscription> targetFsList = familySubscriptionRepository.findAllBySubIdIn(targetSubIds);
-        
+
         // 회선 존재 여부 검증 (요청한 ID들이 모두 가족 매핑 테이블에 존재하는지 확인)
         if (targetFsList.size() != targetSubIds.size()) {
             throw new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND);
@@ -69,7 +69,8 @@ public class RemoveFamilyMemberServiceImpl implements RemoveFamilyMemberService 
                 .collect(Collectors.toSet());
 
         // 이미 삭제 스케줄이 잡혀있는 subId Set 생성 (중복 신청 방지)
-        Set<Long> alreadyScheduledSubIds = familyRemoveScheduleRepository.findAllByTargetSubIdInAndStatus(targetSubIds, DeleteStatus.SCHEDULED)
+        Set<Long> alreadyScheduledSubIds = familyRemoveScheduleRepository
+                .findAllByTargetSubIdInAndStatus(targetSubIds, DeleteStatus.SCHEDULED)
                 .stream()
                 .map(FamilyRemoveSchedule::getTargetSubId)
                 .collect(Collectors.toSet());
@@ -93,7 +94,7 @@ public class RemoveFamilyMemberServiceImpl implements RemoveFamilyMemberService 
 
         // 5. 삭제 스케줄 생성 및 저장 - 다음 달 1일로 설정
         LocalDate scheduleDate = LocalDate.now().plusMonths(1).withDayOfMonth(1);
-        
+
         List<FamilyRemoveSchedule> schedules = targetSubIds.stream()
                 .map(subId -> RemoveFamilyMemberMapper.toFamilyRemoveSchedule(familyId, subId, scheduleDate))
                 .toList();

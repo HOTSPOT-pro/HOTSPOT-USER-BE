@@ -1,7 +1,8 @@
 package hotspot.user.family.controller.request;
 
-import lombok.Builder;
 import java.util.List;
+
+import lombok.Builder;
 
 /**
  * 가족 구성원 삭제 신청 request dto

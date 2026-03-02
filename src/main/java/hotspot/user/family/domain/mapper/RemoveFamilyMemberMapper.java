@@ -15,7 +15,7 @@ import hotspot.user.family.domain.FamilyRemoveSchedule;
  */
 public class RemoveFamilyMemberMapper {
 
-    // request -> domain (FamilyApply 신청서 생성)
+    // request -> domain
     public static FamilyApply toFamilyApply(Long requesterSubId, Long familyId) {
         return FamilyApply.builder()
                 .requesterSubId(requesterSubId)
@@ -25,7 +25,7 @@ public class RemoveFamilyMemberMapper {
                 .build();
     }
 
-    // domain (개별 삭제 스케줄 생성)
+    // 개별 삭제 스케줄 생성
     public static FamilyRemoveSchedule toFamilyRemoveSchedule(Long familyId, Long targetSubId, LocalDate scheduleDate) {
         return FamilyRemoveSchedule.builder()
                 .familyId(familyId)

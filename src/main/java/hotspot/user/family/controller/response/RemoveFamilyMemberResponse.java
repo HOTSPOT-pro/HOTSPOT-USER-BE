@@ -1,10 +1,10 @@
 package hotspot.user.family.controller.response;
 
-import hotspot.user.family.domain.DeleteStatus;
-import lombok.Builder;
-
 import java.time.LocalDate;
 import java.util.List;
+
+import hotspot.user.family.domain.DeleteStatus;
+import lombok.Builder;
 
 /**
  * 가족 구성원 삭제 신청 결과 response dto

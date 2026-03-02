@@ -1,12 +1,22 @@
 package hotspot.user.family.infrastructure.entity;
 
+import java.time.LocalDate;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import hotspot.user.common.BaseEntity;
 import hotspot.user.family.domain.DeleteStatus;
 import hotspot.user.family.domain.FamilyRemoveSchedule;
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.time.LocalDate;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * 가족 삭제 스케쥴러 entity

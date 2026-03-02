@@ -24,7 +24,8 @@ public class FamilyRemoveScheduleRepositoryImpl implements FamilyRemoveScheduleR
                 .map(FamilyRemoveScheduleEntity::domainToEntity)
                 .toList();
 
-        List<FamilyRemoveScheduleEntity> saved = familyRemoveScheduleJpaRepository.saveAll(familyRemoveScheduleEntityList);
+        List<FamilyRemoveScheduleEntity> saved = familyRemoveScheduleJpaRepository
+                .saveAll(familyRemoveScheduleEntityList);
 
         return saved.stream()
                 .map(FamilyRemoveScheduleEntity::entityToDomain)
