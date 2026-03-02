@@ -1,9 +1,9 @@
 package hotspot.user.family.controller.response;
 
+import java.util.List;
+
 import hotspot.user.family.domain.ApplyType;
 import lombok.Builder;
-
-import java.util.List;
 
 /**
  * 가족 신규 생성 response dto

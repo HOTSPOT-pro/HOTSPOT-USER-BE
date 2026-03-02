@@ -1,15 +1,15 @@
 package hotspot.user.family.controller.request;
 
-import hotspot.user.family.domain.ApplyType;
-import hotspot.user.member.domain.FamilyRole;
+import java.util.List;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
 
-import java.util.List;
+import hotspot.user.family.domain.ApplyType;
+import lombok.Builder;
 
 /**
  * 가족 신규 생성 dto

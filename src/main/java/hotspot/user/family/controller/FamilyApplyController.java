@@ -12,13 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.family.controller.port.AddFamilyMemberService;
-import hotspot.user.family.controller.port.CreateFamilyApplyService;
 import hotspot.user.family.controller.port.CreateNewFamilyService;
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
-import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
 import hotspot.user.family.controller.request.CreateNewFamilyRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
-import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
 import hotspot.user.family.controller.response.CreateNewFamilyResponse;
 import hotspot.user.family.controller.swagger.FamilyApplyApi;
 import lombok.RequiredArgsConstructor;
@@ -31,26 +28,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/families")
 public class FamilyApplyController implements FamilyApplyApi {
 
-    private final CreateFamilyApplyService createFamilyApplyService; // 가족 구성원 추가 / 삭제 신청 (단건)
-    private final CreateNewFamilyService createNewFamilyService; // 가족 신규 생성 (다건)
-    private final AddFamilyMemberService addFamilyMemberService; // 가족 구성원 추가 신청 (다건)
-
-    // 가족 구성원 추가 / 삭제 신청 (단건)
-    @Override
-    @PostMapping
-    public ResponseEntity<ApiResponse<CreateFamilyApplyResponse>> manageFamilyMember(
-            @Valid @RequestBody CreateFamilyApplyRequest request,
-            @AuthenticationPrincipal PrincipalDetails principal) {
-
-        CreateFamilyApplyResponse response = createFamilyApplyService.manage(
-                principal.getId(),
-                principal.getFamilyId(),
-                principal.getRole(),
-                request
-        );
-
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
+    private final CreateNewFamilyService createNewFamilyService; // 가족 신규 생성
+    private final AddFamilyMemberService addFamilyMemberService; // 가족 구성원 추가 신청
 
     // 가족 신규 생성
     @Override
@@ -61,8 +40,6 @@ public class FamilyApplyController implements FamilyApplyApi {
 
         CreateNewFamilyResponse response = createNewFamilyService.createNewFamily(
                 principal.getId(),
-                principal.getFamilyId(),
-                principal.getRole(),
                 request
         );
 
