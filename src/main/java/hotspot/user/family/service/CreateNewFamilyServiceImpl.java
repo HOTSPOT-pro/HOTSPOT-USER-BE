@@ -1,19 +1,29 @@
 package hotspot.user.family.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import hotspot.user.common.crpyto.PhoneDecryptor;
+import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
 import hotspot.user.family.controller.port.CreateNewFamilyService;
 import hotspot.user.family.controller.request.CreateNewFamilyRequest;
+import hotspot.user.family.controller.request.FamilyMemberRequest;
 import hotspot.user.family.controller.response.CreateNewFamilyResponse;
 import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.FamilyApply;
-import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.family.domain.FamilyApplyTarget;
 import hotspot.user.family.domain.mapper.FamilyApplyMapper;
 import hotspot.user.family.service.port.FamilyApplyRepository;
+import hotspot.user.family.service.port.FamilyApplyTargetRepository;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.subscription.domain.Subscription;
@@ -21,76 +31,129 @@ import hotspot.user.subscription.service.port.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 가족 구성원 추가 / 삭제 신청 서비스 구현체
+ * 신규 가족 생성 서비스 구현체
  */
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
-    private final FamilyApplyRepository familyApplyRepository;
+
     private final SubscriptionRepository subscriptionRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
+    private final FamilyApplyRepository familyApplyRepository;
+    private final FamilyApplyTargetRepository familyApplyTargetRepository;
+    private final PhoneHashIndexer phoneHashIndexer;
+    private final PhoneDecryptor phoneDecryptor;
 
     @Override
-    public CreateNewFamilyResponse manage(
+    public CreateNewFamilyResponse createNewFamily(
             Long requesterMemberId,
-            Long familyId,
-            FamilyRole requesterFamilyRole,
             CreateNewFamilyRequest request) {
 
-        // 1. 신청자의 역할이 OWNER인지 확인
-        if (requesterFamilyRole != FamilyRole.OWNER) {
-            throw new ApplicationException(FamilyErrorCode.ONLY_OWNER_CAN_MANAGE);
+        // 1. 이미 가족에 소속되어 있는지 확인 (신규 생성의 전제 조건)
+        if (familySubscriptionRepository.findByMemberId(requesterMemberId).isPresent()) {
+            throw new ApplicationException(FamilyErrorCode.TARGET_ALREADY_IN_FAMILY);
         }
 
-        // 2. 가입된 회선 있는지 확인
+        // 2. 신청 타입 검증
+        if (request.applyType() != ApplyType.CREATE) {
+            throw new ApplicationException(FamilyErrorCode.INVALID_APPLY_TYPE);
+        }
+
+        // 3. 신청자(본인) 회선 정보 조회
         Subscription requesterSub = subscriptionRepository.findByMemberId(requesterMemberId)
                 .orElseThrow(() -> new ApplicationException(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND));
 
-        // 3. 피신청자 회선 유효성 확인
-        Subscription targetSub = subscriptionRepository.findById(request.targetSubId())
-                .orElseThrow(() -> new ApplicationException(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND));
+        // 4. 피신청자 정보 조회 및 배치 처리를 위한 데이터 준비
+        Map<String, FamilyMemberRequest> hashToRequestMap = request.familyMemberList().stream()
+                .collect(Collectors.toMap(r -> phoneHashIndexer.toHash(r.phone()), r -> r));
 
-        // 4. 타입별 비즈니스 규칙 검증
-        validateApplyType(familyId, request, targetSub.getId());
+        List<String> phoneHashes = new ArrayList<>(hashToRequestMap.keySet());
+        List<Subscription> targetSubscriptions = subscriptionRepository.findAllByPhoneHashIn(phoneHashes);
 
-        // 5. 이미 처리 대기 중인 동일한 신청이 있는지 확인
-        if (familyApplyRepository.existsPendingApply(requesterSub.getId(), targetSub.getId(), familyId)) {
-            throw new ApplicationException(FamilyErrorCode.DUPLICATE_FAMILY_APPLY);
+        if (targetSubscriptions.size() != phoneHashes.size()) {
+            throw new ApplicationException(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND);
         }
 
-        FamilyApply familyApply = FamilyApplyMapper.toFamilyApply(
-                requesterSub.getId(),
-                familyId,
-                request
-        );
+        List<Long> targetSubIds = targetSubscriptions.stream().map(Subscription::getId).toList();
 
-        FamilyApply savedFamilyApply = familyApplyRepository.save(familyApply);
+        // 5. 중복 소속 및 중복 신청 여부 일괄 조회
+        Set<Long> existingFamilySubIds = familySubscriptionRepository.findAllBySubIdIn(targetSubIds).stream()
+                .map(fs -> fs.getSubscription().getId())
+                .collect(Collectors.toSet());
 
-        return FamilyApplyMapper.toCreateNewFamilyResponse(savedFamilyApply, targetSub.getId(), requesterFamilyRole);
-    }
+        Set<Long> pendingApplySubIds = familyApplyTargetRepository.findAllPendingByTargetSubIdIn(targetSubIds).stream()
+                .map(FamilyApplyTarget::getTargetSubId)
+                .collect(Collectors.toSet());
 
-    private void validateApplyType(Long familyId, CreateNewFamilyRequest request, Long targetSubId) {
-        FamilySubscription targetFamilySub = familySubscriptionRepository.findBySubId(targetSubId).orElse(null);
+        // 6. 타겟 도메인 리스트 구성
+        List<FamilyApplyTarget> targets = new ArrayList<>();
 
-        if (request.applyType() == ApplyType.ADD) {
-            // 이미 가족에 소속되어 있는지 확인
-            if (targetFamilySub != null) {
+        // 6-1. 신청자 본인을 OWNER로 추가
+        targets.add(FamilyApplyMapper.toFamilyApplyTarget(null, requesterSub.getId(), FamilyRole.OWNER));
+
+        // 6-2. 피신청자들 검증 및 추가
+        for (Subscription sub : targetSubscriptions) {
+            // 본인 중복 방지 (이미 첫 번째에 추가함)
+            if (sub.getId().equals(requesterSub.getId())) {
                 throw new ApplicationException(FamilyErrorCode.TARGET_ALREADY_IN_FAMILY);
             }
-            // 서류 URL 및 역할 필수 체크
-            if (request.docUrl() == null || request.docUrl().isBlank()) {
-                throw new ApplicationException(FamilyErrorCode.DOC_URL_REQUIRED);
+
+            validateMember(sub.getId(), existingFamilySubIds, pendingApplySubIds);
+
+            FamilyMemberRequest memberRequest = hashToRequestMap.get(sub.getPhoneHash());
+            if (memberRequest.targetFamilyRole() == FamilyRole.OWNER) {
+                throw new ApplicationException(FamilyErrorCode.CANNOT_ASSIGN_OWNER_ROLE);
             }
-            if (request.targetFamilyRole() == null) {
-                throw new ApplicationException(FamilyErrorCode.TARGET_ROLE_REQUIRED);
-            }
-        } else if (request.applyType() == ApplyType.REMOVE) {
-            // 삭제 시에는 같은 가족 구성원인지 확인
-            if (targetFamilySub == null || !targetFamilySub.getFamily().getId().equals(familyId)) {
-                throw new ApplicationException(FamilyErrorCode.TARGET_NOT_IN_FAMILY);
-            }
+
+            targets.add(FamilyApplyMapper.toFamilyApplyTarget(null, sub.getId(), memberRequest.targetFamilyRole()));
+        }
+
+        // 7. 신청 정보 저장 (familyId는 신규 생성이므로 null)
+        FamilyApply familyApply = FamilyApplyMapper.toFamilyApply(requesterSub.getId(), null, request);
+        FamilyApply savedApply = familyApplyRepository.save(familyApply);
+
+        // 8. 타겟들 ID 연결 및 일괄 저장
+        List<FamilyApplyTarget> finalTargets = targets.stream()
+                .map(t -> FamilyApplyMapper.toFamilyApplyTarget(
+                        savedApply.getId(),
+                        t.getTargetSubId(),
+                        t.getTargetFamilyRole()))
+                .toList();
+
+        List<FamilyApplyTarget> savedTargets = familyApplyTargetRepository.saveAll(finalTargets);
+
+        // 9. 응답 변환 (복호화 데이터 준비 포함)
+        List<Subscription> allInvolvedSubs = new ArrayList<>();
+        allInvolvedSubs.add(requesterSub); // 본인 포함
+        allInvolvedSubs.addAll(targetSubscriptions);
+
+        Map<Long, Subscription> subscriptionMap = allInvolvedSubs.stream()
+                .collect(Collectors.toMap(Subscription::getId, s -> s));
+
+        Map<Long, String> subIdToPhoneMap = allInvolvedSubs.stream()
+                .collect(Collectors.toMap(
+                        Subscription::getId,
+                        s -> phoneDecryptor.decrypt(s.getPhoneEnc())
+                ));
+
+        return FamilyApplyMapper.toCreateNewFamilyResponse(
+                null, // familyId는 아직 없음
+                request.applyType(),
+                savedTargets,
+                subscriptionMap,
+                subIdToPhoneMap
+        );
+    }
+
+    private void validateMember(Long targetSubId, Set<Long> existingFamilySubIds, Set<Long> pendingApplySubIds) {
+        if (existingFamilySubIds.contains(targetSubId)) {
+            throw new ApplicationException(FamilyErrorCode.TARGET_ALREADY_IN_FAMILY);
+        }
+
+        if (pendingApplySubIds.contains(targetSubId)) {
+            throw new ApplicationException(FamilyErrorCode.DUPLICATE_FAMILY_APPLY);
         }
     }
 }

@@ -5,12 +5,10 @@ import hotspot.user.family.controller.response.CreateNewFamilyResponse;
 import hotspot.user.member.domain.FamilyRole;
 
 /**
- * 가족 구성원 추가 / 삭제 신청 서비스
+ * 가족 신규 생성 서비스
  */
 public interface CreateNewFamilyService {
-    CreateNewFamilyResponse manage(
+    CreateNewFamilyResponse createNewFamily(
             Long requesterMemberId,
-            Long familyId,
-            FamilyRole requesterFamilyRole,
             CreateNewFamilyRequest request);
 }
