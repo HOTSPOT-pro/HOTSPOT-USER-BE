@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.infrastructure.entity.BlockPolicyEntity;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
@@ -51,5 +53,21 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
     @Override
     public void bulkDelete(List<Long> ids) {
         blockPolicyJpaRepository.bulkDelete(ids);
+    }
+
+    @Override
+    public BlockPolicy save(BlockPolicy blockPolicy) {
+        BlockPolicyEntity entity = BlockPolicyEntity.domainToEntity(blockPolicy);
+        BlockPolicyEntity savedEntity = blockPolicyJpaRepository.save(entity);
+        return savedEntity.entityToDomain();
+    }
+
+    // 단일 정책 조회
+    @Override
+    public BlockPolicy findByBlockPolicyId(Long blockPolicyId) {
+        BlockPolicyEntity blockPolicyEntity = blockPolicyJpaRepository.findByBlockPolicyId(blockPolicyId)
+                .orElseThrow(() -> new ApplicationException(PolicyErrorCode.POLICY_NOT_FOUND));
+
+        return blockPolicyEntity.entityToDomain();
     }
 }

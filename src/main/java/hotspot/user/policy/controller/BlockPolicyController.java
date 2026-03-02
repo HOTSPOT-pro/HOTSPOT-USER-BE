@@ -4,11 +4,14 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,10 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.policy.controller.port.CreateBlockPolicyService;
 import hotspot.user.policy.controller.port.DeleteFamilyBlockPolicyService;
 import hotspot.user.policy.controller.port.FindBlockPolicyService;
 import hotspot.user.policy.controller.port.FindFamilyBlockPolicyService;
+import hotspot.user.policy.controller.port.FindSingleBlockPolicyService;
+import hotspot.user.policy.controller.port.UpdateBlockPolicyService;
 import hotspot.user.policy.controller.port.UpdateFamilyBlockPolicyStatusService;
+import hotspot.user.policy.controller.request.BlockPolicyRequest;
 import hotspot.user.policy.controller.request.UpdateFamilyBlockPolicyStatusRequest;
 import hotspot.user.policy.controller.response.BlockPolicyResponse;
 import hotspot.user.policy.controller.response.UpdateFamilyBlockPolicyStatusResponse;
@@ -38,6 +45,9 @@ public class BlockPolicyController implements BlockPolicyApi {
     private final FindFamilyBlockPolicyService findFamilyBlockPolicyService; // 우리 가족이 생성한 정책 조회
     private final UpdateFamilyBlockPolicyStatusService updateFamilyBlockPolicyStatusService; // 우리 가족의 정책 상태 업데이트(비/활성화)
     private final DeleteFamilyBlockPolicyService deleteFamilyBlockPolicyService; // 우리 가족 정책 삭제
+    private final FindSingleBlockPolicyService findSingleBlockPolicyService; // 단일 정책 조회
+    private final CreateBlockPolicyService createBlockPolicyService; // 정책 생성
+    private final UpdateBlockPolicyService updateBlockPolicyService; // 정책 수정
 
     @Override
     @GetMapping
@@ -92,6 +102,52 @@ public class BlockPolicyController implements BlockPolicyApi {
 
         return ResponseEntity.ok()
                 .body(ApiResponse.success());
+    }
+
+    // 정책 단일 조회
+    @Override
+    @GetMapping("/{blockPolicyId}")
+    public ResponseEntity<ApiResponse<BlockPolicyResponse>> getBlockPolicy(
+            @PathVariable Long blockPolicyId,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        BlockPolicyResponse response = findSingleBlockPolicyService
+                .find(blockPolicyId, principal.getId(), principal.getFamilyId());
+
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(response));
+    }
+
+    // 정책 생성
+    @Override
+    @PostMapping
+    public ResponseEntity<ApiResponse<BlockPolicyResponse>> createBlockPolicy(
+            @RequestBody @Valid BlockPolicyRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        BlockPolicyResponse response = createBlockPolicyService.
+                create(request, principal.getId(), principal.getFamilyId());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response));
+    }
+
+    // 정책 수정
+    @Override
+    @PatchMapping("/{blockPolicyId}")
+    public ResponseEntity<ApiResponse<BlockPolicyResponse>> updateBlockPolicy(
+            @PathVariable Long blockPolicyId,
+            @RequestBody @Valid BlockPolicyRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        BlockPolicyResponse response = updateBlockPolicyService.update(
+                request,
+                blockPolicyId,
+                principal.getId(),
+                principal.getFamilyId());
+
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(response));
     }
 
 }

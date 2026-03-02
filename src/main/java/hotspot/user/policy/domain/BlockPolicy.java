@@ -1,5 +1,7 @@
 package hotspot.user.policy.domain;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.PolicyErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,6 +34,24 @@ public class BlockPolicy {
     // 정책 상태 업데이트
     public void updateIsActive(boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public BlockPolicy update(String name, String description, PolicyType policyType,
+                              PolicySnapshot snapshot, Boolean isActive) {
+        if (this.isDeleted) {
+            throw new ApplicationException(PolicyErrorCode.ALREADY_DELETED_POLICY);
+        }
+
+        return BlockPolicy.builder()
+                .id(this.id)
+                .familyId(this.familyId)
+                .policyType(policyType != null ? policyType : this.policyType)
+                .name(name != null ? name : this.name)
+                .policyDescription(description != null ? description : this.policyDescription)
+                .policySnapshot(snapshot != null ? snapshot : this.policySnapshot)
+                .isActive(isActive != null ? isActive : this.isActive)
+                .isDeleted(this.isDeleted)
+                .build();
     }
 
 }
