@@ -12,7 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import hotspot.user.common.BaseEntity;
 import hotspot.user.family.domain.FamilyApplyTarget;
 import hotspot.user.member.domain.FamilyRole;
 import lombok.AccessLevel;
@@ -30,14 +29,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "family_apply_target")
-public class FamilyApplyTargetEntity extends BaseEntity {
+public class FamilyApplyTargetEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long familyApplyTargetId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "family_apply_id")
-    @Column(nullable = false)
     private FamilyApplyEntity familyApply;
 
     @Column(name = "target_sub_id", nullable = false)
