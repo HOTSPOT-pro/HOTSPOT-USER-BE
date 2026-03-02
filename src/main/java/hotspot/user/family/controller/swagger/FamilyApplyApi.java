@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ErrorResponse;
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.family.controller.request.AddFamilyMemberRequest;
 import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
+import hotspot.user.family.controller.response.AddFamilyMemberResponse;
 import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,5 +42,27 @@ public interface FamilyApplyApi {
     })
     ResponseEntity<ApiResponse<CreateFamilyApplyResponse>> manageFamilyMember(
             @Valid @RequestBody CreateFamilyApplyRequest request,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
+
+    @Operation(summary = "가족 구성원 추가 신청 (다건)",
+               description = "가족 OWNER가 여러 명의 새로운 구성원을 가족으로 추가하기 위해 신청을 생성합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "신청 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"
+                                         + "- FAMILY_013: 이미 가족에 속해있는 구성원입니다.",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
+                                         + "- FAMILY_002: 가족에 가입된 회선 정보를 찾을 수 없습니다.\n"
+                                         + "- FAMILY_010: 가족 관리자(OWNER)만 구성원 관리가 가능합니다.",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "찾을 수 없음\n"
+                                         + "- SUB_001: 회선 정보를 찾을 수 없습니다.",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "충돌\n"
+                                         + "- FAMILY_015: 이미 처리 대기 중인 신청이 존재합니다.",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    ResponseEntity<ApiResponse<AddFamilyMemberResponse>> addFamilyMember(
+            @Valid @RequestBody AddFamilyMemberRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
 }
