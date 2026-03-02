@@ -1,15 +1,14 @@
 package hotspot.user.family.infrastructure;
 
+import java.util.List;
 
-import hotspot.user.family.domain.FamilyRemoveSchedule;
-
-import hotspot.user.family.infrastructure.entity.FamilyRemoveScheduleEntity;
-
-import hotspot.user.family.service.port.FamilyRemoveScheduleRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import hotspot.user.family.domain.DeleteStatus;
+import hotspot.user.family.domain.FamilyRemoveSchedule;
+import hotspot.user.family.infrastructure.entity.FamilyRemoveScheduleEntity;
+import hotspot.user.family.service.port.FamilyRemoveScheduleRepository;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 가족 구성원 삭제 신청 스케쥴러 repository 구현체
@@ -28,6 +27,13 @@ public class FamilyRemoveScheduleRepositoryImpl implements FamilyRemoveScheduleR
         List<FamilyRemoveScheduleEntity> saved = familyRemoveScheduleJpaRepository.saveAll(familyRemoveScheduleEntityList);
 
         return saved.stream()
+                .map(FamilyRemoveScheduleEntity::entityToDomain)
+                .toList();
+    }
+
+    @Override
+    public List<FamilyRemoveSchedule> findAllByTargetSubIdInAndStatus(List<Long> subIds, DeleteStatus status) {
+        return familyRemoveScheduleJpaRepository.findAllByTargetSubIdInAndStatus(subIds, status).stream()
                 .map(FamilyRemoveScheduleEntity::entityToDomain)
                 .toList();
     }

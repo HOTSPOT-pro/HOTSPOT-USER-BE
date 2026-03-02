@@ -1,5 +1,6 @@
 package hotspot.user.family.service.port;
 
+import hotspot.user.family.domain.DeleteStatus;
 import hotspot.user.family.domain.FamilyRemoveSchedule;
 
 import java.util.List;
@@ -9,4 +10,5 @@ import java.util.List;
  */
 public interface FamilyRemoveScheduleRepository {
     List<FamilyRemoveSchedule> saveAll(List<FamilyRemoveSchedule> familyRemoveScheduleList);
+    List<FamilyRemoveSchedule> findAllByTargetSubIdInAndStatus(List<Long> subIds, DeleteStatus status);
 }
