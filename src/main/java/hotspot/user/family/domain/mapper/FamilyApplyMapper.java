@@ -20,7 +20,7 @@ import hotspot.user.subscription.domain.Subscription;
  */
 public class FamilyApplyMapper {
 
-    // 단건 신청용 (기존 CreateNewFamilyRequest 대응)
+    // 1. 단건 신청용 (기존 CreateNewFamilyRequest 대응)
     public static FamilyApply toFamilyApply(Long requesterSubId, Long familyId, CreateNewFamilyRequest request) {
         return FamilyApply.builder()
                 .requesterSubId(requesterSubId)
@@ -31,7 +31,7 @@ public class FamilyApplyMapper {
                 .build();
     }
 
-    // 다건 신청용 (AddFamilyMemberRequest 대응)
+    // 2. 다건 신청용 (AddFamilyMemberRequest 대응)
     public static FamilyApply toFamilyApply(Long requesterSubId, Long familyId, AddFamilyMemberRequest request) {
         return FamilyApply.builder()
                 .requesterSubId(requesterSubId)
@@ -42,7 +42,7 @@ public class FamilyApplyMapper {
                 .build();
     }
 
-    // 타겟 도메인 생성
+    // 3. 타겟 도메인 생성
     public static FamilyApplyTarget toFamilyApplyTarget(Long familyApplyId, Long targetSubId, FamilyRole role) {
         return FamilyApplyTarget.builder()
                 .familyApplyId(familyApplyId)
@@ -51,24 +51,36 @@ public class FamilyApplyMapper {
                 .build();
     }
 
-    // 단건 응답 변환
+    /**
+     * 신규 가족 생성 응답 변환 (CreateNewFamilyResponse 전용)
+     */
     public static CreateNewFamilyResponse toCreateNewFamilyResponse(
-            FamilyApply familyApply,
-            Long targetSubId,
-            FamilyRole role) {
+            Long familyId,
+            ApplyType applyType,
+            List<FamilyApplyTarget> targets,
+            Map<Long, Subscription> subscriptionMap,
+            Map<Long, String> subIdToPhoneMap) {
+
+        List<FamilyMemberResponse> memberResponses = targets.stream()
+                .map(target -> {
+                    Subscription sub = subscriptionMap.get(target.getTargetSubId());
+                    return FamilyMemberResponse.builder()
+                            .name(sub.getMember().getName())
+                            .phone(subIdToPhoneMap.get(sub.getId()))
+                            .targetFamilyRole(target.getTargetFamilyRole())
+                            .build();
+                })
+                .toList();
+
         return CreateNewFamilyResponse.builder()
-                .targetSubId(targetSubId)
-                .familyId(familyApply.getFamilyId())
-                .applyType(familyApply.getApplyType())
-                .targetFamilyRole(role)
-                .docUrl(familyApply.getDocUrl())
-                .status(familyApply.getStatus())
+                .familyId(familyId)
+                .applyType(applyType)
+                .familyMemberList(memberResponses)
                 .build();
     }
 
     /**
-     * 다건 응답 변환 (Domain -> Response)
-     * - 매퍼의 순수성을 위해 복호화 도구가 아닌 복호화된 데이터를 전달받음
+     * 구성원 추가 신청 응답 변환 (AddFamilyMemberResponse 전용)
      */
     public static AddFamilyMemberResponse toAddFamilyMemberResponse(
             Long familyId,
