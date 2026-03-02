@@ -11,6 +11,9 @@ import hotspot.user.family.domain.FamilySubscription;
  */
 public interface FamilySubscriptionRepository {
     Optional<FamilySubscription> findBySubId(Long subId);
+
+    // 회선 id 목록 받아서 해당하는 FamilySubscription 리스트 리턴
+    List<FamilySubscription> findAllBySubIdIn(List<Long> subIds);
     List<FamilySubscription> findByFamilyId(Long familyId);
     Optional<FamilySubscription> findByMemberId(Long memberId);
     FamilySubscription save(FamilySubscription familySubscription);

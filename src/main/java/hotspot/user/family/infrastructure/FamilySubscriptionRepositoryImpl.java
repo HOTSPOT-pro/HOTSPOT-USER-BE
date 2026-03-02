@@ -25,6 +25,14 @@ public class FamilySubscriptionRepositoryImpl implements FamilySubscriptionRepos
                 .map(FamilySubscriptionEntity::entityToDomain);
     }
 
+    // 회선 id 목록 받아서 해당하는 FamilySubscription 리스트 리턴
+    @Override
+    public List<FamilySubscription> findAllBySubIdIn(List<Long> subIds) {
+        return jpaRepository.findAllBySubscriptionSubIdIn(subIds).stream()
+                .map(FamilySubscriptionEntity::entityToDomain)
+                .toList();
+    }
+
     @Override
     public List<FamilySubscription> findByFamilyId(Long familyId) {
         return jpaRepository.findByFamilyFamilyId(familyId).stream()

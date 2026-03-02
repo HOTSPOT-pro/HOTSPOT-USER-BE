@@ -19,6 +19,10 @@ public interface FamilySubscriptionJpaRepository extends JpaRepository<FamilySub
     @EntityGraph(attributePaths = {"family", "subscription", "subscription.member"})
     Optional<FamilySubscriptionEntity> findBySubscriptionSubId(Long subId);
 
+    // 회선 id 목록 받아서 해당하는 FamilySubscription 리스트 리턴
+    @EntityGraph(attributePaths = {"family", "subscription", "subscription.member"})
+    List<FamilySubscriptionEntity> findAllBySubscriptionSubIdIn(List<Long> subIds);
+
     @EntityGraph(attributePaths = {"family", "subscription", "subscription.member"})
     List<FamilySubscriptionEntity> findByFamilyFamilyId(Long familyId);
 
