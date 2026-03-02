@@ -14,10 +14,8 @@ import lombok.Getter;
 public class FamilyApply {
     private Long id;
     private Long requesterSubId;
-    private Long targetSubId;
     private Long familyId;
     private ApplyType applyType;
-    private FamilyRole targetFamilyRole;
     private String docUrl;
     private ApplyStatus status;
 }
