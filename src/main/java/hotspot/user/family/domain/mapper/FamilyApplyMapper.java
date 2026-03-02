@@ -52,7 +52,10 @@ public class FamilyApplyMapper {
     }
 
     // 단건 응답 변환
-    public static CreateFamilyApplyResponse toCreateFamilyApplyResponse(FamilyApply familyApply, Long targetSubId, FamilyRole role) {
+    public static CreateFamilyApplyResponse toCreateFamilyApplyResponse(
+            FamilyApply familyApply,
+            Long targetSubId,
+            FamilyRole role) {
         return CreateFamilyApplyResponse.builder()
                 .targetSubId(targetSubId)
                 .familyId(familyApply.getFamilyId())

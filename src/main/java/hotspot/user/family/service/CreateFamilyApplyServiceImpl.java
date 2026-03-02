@@ -68,7 +68,7 @@ public class CreateFamilyApplyServiceImpl implements CreateFamilyApplyService {
 
         FamilyApply savedFamilyApply = familyApplyRepository.save(familyApply);
 
-        return FamilyApplyMapper.toCreateFamilyApplyResponse(savedFamilyApply);
+        return FamilyApplyMapper.toCreateFamilyApplyResponse(savedFamilyApply, targetSub.getId(), requesterFamilyRole);
     }
 
     private void validateApplyType(Long familyId, CreateFamilyApplyRequest request, Long targetSubId) {

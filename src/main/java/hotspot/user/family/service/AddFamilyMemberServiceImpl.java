@@ -108,7 +108,10 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
 
         // 7. 신청 타겟들 저장
         List<FamilyApplyTarget> finalTargets = targets.stream()
-                .map(t -> FamilyApplyMapper.toFamilyApplyTarget(savedApply.getId(), t.getTargetSubId(), t.getTargetFamilyRole()))
+                .map(t -> FamilyApplyMapper.toFamilyApplyTarget(
+                        savedApply.getId(),
+                        t.getTargetSubId(),
+                        t.getTargetFamilyRole()))
                 .toList();
 
         List<FamilyApplyTarget> savedTargets = familyApplyTargetRepository.saveAll(finalTargets);
