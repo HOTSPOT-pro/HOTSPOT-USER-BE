@@ -9,7 +9,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import hotspot.user.family.domain.ApplyType;
-import lombok.Builder;
 
 /**
  * 가족 신규 생성 dto
@@ -17,7 +16,6 @@ import lombok.Builder;
  * @param docUrl
  * @param familyMemberList
  */
-@Builder
 public record CreateNewFamilyRequest(
         @NotNull(message = "신청 타입은 필수입니다.")
         ApplyType applyType,
