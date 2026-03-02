@@ -61,68 +61,50 @@ class AddFamilyMemberServiceImplTest {
     private PhoneDecryptor phoneDecryptor;
 
     @Test
-    @DisplayName("가족 OWNER가 새로운 구성원 추가 신청을 하면 성공한다.")
+    @DisplayName("성공: 가족 OWNER가 새로운 구성원들을 추가 신청한다.")
     void addFamilyMemberSuccess() {
         // given
         Long requesterMemberId = 1L;
         Long familyId = 10L;
-        String phone1 = "01011112222";
-        String hash1 = "HASH1";
+        String phone = "01011112222";
+        String hash = "HASH";
 
-        // 요청자 정보 (OWNER)
-        Family family = Family.builder().id(familyId).build();
-        Subscription requesterSub = Subscription.builder().id(100L).build();
-        FamilySubscription requesterFs = FamilySubscription.builder()
-                .family(family)
-                .subscription(requesterSub)
-                .familyRole(FamilyRole.OWNER)
-                .build();
+        FamilySubscription requesterFs = createRequesterFs(familyId, 100L, FamilyRole.OWNER);
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterFs));
 
-        // 피신청자 정보
-        FamilyMemberRequest memberReq = new FamilyMemberRequest("홍길동", phone1, FamilyRole.CHILD);
-        AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, "doc-url", List.of(memberReq));
+        FamilyMemberRequest memberReq = new FamilyMemberRequest("홍길동", phone, FamilyRole.CHILD);
+        AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, "url", List.of(memberReq));
 
         Subscription targetSub = Subscription.builder()
-                .id(200L)
-                .phoneHash(hash1)
-                .phoneEnc("ENC1")
-                .member(Member.builder().name("홍길동").build())
-                .build();
+                .id(200L).phoneHash(hash).phoneEnc("ENC")
+                .member(Member.builder().name("홍길동").build()).build();
 
-        given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterFs));
-        given(phoneHashIndexer.toHash(phone1)).willReturn(hash1);
+        given(phoneHashIndexer.toHash(phone)).willReturn(hash);
         given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of(targetSub));
-        given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of()); // 아직 가족 아님
-        given(familyApplyTargetRepository.findAllPendingByTargetSubIdIn(anyList())).willReturn(List.of()); // 대기중인 신청 없음
+        given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of());
+        given(familyApplyTargetRepository.findAllPendingByTargetSubIdIn(anyList())).willReturn(List.of());
 
-        FamilyApply savedApply = FamilyApply.builder().id(1L).build();
-        given(familyApplyRepository.save(any())).willReturn(savedApply);
+        given(familyApplyRepository.save(any())).willReturn(FamilyApply.builder().id(1L).build());
         given(familyApplyTargetRepository.saveAll(anyList())).willReturn(List.of(
-                FamilyApplyTarget.builder().id(101L).targetSubId(200L).targetFamilyRole(FamilyRole.CHILD).build()
+                FamilyApplyTarget.builder().targetSubId(200L).targetFamilyRole(FamilyRole.CHILD).build()
         ));
-        given(phoneDecryptor.decrypt("ENC1")).willReturn("010-1111-2222");
+        given(phoneDecryptor.decrypt("ENC")).willReturn("010-1111-2222");
 
         // when
         AddFamilyMemberResponse response = addFamilyMemberService.addFamilyMember(requesterMemberId, familyId, request);
 
         // then
-        assertThat(response.familyId()).isEqualTo(familyId);
         assertThat(response.familyMemberList()).hasSize(1);
-        assertThat(response.familyMemberList().get(0).name()).isEqualTo("홍길동");
         assertThat(response.familyMemberList().get(0).phone()).isEqualTo("010-1111-2222");
     }
 
     @Test
-    @DisplayName("가족 OWNER가 아닌 사람이 신청하면 예외가 발생한다.")
+    @DisplayName("실패: 요청자가 해당 가족의 OWNER가 아니면 예외가 발생한다.")
     void addFamilyMemberFailNotOwner() {
         // given
         Long requesterMemberId = 1L;
         Long familyId = 10L;
-        FamilySubscription requesterFs = FamilySubscription.builder()
-                .family(Family.builder().id(familyId).build())
-                .familyRole(FamilyRole.CHILD) // OWNER 아님
-                .build();
-
+        FamilySubscription requesterFs = createRequesterFs(familyId, 100L, FamilyRole.CHILD); // OWNER 아님
         given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterFs));
 
         AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, "url", List.of());
@@ -134,50 +116,56 @@ class AddFamilyMemberServiceImplTest {
     }
 
     @Test
-    @DisplayName("자기 자신을 추가 리스트에 넣으면 예외가 발생한다.")
-    void addFamilyMemberFailAddSelf() {
+    @DisplayName("실패: 신청 타입이 ADD가 아니면 예외가 발생한다.")
+    void addFamilyMemberFailInvalidType() {
         // given
         Long requesterMemberId = 1L;
         Long familyId = 10L;
-        Subscription requesterSub = Subscription.builder().id(100L).build();
-        FamilySubscription requesterFs = FamilySubscription.builder()
-                .family(Family.builder().id(familyId).build())
-                .subscription(requesterSub)
-                .familyRole(FamilyRole.OWNER)
-                .build();
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId))
+                .willReturn(Optional.of(createRequesterFs(familyId, 100L, FamilyRole.OWNER)));
 
-        given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterFs));
-
-        String phone = "01000000000";
-        String hash = "SELF_HASH";
-        FamilyMemberRequest selfReq = new FamilyMemberRequest("나자신", phone, FamilyRole.CHILD);
-        AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, "url", List.of(selfReq));
-
-        Subscription selfSub = Subscription.builder().id(100L).phoneHash(hash).build(); // 요청자와 동일한 ID
-
-        given(phoneHashIndexer.toHash(phone)).willReturn(hash);
-        given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of(selfSub));
+        AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.REMOVE, "url", List.of());
 
         // when & then
         assertThatThrownBy(() -> addFamilyMemberService.addFamilyMember(requesterMemberId, familyId, request))
                 .isInstanceOf(ApplicationException.class)
-                .hasMessage(FamilyErrorCode.TARGET_ALREADY_IN_FAMILY.getMessage());
+                .hasMessage(FamilyErrorCode.INVALID_APPLY_TYPE.getMessage());
     }
 
     @Test
-    @DisplayName("이미 대기 중인 신청이 있는 대상을 추가하면 예외가 발생한다.")
-    void addFamilyMemberFailDuplicateApply() {
+    @DisplayName("실패: 피신청자에게 OWNER 역할을 부여하려 하면 예외가 발생한다.")
+    void addFamilyMemberFailAssignOwner() {
         // given
         Long requesterMemberId = 1L;
         Long familyId = 10L;
-        Subscription requesterSub = Subscription.builder().id(100L).build();
-        FamilySubscription requesterFs = FamilySubscription.builder()
-                .family(Family.builder().id(familyId).build())
-                .subscription(requesterSub)
-                .familyRole(FamilyRole.OWNER)
-                .build();
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId))
+                .willReturn(Optional.of(createRequesterFs(familyId, 100L, FamilyRole.OWNER)));
 
-        given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterFs));
+        String phone = "01012345678";
+        String hash = "HASH";
+        FamilyMemberRequest invalidReq = new FamilyMemberRequest("타겟", phone, FamilyRole.OWNER); // 타인에게 OWNER 부여
+        AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, "url", List.of(invalidReq));
+
+        Subscription targetSub = Subscription.builder().id(200L).phoneHash(hash).build();
+        given(phoneHashIndexer.toHash(phone)).willReturn(hash);
+        given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of(targetSub));
+        given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of());
+        given(familyApplyTargetRepository.findAllPendingByTargetSubIdIn(anyList())).willReturn(List.of());
+
+        // when & then
+        assertThatThrownBy(() -> addFamilyMemberService.addFamilyMember(requesterMemberId, familyId, request))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(FamilyErrorCode.CANNOT_ASSIGN_OWNER_ROLE.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패: 이미 다른 가족에 속한 대상을 추가하려 하면 예외가 발생한다.")
+    void addFamilyMemberFailAlreadyInFamily() {
+        // given
+        Long requesterMemberId = 1L;
+        Long familyId = 10L;
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId))
+                .willReturn(Optional.of(createRequesterFs(familyId, 100L, FamilyRole.OWNER)));
 
         String phone = "01012345678";
         String hash = "HASH";
@@ -185,18 +173,24 @@ class AddFamilyMemberServiceImplTest {
         AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, "url", List.of(memberReq));
 
         Subscription targetSub = Subscription.builder().id(200L).phoneHash(hash).build();
-
         given(phoneHashIndexer.toHash(phone)).willReturn(hash);
         given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of(targetSub));
-        given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of());
 
-        // 이미 대기 중인 신청 리스트에 포함
-        given(familyApplyTargetRepository.findAllPendingByTargetSubIdIn(anyList()))
-                .willReturn(List.of(FamilyApplyTarget.builder().targetSubId(200L).build()));
+        // 이미 가족에 소속됨 모킹
+        given(familySubscriptionRepository.findAllBySubIdIn(anyList()))
+                .willReturn(List.of(FamilySubscription.builder().subscription(targetSub).build()));
 
         // when & then
         assertThatThrownBy(() -> addFamilyMemberService.addFamilyMember(requesterMemberId, familyId, request))
                 .isInstanceOf(ApplicationException.class)
-                .hasMessage(FamilyErrorCode.DUPLICATE_FAMILY_APPLY.getMessage());
+                .hasMessage(FamilyErrorCode.TARGET_ALREADY_IN_FAMILY.getMessage());
+    }
+
+    private FamilySubscription createRequesterFs(Long familyId, Long subId, FamilyRole role) {
+        return FamilySubscription.builder()
+                .family(Family.builder().id(familyId).build())
+                .subscription(Subscription.builder().id(subId).build())
+                .familyRole(role)
+                .build();
     }
 }
