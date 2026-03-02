@@ -130,13 +130,16 @@ public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
         allInvolvedSubs.addAll(targetSubscriptions);
 
         Map<Long, Subscription> subscriptionMap = allInvolvedSubs.stream()
-                .collect(Collectors.toMap(Subscription::getId, s -> s));
+                .collect(Collectors.toMap(
+                        Subscription::getId,
+                        s -> s,
+                        (existing, replacement) -> existing));
 
         Map<Long, String> subIdToPhoneMap = allInvolvedSubs.stream()
                 .collect(Collectors.toMap(
                         Subscription::getId,
-                        s -> phoneDecryptor.decrypt(s.getPhoneEnc())
-                ));
+                        s -> phoneDecryptor.decrypt(s.getPhoneEnc()),
+                        (existing, replacement) -> existing));
 
         return FamilyApplyMapper.toCreateNewFamilyResponse(
                 null, // familyId는 아직 없음
