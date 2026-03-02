@@ -95,9 +95,9 @@ public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
 
         // 6-2. 피신청자들 검증 및 추가
         for (Subscription sub : targetSubscriptions) {
-            // 본인 중복 방지 (이미 첫 번째에 추가함)
+            // 본인 중복 방지
             if (sub.getId().equals(requesterSub.getId())) {
-                throw new ApplicationException(FamilyErrorCode.TARGET_ALREADY_IN_FAMILY);
+                continue;
             }
 
             validateMember(sub.getId(), existingFamilySubIds, pendingApplySubIds);

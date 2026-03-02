@@ -108,6 +108,47 @@ class CreateNewFamilyServiceImplTest {
     }
 
     @Test
+    @DisplayName("성공: 가족 생성 시 초대 목록에 본인을 포함하더라도 무시하고 성공한다.")
+    void createNewFamilySuccessEvenIfSelfIncluded() {
+        // given
+        Long requesterMemberId = 1L;
+        String selfPhone = "01000000000";
+        String selfHash = "SELF_HASH";
+
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.empty());
+
+        Subscription requesterSub = Subscription.builder()
+                .id(100L).phoneEnc("ENC_SELF").phoneHash(selfHash)
+                .member(Member.builder().name("방장").build())
+                .build();
+        given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
+
+        // 초대 목록에 본인(방장)의 번호를 넣음
+        FamilyMemberRequest selfReq = new FamilyMemberRequest("방장", selfPhone, FamilyRole.CHILD);
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of(selfReq));
+
+        given(phoneHashIndexer.toHash(selfPhone)).willReturn(selfHash);
+        given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of(requesterSub));
+        given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of());
+        given(familyApplyTargetRepository.findAllPendingByTargetSubIdIn(anyList())).willReturn(List.of());
+
+        given(familyApplyRepository.save(any())).willReturn(FamilyApply.builder().id(1L).build());
+        // 결과 타겟은 중복 없이 1명(본인 OWNER)만 저장되어야 함
+        given(familyApplyTargetRepository.saveAll(anyList())).willReturn(List.of(
+                FamilyApplyTarget.builder().targetSubId(100L).targetFamilyRole(FamilyRole.OWNER).build()
+        ));
+
+        given(phoneDecryptor.decrypt("ENC_SELF")).willReturn("010-0000-0000");
+
+        // when
+        CreateNewFamilyResponse response = createNewFamilyService.createNewFamily(requesterMemberId, request);
+
+        // then
+        assertThat(response.familyMemberList()).hasSize(1); // 본인만 포함됨
+        assertThat(response.familyMemberList().get(0).targetFamilyRole()).isEqualTo(FamilyRole.OWNER);
+    }
+
+    @Test
     @DisplayName("실패: 이미 가족에 소속된 사용자가 신규 생성을 요청하면 예외가 발생한다.")
     void createNewFamilyFailAlreadyInFamily() {
         // given
