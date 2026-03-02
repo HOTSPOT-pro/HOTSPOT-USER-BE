@@ -1,8 +1,10 @@
 package hotspot.user.family.service;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.BDDMockito.given;
 
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +62,7 @@ class AddFamilyMemberServiceImplTest {
 
     @Test
     @DisplayName("가족 OWNER가 새로운 구성원 추가 신청을 하면 성공한다.")
-    void addFamilyMember_success() {
+    void addFamilyMemberSuccess() {
         // given
         Long requesterMemberId = 1L;
         Long familyId = 10L;
@@ -112,7 +114,7 @@ class AddFamilyMemberServiceImplTest {
 
     @Test
     @DisplayName("가족 OWNER가 아닌 사람이 신청하면 예외가 발생한다.")
-    void addFamilyMember_fail_not_owner() {
+    void addFamilyMemberFailNotOwner() {
         // given
         Long requesterMemberId = 1L;
         Long familyId = 10L;
@@ -133,7 +135,7 @@ class AddFamilyMemberServiceImplTest {
 
     @Test
     @DisplayName("자기 자신을 추가 리스트에 넣으면 예외가 발생한다.")
-    void addFamilyMember_fail_add_self() {
+    void addFamilyMemberFailAddSelf() {
         // given
         Long requesterMemberId = 1L;
         Long familyId = 10L;
@@ -164,7 +166,7 @@ class AddFamilyMemberServiceImplTest {
 
     @Test
     @DisplayName("이미 대기 중인 신청이 있는 대상을 추가하면 예외가 발생한다.")
-    void addFamilyMember_fail_duplicate_apply() {
+    void addFamilyMemberFailDuplicateApply() {
         // given
         Long requesterMemberId = 1L;
         Long familyId = 10L;

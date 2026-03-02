@@ -61,7 +61,7 @@ class CreateFamilyApplyServiceImplTest {
         given(familySubscriptionRepository.findBySubId(2L)).willReturn(Optional.empty());
         given(familyApplyRepository.existsPendingApply(10L, 2L, familyId)).willReturn(false);
         given(familyApplyRepository.save(any(FamilyApply.class)))
-                .willReturn(FamilyApply.builder().requesterSubId(10L).targetSubId(2L).build());
+                .willReturn(FamilyApply.builder().requesterSubId(10L).build());
 
         // when
         CreateFamilyApplyResponse response = createFamilyApplyService.manage(
