@@ -49,7 +49,9 @@ public interface FamilyApplyApi {
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "신청 성공"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"
-                                         + "- FAMILY_013: 이미 가족에 속해있는 구성원입니다.",
+                                         + "- FAMILY_013: 이미 가족에 속해있는 구성원입니다.\n"
+                                         + "- FAMILY_017: 타인에게 OWNER 역할을 부여할 수 없습니다.\n"
+                                         + "- FAMILY_019: 유효하지 않은 신청 타입입니다.",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
                                          + "- FAMILY_002: 가족에 가입된 회선 정보를 찾을 수 없습니다.\n"
