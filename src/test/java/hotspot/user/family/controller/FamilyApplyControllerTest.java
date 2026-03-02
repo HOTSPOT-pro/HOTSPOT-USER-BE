@@ -42,9 +42,9 @@ class FamilyApplyControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @MockBean
-    private CreateNewFamilyService createNewFamilyService;
-    @MockBean
     private AddFamilyMemberService addFamilyMemberService;
+    @MockBean
+    private CreateNewFamilyService createNewFamilyService;
     @MockBean
     private JwtFilter jwtFilter;
     @MockBean
@@ -53,27 +53,23 @@ class FamilyApplyControllerTest {
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
     @Test
-    @DisplayName("성공: 가족 신청 생성 API 호출 시 200 OK를 반환한다")
-    void manageFamilyMemberSuccess() throws Exception {
+    @DisplayName("성공: 가족 신규 생성 API 호출 시 200 OK를 반환한다")
+    void createNewFamilySuccess() throws Exception {
         // given
-        setAuthentication(1L, 100L, FamilyRole.OWNER);
-        CreateNewFamilyRequest request = CreateNewFamilyRequest.builder()
-                .targetSubId(2L)
-                .applyType(ApplyType.ADD)
-                .targetFamilyRole(FamilyRole.CHILD)
-                .docUrl("http://doc.url")
-                .build();
+        setAuthentication(1L, null, FamilyRole.NONE);
+        FamilyMemberRequest memberReq = new FamilyMemberRequest("구성원1", "01011112222", FamilyRole.CHILD);
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "doc-url", List.of(memberReq));
 
         CreateNewFamilyResponse response = CreateNewFamilyResponse.builder()
-                .status(hotspot.user.family.domain.ApplyStatus.PENDING)
+                .familyId(null)
+                .applyType(ApplyType.CREATE)
                 .build();
 
-        given(createNewFamilyService.manage(
-                eq(1L), eq(100L), eq(FamilyRole.OWNER), any(CreateNewFamilyRequest.class)))
+        given(createNewFamilyService.createNewFamily(eq(1L), any(CreateNewFamilyRequest.class)))
                 .willReturn(response);
 
         // when & then
-        mockMvc.perform(post("/api/v1/families")
+        mockMvc.perform(post("/api/v1/families/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -124,7 +120,7 @@ class FamilyApplyControllerTest {
     void addFamilyMemberFailMissingField() throws Exception {
         // given
         setAuthentication(1L, 100L, FamilyRole.OWNER);
-        AddFamilyMemberRequest request = new AddFamilyMemberRequest(null, "doc-url", List.of()); // Type 누락 + 리스트 비어있음
+        AddFamilyMemberRequest request = new AddFamilyMemberRequest(null, "doc-url", List.of()); // Type 누락
 
         // when & then
         mockMvc.perform(post("/api/v1/families/add")
