@@ -52,7 +52,8 @@ class RemoveFamilyMemberMapperTest {
                 .targetSubId(20L).scheduleDate(LocalDate.now()).status(DeleteStatus.SCHEDULED).build();
 
         // when
-        RemoveFamilyMemberResponse response = RemoveFamilyMemberMapper.toRemoveFamilyMemberResponse(apply, List.of(schedule));
+        RemoveFamilyMemberResponse response = RemoveFamilyMemberMapper
+                .toRemoveFamilyMemberResponse(apply, List.of(schedule));
 
         // then
         assertThat(response.familyApplyId()).isEqualTo(100L);

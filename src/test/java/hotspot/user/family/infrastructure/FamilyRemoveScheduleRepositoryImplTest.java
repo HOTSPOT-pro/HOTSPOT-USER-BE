@@ -61,7 +61,8 @@ class FamilyRemoveScheduleRepositoryImplTest {
                 .willReturn(List.of(entity));
 
         // when
-        List<FamilyRemoveSchedule> result = familyRemoveScheduleRepository.findAllByTargetSubIdInAndStatus(subIds, DeleteStatus.SCHEDULED);
+        List<FamilyRemoveSchedule> result = familyRemoveScheduleRepository
+                .findAllByTargetSubIdInAndStatus(subIds, DeleteStatus.SCHEDULED);
 
         // then
         assertThat(result).hasSize(1);
