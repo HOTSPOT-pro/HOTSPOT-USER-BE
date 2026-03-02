@@ -18,6 +18,7 @@ import hotspot.user.family.controller.port.AddFamilyMemberService;
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
 import hotspot.user.family.controller.request.FamilyMemberRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
+import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.FamilyApply;
 import hotspot.user.family.domain.FamilyApplyTarget;
 import hotspot.user.family.domain.FamilySubscription;
@@ -60,15 +61,20 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
             throw new ApplicationException(FamilyErrorCode.ONLY_OWNER_CAN_MANAGE);
         }
 
+        // 2. 추가 신청 타입 검증 (ADD만 허용)
+        if (request.applyType() != ApplyType.ADD) {
+            throw new ApplicationException(FamilyErrorCode.INVALID_APPLY_TYPE);
+        }
+
         Subscription requesterSub = requesterFs.getSubscription();
 
-        // 2. 피신청자들의 정보 매핑 (Hash 기반 매핑)
+        // 3. 피신청자들의 정보 매핑 (Hash 기반 매핑)
         Map<String, FamilyMemberRequest> hashToRequestMap = request.familyMemberList().stream()
                 .collect(Collectors.toMap(r -> phoneHashIndexer.toHash(r.phone()), r -> r));
 
         List<String> phoneHashes = new ArrayList<>(hashToRequestMap.keySet());
 
-        // 3. Subscription 일괄 조회
+        // 4. Subscription 일괄 조회
         List<Subscription> subscriptions = subscriptionRepository.findAllByPhoneHashIn(phoneHashes);
         if (subscriptions.size() != phoneHashes.size()) {
             throw new ApplicationException(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND);
@@ -78,7 +84,7 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
                 .map(Subscription::getId)
                 .toList();
 
-        // 4. 가족 소속 및 중복 신청 여부 일괄 조회
+        // 5. 가족 소속 및 중복 신청 여부 일괄 조회
         Set<Long> existingFamilySubIds = familySubscriptionRepository.findAllBySubIdIn(subIds).stream()
                 .map(fs -> fs.getSubscription().getId())
                 .collect(Collectors.toSet());
@@ -87,7 +93,7 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
                 .map(FamilyApplyTarget::getTargetSubId)
                 .collect(Collectors.toSet());
 
-        // 5. 검증 및 타겟 도메인 생성
+        // 6. 검증 및 타겟 도메인 생성
         List<FamilyApplyTarget> targets = new ArrayList<>();
         for (Subscription sub : subscriptions) {
             // 본인 추가 방지
@@ -99,14 +105,20 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
 
             // Hash로 요청 정보 매칭
             FamilyMemberRequest memberRequest = hashToRequestMap.get(sub.getPhoneHash());
+
+            // 타인에게 OWNER 부여 금지 검증
+            if (memberRequest.targetFamilyRole() == FamilyRole.OWNER) {
+                throw new ApplicationException(FamilyErrorCode.CANNOT_ASSIGN_OWNER_ROLE);
+            }
+
             targets.add(FamilyApplyMapper.toFamilyApplyTarget(null, sub.getId(), memberRequest.targetFamilyRole()));
         }
 
-        // 6. 신청 저장
+        // 7. 신청 저장
         FamilyApply familyApply = FamilyApplyMapper.toFamilyApply(requesterSub.getId(), familyId, request);
         FamilyApply savedApply = familyApplyRepository.save(familyApply);
 
-        // 7. 신청 타겟들 저장
+        // 8. 신청 타겟들 저장
         List<FamilyApplyTarget> finalTargets = targets.stream()
                 .map(t -> FamilyApplyMapper.toFamilyApplyTarget(
                         savedApply.getId(),
@@ -116,11 +128,10 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
 
         List<FamilyApplyTarget> savedTargets = familyApplyTargetRepository.saveAll(finalTargets);
 
-        // 8. 응답 변환
+        // 9. 응답 변환
         Map<Long, Subscription> subscriptionMap = subscriptions.stream()
                 .collect(Collectors.toMap(Subscription::getId, s -> s));
 
-        // 전화번호 복호화 진행
         Map<Long, String> subIdToPhoneMap = subscriptions.stream()
                 .collect(Collectors.toMap(
                         Subscription::getId,
