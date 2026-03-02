@@ -37,6 +37,14 @@ public class SubscriptionRepositoryImpl implements SubscriptionRepository {
     }
 
     @Override
+    public List<Subscription> findAllByPhoneHashIn(List<String> phoneHashes) {
+        return subscriptionJpaRepository.findAllByPhoneHashIn(phoneHashes)
+                .stream()
+                .map(SubscriptionEntity::entityToDomain)
+                .toList();
+    }
+
+    @Override
     public Subscription save(Subscription subscription) {
         SubscriptionEntity entity = SubscriptionEntity.domainToEntity(subscription);
         return subscriptionJpaRepository.save(entity).entityToDomain();
