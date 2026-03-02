@@ -16,7 +16,6 @@ import hotspot.user.common.BaseEntity;
 import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.FamilyApply;
-import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -40,21 +39,12 @@ public class FamilyApplyEntity extends BaseEntity {
     @JoinColumn(name = "requester_sub_id")
     private SubscriptionEntity requesterSubscription;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_sub_id")
-    private SubscriptionEntity targetSubscription;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "family_id")
-    private FamilyEntity family;
+    @Column(name = "family_id")
+    private Long familyId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ApplyType applyType;
-
-    @Enumerated(EnumType.STRING)
-    private FamilyRole targetFamilyRole;
-
 
     private String docUrl;
 
@@ -70,21 +60,11 @@ public class FamilyApplyEntity extends BaseEntity {
                 .subId(familyApply.getRequesterSubId())
                 .build();
 
-        SubscriptionEntity targetSub = SubscriptionEntity.builder()
-                .subId(familyApply.getTargetSubId())
-                .build();
-
-        FamilyEntity family = FamilyEntity.builder()
-                .familyId(familyApply.getFamilyId())
-                .build();
-
         return FamilyApplyEntity.builder()
                 .familyApplyId(familyApply.getId())
                 .requesterSubscription(requesterSub)
-                .targetSubscription(targetSub)
-                .family(family)
+                .familyId(familyApply.getFamilyId())
                 .applyType(familyApply.getApplyType())
-                .targetFamilyRole(familyApply.getTargetFamilyRole())
                 .docUrl(familyApply.getDocUrl())
                 .status(familyApply.getStatus() != null ? familyApply.getStatus() : ApplyStatus.PENDING)
                 .build();
@@ -96,11 +76,8 @@ public class FamilyApplyEntity extends BaseEntity {
                 .id(this.familyApplyId)
                 .requesterSubId(this.requesterSubscription != null ?
                         this.requesterSubscription.getSubId() : null) // NPE 방지
-                .targetSubId(this.targetSubscription != null ?
-                        this.targetSubscription.getSubId() : null) // NPE 방지
-                .familyId(this.family != null ? this.family.getFamilyId() : null) // NPE 방지
+                .familyId(familyId)
                 .applyType(this.applyType)
-                .targetFamilyRole(this.targetFamilyRole)
                 .docUrl(this.docUrl)
                 .status(this.status)
                 .build();

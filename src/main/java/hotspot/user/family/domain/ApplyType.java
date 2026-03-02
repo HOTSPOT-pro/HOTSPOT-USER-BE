@@ -5,5 +5,6 @@ package hotspot.user.family.domain;
  */
 public enum ApplyType {
     ADD,
-    REMOVE
+    REMOVE,
+    CREATE
 }

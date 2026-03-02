@@ -97,6 +97,40 @@ class FamilySubscriptionRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("여러 회선 ID로 가족 결합 정보 리스트 일괄 조회 성공")
+    void findAllBySubIdInSuccess() {
+        // given
+        List<Long> subIds = List.of(100L, 101L);
+        FamilySubscriptionEntity entity1 = FamilySubscriptionEntity.builder()
+                .familySubId(1L)
+                .family(FamilyEntity.builder().familyId(1L).build())
+                .subscription(SubscriptionEntity.builder().subId(100L)
+                        .member(MemberEntity.builder().id(1L).build())
+                        .plan(PlanEntity.builder().planId(1L).build())
+                        .build())
+                .build();
+        FamilySubscriptionEntity entity2 = FamilySubscriptionEntity.builder()
+                .familySubId(2L)
+                .family(FamilyEntity.builder().familyId(1L).build())
+                .subscription(SubscriptionEntity.builder().subId(101L)
+                        .member(MemberEntity.builder().id(2L).build())
+                        .plan(PlanEntity.builder().planId(1L).build())
+                        .build())
+                .build();
+
+        given(familySubscriptionJpaRepository.findAllBySubscriptionSubIdIn(subIds))
+                .willReturn(List.of(entity1, entity2));
+
+        // when
+        List<FamilySubscription> result = familySubscriptionRepository.findAllBySubIdIn(subIds);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getSubscription().getId()).isEqualTo(100L);
+        assertThat(result.get(1).getSubscription().getId()).isEqualTo(101L);
+    }
+
+    @Test
     @DisplayName("멤버 ID로 소속된 가족 매핑 정보 조회 성공")
     void findByMemberIdSuccess() {
         // given

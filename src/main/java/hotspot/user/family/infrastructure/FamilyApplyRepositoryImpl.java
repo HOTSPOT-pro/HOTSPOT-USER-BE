@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
     private final FamilyApplyJpaRepository familyApplyJpaRepository;
+    private final FamilyApplyTargetJpaRepository familyApplyTargetJpaRepository;
 
     @Override
     public FamilyApply save(FamilyApply familyApply) {
@@ -22,8 +23,9 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
 
     @Override
     public boolean existsPendingApply(Long requesterSubId, Long targetSubId, Long familyId) {
-        return familyApplyJpaRepository
-                .existsByRequesterSubscriptionSubIdAndTargetSubscriptionSubIdAndFamilyFamilyIdAndStatus(
-                requesterSubId, targetSubId, familyId, ApplyStatus.PENDING);
+        return familyApplyTargetJpaRepository.existsByTargetSubIdAndFamilyApplyStatus(
+                targetSubId,
+                ApplyStatus.PENDING
+        );
     }
 }
