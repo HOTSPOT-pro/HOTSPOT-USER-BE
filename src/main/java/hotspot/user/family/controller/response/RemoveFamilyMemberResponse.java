@@ -12,7 +12,7 @@ import lombok.Builder;
  * @param familyId
  * @param subIdList
  * @param status
- * @param schueduleDate
+ * @param scheduleDate
  */
 @Builder
 public record RemoveFamilyMemberResponse(
@@ -20,6 +20,6 @@ public record RemoveFamilyMemberResponse(
         Long familyId,
         List<Long> subIdList,
         DeleteStatus status,
-        LocalDate schueduleDate
+        LocalDate scheduleDate
 ) {
 }
