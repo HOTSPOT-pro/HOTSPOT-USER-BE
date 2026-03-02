@@ -2,8 +2,6 @@ package hotspot.user.family.service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,35 +55,25 @@ public class RemoveFamilyMemberServiceImpl implements RemoveFamilyMemberService 
         // 3. 삭제 대상자들의 가족 소속 확인 및 중복 신청 여부 확인 (N+1 방지)
         List<FamilySubscription> targetFsList = familySubscriptionRepository.findAllBySubIdIn(targetSubIds);
 
-        // 회선 존재 여부 검증 (요청한 ID들이 모두 가족 매핑 테이블에 존재하는지 확인)
+        // 회선 존재 여부 검증
         if (targetFsList.size() != targetSubIds.size()) {
             throw new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND);
         }
 
-        // 해당 가족에 속한 subId Set 생성
-        Set<Long> validFamilySubIds = targetFsList.stream()
-                .filter(fs -> fs.getFamily().getId().equals(familyId))
-                .map(fs -> fs.getSubscription().getId())
-                .collect(Collectors.toSet());
+        // 모든 대상이 현재 방장과 같은 가족 소속인지 확인
+        boolean allInSameFamily = targetFsList.stream()
+                .allMatch(fs -> fs.getFamily().getId().equals(familyId));
 
-        // 이미 삭제 스케줄이 잡혀있는 subId Set 생성 (중복 신청 방지)
-        Set<Long> alreadyScheduledSubIds = familyRemoveScheduleRepository
-                .findAllByTargetSubIdInAndStatus(targetSubIds, DeleteStatus.SCHEDULED)
-                .stream()
-                .map(FamilyRemoveSchedule::getTargetSubId)
-                .collect(Collectors.toSet());
+        if (!allInSameFamily) {
+            throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
+        }
 
-        for (Long targetSubId : targetSubIds) {
+        // 이미 처리 대기 중인(SCHEDULED) 신청이 있는지 확인
+        List<FamilyRemoveSchedule> existingSchedules = familyRemoveScheduleRepository
+                .findAllByTargetSubIdInAndStatus(targetSubIds, DeleteStatus.SCHEDULED);
 
-            // 같은 가족 소속인지 확인 (가족이 아닌 사람을 삭제하려 할 경우 차단)
-            if (!validFamilySubIds.contains(targetSubId)) {
-                throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
-            }
-
-            // 이미 처리 대기 중인 신청이 있는지 확인
-            if (alreadyScheduledSubIds.contains(targetSubId)) {
-                throw new ApplicationException(FamilyErrorCode.DUPLICATE_FAMILY_APPLY);
-            }
+        if (!existingSchedules.isEmpty()) {
+            throw new ApplicationException(FamilyErrorCode.DUPLICATE_FAMILY_APPLY);
         }
 
         // 4. 신청서 저장
