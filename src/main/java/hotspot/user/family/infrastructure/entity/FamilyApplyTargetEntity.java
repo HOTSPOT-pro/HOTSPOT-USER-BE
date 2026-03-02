@@ -1,9 +1,10 @@
 package hotspot.user.family.infrastructure.entity;
 
+import jakarta.persistence.*;
+
 import hotspot.user.common.BaseEntity;
 import hotspot.user.family.domain.FamilyApplyTarget;
 import hotspot.user.member.domain.FamilyRole;
-import jakarta.persistence.*;
 import lombok.*;
 
 /**

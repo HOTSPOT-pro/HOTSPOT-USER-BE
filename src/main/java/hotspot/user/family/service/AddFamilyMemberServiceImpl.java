@@ -1,17 +1,13 @@
 package hotspot.user.family.service;
 
 
-import hotspot.user.family.controller.port.AddFamilyMemberService;
-
-import hotspot.user.family.controller.request.AddFamilyMemberRequest;
-
-import hotspot.user.family.controller.response.AddFamilyMemberResponse;
-import hotspot.user.family.service.port.FamilyApplyRepository;
-import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.subscription.service.port.SubscriptionRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import hotspot.user.family.controller.port.AddFamilyMemberService;
+import hotspot.user.family.controller.request.AddFamilyMemberRequest;
+import hotspot.user.family.controller.response.AddFamilyMemberResponse;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 가족 구성원 신청 서비스 구현체

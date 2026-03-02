@@ -16,7 +16,6 @@ import hotspot.user.common.BaseEntity;
 import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.FamilyApply;
-import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

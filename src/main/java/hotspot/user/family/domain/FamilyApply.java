@@ -1,6 +1,5 @@
 package hotspot.user.family.domain;
 
-import hotspot.user.member.domain.FamilyRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
