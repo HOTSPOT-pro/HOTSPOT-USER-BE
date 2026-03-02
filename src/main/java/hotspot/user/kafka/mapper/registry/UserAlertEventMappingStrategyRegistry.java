@@ -26,11 +26,7 @@ public class UserAlertEventMappingStrategyRegistry {
 
     // 요청된 이벤트 타입에 해당하는 매핑 전략을 찾아 반환하고 없으면 예외를 발생시킨다.
     public UserAlertEventMappingStrategy resolve(KafkaEventType eventType) {
-        UserAlertEventMappingStrategy strategy = strategiesByEventType.get(eventType);
-        if (strategy == null) {
-            throw new ApplicationException(KafkaErrorCode.UNSUPPORTED_KAFKA_EVENT_TYPE);
-        }
-        return strategy;
+        return strategiesByEventType.get(eventType);
     }
 
     // 주어진 이벤트 타입을 지원하는 전략을 필터링해 정확히 1개인지 검증하고 그 전략을 반환한다.
