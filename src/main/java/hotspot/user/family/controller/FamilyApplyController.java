@@ -1,5 +1,8 @@
 package hotspot.user.family.controller;
 
+import hotspot.user.family.controller.port.AddFamilyMemberService;
+import hotspot.user.family.controller.request.AddFamilyMemberRequest;
+import hotspot.user.family.controller.response.AddFamilyMemberResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -26,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class FamilyApplyController implements FamilyApplyApi {
 
     private final CreateFamilyApplyService createFamilyApplyService; // 가족 구성원 추가 / 삭제 신청 서비스
+    private final AddFamilyMemberService addFamilyMemberService; // 가족 구성원 추가 서비스
 
     // 가족 구성원 추가 / 삭제 신청
     @PostMapping
@@ -37,6 +41,22 @@ public class FamilyApplyController implements FamilyApplyApi {
                 principal.getId(),
                 principal.getFamilyId(),
                 principal.getRole(),
+                request
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+
+    }
+
+    // 가족 구성원 추가 신청
+    @PostMapping("/add")
+    public ResponseEntity<ApiResponse<AddFamilyMemberResponse>> addFamilyMember(
+            @Valid @RequestBody AddFamilyMemberRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        AddFamilyMemberResponse response = addFamilyMemberService.addFamilyMember(
+                principal.getId(),
+                principal.getFamilyId(),
                 request
         );
 
