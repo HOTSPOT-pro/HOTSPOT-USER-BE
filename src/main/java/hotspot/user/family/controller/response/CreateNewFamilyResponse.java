@@ -1,28 +1,20 @@
 package hotspot.user.family.controller.response;
 
-import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.domain.ApplyType;
-import hotspot.user.member.domain.FamilyRole;
 import lombok.Builder;
 
+import java.util.List;
+
 /**
- * 가족 구성원 추가 / 삭제 신청 response dto
- * @param requesterSubId
- * @param targetSubId
+ * 가족 신규 생성 response dto
  * @param familyId
  * @param applyType
- * @param targetFamilyRole
- * @param docUrl
- * @param status
+ * @param familyMemberList
  */
 @Builder
 public record CreateNewFamilyResponse(
-        Long requesterSubId,
-        Long targetSubId,
         Long familyId,
         ApplyType applyType,
-        FamilyRole targetFamilyRole,
-        String docUrl,
-        ApplyStatus status
+        List<FamilyMemberResponse> familyMemberList
 ) {
 }
