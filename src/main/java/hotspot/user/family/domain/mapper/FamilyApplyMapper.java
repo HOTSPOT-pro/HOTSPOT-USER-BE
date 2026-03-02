@@ -3,7 +3,6 @@ package hotspot.user.family.domain.mapper;
 import java.util.List;
 import java.util.Map;
 
-import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
 import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
@@ -64,21 +63,23 @@ public class FamilyApplyMapper {
                 .build();
     }
 
-    // 다건 응답 변환 (Domain -> Response)
+    /**
+     * 다건 응답 변환 (Domain -> Response)
+     * - 매퍼의 순수성을 위해 복호화 도구가 아닌 복호화된 데이터를 전달받음
+     */
     public static AddFamilyMemberResponse toAddFamilyMemberResponse(
             Long familyId,
             ApplyType applyType,
             List<FamilyApplyTarget> targets,
             Map<Long, Subscription> subscriptionMap,
-            PhoneDecryptor phoneDecryptor) {
+            Map<Long, String> subIdToPhoneMap) {
 
         List<FamilyMemberResponse> memberResponses = targets.stream()
                 .map(target -> {
                     Subscription sub = subscriptionMap.get(target.getTargetSubId());
-                    String decryptedPhone = phoneDecryptor.decrypt(sub.getPhoneEnc());
                     return FamilyMemberResponse.builder()
                             .name(sub.getMember().getName())
-                            .phone(decryptedPhone)
+                            .phone(subIdToPhoneMap.get(sub.getId()))
                             .targetFamilyRole(target.getTargetFamilyRole())
                             .build();
                 })
