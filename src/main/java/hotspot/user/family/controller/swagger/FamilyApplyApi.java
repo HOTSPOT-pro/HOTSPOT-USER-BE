@@ -32,7 +32,7 @@ public interface FamilyApplyApi {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"
                                          + "- FAMILY_013: 이미 가족에 속해있는 구성원입니다.\n"
                                          + "- FAMILY_017: 타인에게 OWNER 역할을 부여할 수 없습니다.\n"
-                                         + "- FAMILY_019: 유효하지 않은 신청 타입입니다.",
+                                         + "- FAMILY_019: 가족 신규 생성 신청 시에는 CREATE 타입만 가능합니다.",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "찾을 수 없음\n"
                                          + "- SUB_001: 회선 정보를 찾을 수 없습니다.",
@@ -45,14 +45,14 @@ public interface FamilyApplyApi {
             @Valid @RequestBody CreateNewFamilyRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
 
-    @Operation(summary = "가족 구성원 추가 신청 (다건)",
-               description = "가족 OWNER가 여러 명의 새로운 구성원을 가족으로 추가하기 위해 신청을 생성합니다.")
+    @Operation(summary = "가족 구성원 추가 신청",
+               description = "가족 OWNER가 여러 명의 새로운 구성원을 가족으로 추가하기 위해 신청을 생성합니다. (ApplyType: ADD)")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "신청 성공"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"
                                          + "- FAMILY_013: 이미 가족에 속해있는 구성원입니다.\n"
                                          + "- FAMILY_017: 타인에게 OWNER 역할을 부여할 수 없습니다.\n"
-                                         + "- FAMILY_019: 유효하지 않은 신청 타입입니다.",
+                                         + "- FAMILY_019: 가족 구성원 추가 신청 시에는 ADD 타입만 가능합니다.",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
                                          + "- FAMILY_002: 가족에 가입된 회선 정보를 찾을 수 없습니다.\n"
@@ -70,7 +70,7 @@ public interface FamilyApplyApi {
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
 
     @Operation(summary = "가족 구성원 삭제 신청",
-               description = "가족 OWNER가 한 명 or 여러 명의 구성원을 가족에서 삭제하기 위해 신청을 생성합니다. (다음 달 1일 삭제 예정)")
+               description = "가족 OWNER가 자신을 포함한 여러 명의 구성원을 가족에서 삭제하기 위한 신청을 생성합니다. (익월 1일 일괄 삭제 예정)")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "신청 성공"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"

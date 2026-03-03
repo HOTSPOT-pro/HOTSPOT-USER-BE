@@ -13,6 +13,6 @@ import lombok.Getter;
 public class Plan {
     private final Long id; // DB 저장 전에는 null, 저장 후 ID 할당됨
     private final String name;
-    private final int dataAmount;
+    private final Long dataAmount;
     private final DataPeriod dataPeriod;
 }

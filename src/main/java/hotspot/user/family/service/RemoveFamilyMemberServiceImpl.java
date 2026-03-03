@@ -1,7 +1,8 @@
 package hotspot.user.family.service;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,13 +12,13 @@ import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.controller.port.RemoveFamilyMemberService;
 import hotspot.user.family.controller.request.RemoveFamilyMemberRequest;
 import hotspot.user.family.controller.response.RemoveFamilyMemberResponse;
-import hotspot.user.family.domain.DeleteStatus;
 import hotspot.user.family.domain.FamilyApply;
-import hotspot.user.family.domain.FamilyRemoveSchedule;
+import hotspot.user.family.domain.FamilyApplyTarget;
 import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.family.domain.mapper.FamilyApplyMapper;
 import hotspot.user.family.domain.mapper.RemoveFamilyMemberMapper;
 import hotspot.user.family.service.port.FamilyApplyRepository;
-import hotspot.user.family.service.port.FamilyRemoveScheduleRepository;
+import hotspot.user.family.service.port.FamilyApplyTargetRepository;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class RemoveFamilyMemberServiceImpl implements RemoveFamilyMemberService 
 
     private final FamilyApplyRepository familyApplyRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
-    private final FamilyRemoveScheduleRepository familyRemoveScheduleRepository;
+    private final FamilyApplyTargetRepository familyApplyTargetRepository;
 
     @Override
     public RemoveFamilyMemberResponse removeFamilyMember(Long requesterMemberId, RemoveFamilyMemberRequest request) {
@@ -60,7 +61,7 @@ public class RemoveFamilyMemberServiceImpl implements RemoveFamilyMemberService 
             throw new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND);
         }
 
-        // 모든 대상이 현재 방장과 같은 가족 소속인지 확인
+        // 모든 대상이 현재 방장과 같은 가족 소속인지 확인 (선언적 검증)
         boolean allInSameFamily = targetFsList.stream()
                 .allMatch(fs -> fs.getFamily().getId().equals(familyId));
 
@@ -68,28 +69,33 @@ public class RemoveFamilyMemberServiceImpl implements RemoveFamilyMemberService 
             throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
         }
 
-        // 이미 처리 대기 중인(SCHEDULED) 신청이 있는지 확인
-        List<FamilyRemoveSchedule> existingSchedules = familyRemoveScheduleRepository
-                .findAllByTargetSubIdInAndStatus(targetSubIds, DeleteStatus.SCHEDULED);
+        // 이미 처리 대기 중인(PENDING) 신청이 있는지 확인 (FamilyApplyTarget 테이블 조회)
+        List<FamilyApplyTarget> existingApplies = familyApplyTargetRepository
+                .findAllPendingByTargetSubIdIn(targetSubIds);
 
-        if (!existingSchedules.isEmpty()) {
+        if (!existingApplies.isEmpty()) {
             throw new ApplicationException(FamilyErrorCode.DUPLICATE_FAMILY_APPLY);
         }
 
-        // 4. 신청서 저장
-        FamilyApply apply = RemoveFamilyMemberMapper.toFamilyApply(requesterFs.getSubscription().getId(), familyId);
+        // 4. 신청서 저장 (부모)
+        FamilyApply apply = FamilyApplyMapper.toFamilyApply(requesterFs.getSubscription().getId(), familyId, request);
         FamilyApply savedApply = familyApplyRepository.save(apply);
 
-        // 5. 삭제 스케줄 생성 및 저장 - 다음 달 1일로 설정
-        LocalDate scheduleDate = LocalDate.now().plusMonths(1).withDayOfMonth(1);
+        // 5. 삭제 대상자 리스트 생성 및 일괄 저장 (자식)
+        // 이미 조회된 targetFsList를 활용해 각 사용자의 현재 역할을 주입
+        Map<Long, FamilyRole> subIdToRoleMap = targetFsList.stream()
+                .collect(Collectors.toMap(fs -> fs.getSubscription().getId(), FamilySubscription::getFamilyRole));
 
-        List<FamilyRemoveSchedule> schedules = targetSubIds.stream()
-                .map(subId -> RemoveFamilyMemberMapper.toFamilyRemoveSchedule(familyId, subId, scheduleDate))
+        List<FamilyApplyTarget> targets = targetSubIds.stream()
+                .map(subId -> FamilyApplyMapper.toFamilyApplyTarget(
+                        savedApply.getId(),
+                        subId,
+                        subIdToRoleMap.get(subId)))
                 .toList();
 
-        List<FamilyRemoveSchedule> savedSchedules = familyRemoveScheduleRepository.saveAll(schedules);
+        List<FamilyApplyTarget> savedTargets = familyApplyTargetRepository.saveAll(targets);
 
-        // 6. 응답 변환
-        return RemoveFamilyMemberMapper.toRemoveFamilyMemberResponse(savedApply, savedSchedules);
+        // 6. 응답 반환
+        return RemoveFamilyMemberMapper.toRemoveFamilyMemberResponse(savedApply, savedTargets);
     }
 }

@@ -48,7 +48,7 @@ class FindSubscriptionServiceImplTest {
         Plan plan = Plan.builder()
                 .id(1L)
                 .name("베이직")
-                .dataAmount(10)
+                .dataAmount(100L)
                 .dataPeriod(DataPeriod.MONTH)
                 .build();
 
@@ -100,7 +100,7 @@ class FindSubscriptionServiceImplTest {
         Plan plan = Plan.builder()
                 .id(1L)
                 .name("베이직")
-                .dataAmount(10)
+                .dataAmount(100L)
                 .dataPeriod(DataPeriod.MONTH).build();
 
         Member member = Member.builder()

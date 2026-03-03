@@ -40,7 +40,7 @@ public class PlanEntity extends BaseEntity {
     @Column(length = 20, nullable = false)
     private String planName;
 
-    private int planDataAmount;
+    private Long planDataAmount;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
