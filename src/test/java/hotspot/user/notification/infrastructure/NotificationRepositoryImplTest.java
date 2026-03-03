@@ -113,16 +113,22 @@ class NotificationRepositoryImplTest {
     @Test
     @DisplayName("count and markAllRead work as expected")
     void countAndMarkAllReadSuccess() {
-        given(notificationJpaRepository.countBySubscriptionSubIdAndIsReadFalse(1L)).willReturn(3L);
-        given(notificationJpaRepository.markAllReadBySubId(1L)).willReturn(3);
+        given(notificationJpaRepository
+                .countBySubscriptionSubIdAndIsReadFalseAndCreatedTimeGreaterThanEqual(eq(1L), any()))
+                .willReturn(3L);
+        given(notificationJpaRepository
+                .markAllReadBySubIdAndCreatedTimeGreaterThanEqual(eq(1L), any()))
+                .willReturn(3);
 
         long count = notificationRepository.countUnreadBySubId(1L);
         int updated = notificationRepository.markAllReadBySubId(1L);
 
         assertThat(count).isEqualTo(3L);
         assertThat(updated).isEqualTo(3);
-        then(notificationJpaRepository).should().countBySubscriptionSubIdAndIsReadFalse(1L);
-        then(notificationJpaRepository).should().markAllReadBySubId(1L);
+        then(notificationJpaRepository).should()
+                .countBySubscriptionSubIdAndIsReadFalseAndCreatedTimeGreaterThanEqual(eq(1L), any());
+        then(notificationJpaRepository).should()
+                .markAllReadBySubIdAndCreatedTimeGreaterThanEqual(eq(1L), any());
     }
 
     @Test

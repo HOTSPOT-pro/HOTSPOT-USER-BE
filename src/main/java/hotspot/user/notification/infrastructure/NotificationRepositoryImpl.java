@@ -56,13 +56,22 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     // 회선 기준 안 읽은 알림 수를 반환한다.
     @Override
     public long countUnreadBySubId(Long subId) {
-        return notificationJpaRepository.countBySubscriptionSubIdAndIsReadFalse(subId);
+        LocalDateTime cutoffDateTime = LocalDateTime.now().minusDays(RECENT_DAYS);
+        return notificationJpaRepository
+                .countBySubscriptionSubIdAndIsReadFalseAndCreatedTimeGreaterThanEqual(
+                        subId,
+                        cutoffDateTime
+                );
     }
 
     // 회선 기준 전체 읽음 처리 row 수를 반환한다.
     @Override
     public int markAllReadBySubId(Long subId) {
-        return notificationJpaRepository.markAllReadBySubId(subId);
+        LocalDateTime cutoffDateTime = LocalDateTime.now().minusDays(RECENT_DAYS);
+        return notificationJpaRepository.markAllReadBySubIdAndCreatedTimeGreaterThanEqual(
+                subId,
+                cutoffDateTime
+        );
     }
 
     // 회선 소유 알림 1건 읽음 처리 row 수를 반환한다.

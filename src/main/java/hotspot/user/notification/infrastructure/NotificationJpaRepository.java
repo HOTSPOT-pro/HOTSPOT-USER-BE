@@ -59,7 +59,10 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationEnt
     );
 
     // 안 읽은 알림의 개수를 카운트한다.
-    long countBySubscriptionSubIdAndIsReadFalse(Long subId);
+    long countBySubscriptionSubIdAndIsReadFalseAndCreatedTimeGreaterThanEqual(
+            Long subId,
+            LocalDateTime cutoffDateTime
+    );
 
     // 해당 회선의 읽지 않은 알림을 모두 읽음 처리한다.
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -68,8 +71,12 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationEnt
                SET n.isRead = true
              WHERE n.subscription.subId = :subId
                AND n.isRead = false
+               AND n.createdTime >= :cutoffDateTime
             """)
-    int markAllReadBySubId(@Param("subId") Long subId);
+    int markAllReadBySubIdAndCreatedTimeGreaterThanEqual(
+            @Param("subId") Long subId,
+            @Param("cutoffDateTime") LocalDateTime cutoffDateTime
+    );
 
     // 해당 회선 소유의 특정 알림 1건만 읽음 처리한다.
     @Modifying(clearAutomatically = true, flushAutomatically = true)
