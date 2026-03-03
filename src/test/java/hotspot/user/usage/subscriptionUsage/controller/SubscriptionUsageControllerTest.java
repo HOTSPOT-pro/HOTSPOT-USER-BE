@@ -55,6 +55,7 @@ class SubscriptionUsageControllerTest {
                 new SubscriptionUsageResponse(
                         1L,
                         now,
+                        "요금제명",
                         24.0,
                         0.0,
                         24.0,

@@ -6,6 +6,7 @@ import java.util.List;
 public record SubscriptionUsageResponse(
         Long subId,
         LocalDateTime currentTime,
+        String planName, // 요금제 이름
         Double subDataAmount,
         Double subDataUsageAmount,
         Double subDataRemainAmount,

@@ -11,6 +11,7 @@ public class SubscriptionUsageMapper {
 
     public static SubscriptionUsageResponse toSubscriptionUsageResponse(
             SubscriptionUsage usage,
+            String planName,
             Map<Long, String> giftIdToUserName,
             LocalDateTime now
     ) {
@@ -40,6 +41,7 @@ public class SubscriptionUsageMapper {
         return new SubscriptionUsageResponse(
                 usage.subId(),
                 now,
+                planName, // 요금제 이름
                 // 개인 요금제
                 usage.limitGb(),
                 usage.usedGb(),
