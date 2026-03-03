@@ -20,6 +20,8 @@ import hotspot.user.family.domain.mapper.FamilySubscriptionMapper;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.outbox.consistencyOutbox.domain.event.family.limit.FamilySubLimitChangedEvent;
+import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.lock.SubscriptionLockedEvent;
+import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.lock.SubscriptionUnlockedEvent;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -76,6 +78,8 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
         // 5. 차단 여부 업데이트
         subscriptionRepository.updateLockedStatus(request.subId(), request.isLocked());
 
+        publishSubscriptionLockEvent(request.subId(), request.isLocked());
+
         // 6. 실제 DB에서 최종 상태를 다시 읽어와서 응답 (데이터 정합성 보장)
         FamilySubDataLimit savedDataLimit = familySubscriptionRepository.findDataLimitBySubId(request.subId());
 
@@ -102,5 +106,25 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
                         UUID.randomUUID().toString()
                 )
         );
+    }
+
+    private void publishSubscriptionLockEvent(Long subId, boolean isLocked) {
+        if (isLocked) {
+            eventPublisher.publishEvent(
+                    new SubscriptionLockedEvent(
+                            "SUBSCRIPTION_LOCKED",
+                            subId,
+                            UUID.randomUUID().toString()
+                    )
+            );
+        } else {
+            eventPublisher.publishEvent(
+                    new SubscriptionUnlockedEvent(
+                            "SUBSCRIPTION_UNLOCKED",
+                            subId,
+                            UUID.randomUUID().toString()
+                    )
+            );
+        }
     }
 }

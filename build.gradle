@@ -132,7 +132,7 @@ jacoco {
 }
 
 /*
- * 1️⃣ 리포트에서 제외할 것 (파일 경로 패턴)
+ * 리포트에서 제외할 것 (파일 경로 패턴)
  * 실제 HTML/XML 리포트에서 빠짐
  */
 def reportExcludes = [
@@ -144,11 +144,12 @@ def reportExcludes = [
 		'**/entity/**',
 		'**/exception/**',
 		'**/common/**',
-		'**/HealthController'
+		'**/HealthController',
+		'**/outbox/consistencyOutbox/domain/event/**'
 ]
 
 /*
- * 2️⃣ 커버리지 검증에서 제외할 것 (패키지 패턴)
+ * 커버리지 검증에서 제외할 것 (패키지 패턴)
  * violationRules 에서 사용
  */
 def verificationExcludes = [
@@ -160,8 +161,13 @@ def verificationExcludes = [
 		'*.exception.*',
 		'*.mapper.*',
 		'*.common.*',
-		'**.*Application*',    // 메인 애플리케이션
-		'**.*HealthController' // 특정 컨트롤러
+
+		// 메인 클래스 & 헬스체크
+		'**.*Application*',
+		'**.*HealthController',
+
+		// Outbox Domain Event
+		'*.outbox.consistencyOutbox.domain.event.*'
 ]
 
 jacocoTestReport {
