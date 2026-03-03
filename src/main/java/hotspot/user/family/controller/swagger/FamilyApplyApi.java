@@ -70,11 +70,12 @@ public interface FamilyApplyApi {
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
 
     @Operation(summary = "가족 구성원 삭제 신청",
-               description = "가족 OWNER가 자신을 포함한 여러 명의 구성원을 가족에서 삭제하기 위한 신청을 생성합니다. (익월 1일 일괄 삭제 예정)")
+               description = "가족 OWNER가 자신을 포함한 여러 명의 구성원을 가족에서 삭제하기 위한 신청을 생성합니다. (익월 1일 일괄 삭제 예정) (ApplyType: REMOVE)")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "신청 성공"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"
-                                         + "- FAMILY_003: 해당 구성원은 동일한 가족 그룹에 속해 있지 않습니다.",
+                                         + "- FAMILY_003: 해당 구성원은 동일한 가족 그룹에 속해 있지 않습니다.\n"
+                                         + "- FAMILY_019: 가족 구성원 삭제 신청 시에는 REMOVE 타입만 가능합니다.",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
                                          + "- FAMILY_002: 가족에 가입된 회선 정보를 찾을 수 없습니다.\n"
