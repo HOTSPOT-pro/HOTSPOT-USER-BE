@@ -13,7 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import hotspot.user.common.security.PrincipalDetails;
-import hotspot.user.dispatch.controller.port.SubscribeSseService;
+import hotspot.user.dispatch.sse.controller.SseController;
+import hotspot.user.dispatch.sse.controller.port.SubscribeSseService;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
 
