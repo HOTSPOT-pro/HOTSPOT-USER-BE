@@ -145,7 +145,6 @@ class FamilyApplyControllerTest {
                 .familyApplyId(1L)
                 .familyId(100L)
                 .subIdList(List.of(200L, 201L))
-                .status(hotspot.user.family.domain.DeleteStatus.SCHEDULED)
                 .build();
 
         given(removeFamilyMemberService.removeFamilyMember(eq(1L), any(RemoveFamilyMemberRequest.class)))
