@@ -6,4 +6,4 @@ aws:
 s3:
   bucket:
     temp: hotspot-temp-bucket
-    certificate: certificate-bucket
+    certificate: hotspot-certificate-bucket
