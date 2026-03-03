@@ -9,6 +9,7 @@ public enum KafkaEventType {
     IMMEDIATE_BLOCK,
     SERVICE_ACCESS,
     PRESENT_DATA,
+    FAMILY_CREATE,
     FAMILY_MEMBER_ADD,
     FAMILY_MEMBER_REMOVE,
     ;
