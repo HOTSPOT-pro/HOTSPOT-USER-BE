@@ -36,7 +36,7 @@ class FamilyApplyMapperTest {
         assertThat(result.getRequesterSubId()).isEqualTo(10L);
         assertThat(result.getApplyType()).isEqualTo(ApplyType.CREATE);
         assertThat(result.getStatus()).isEqualTo(ApplyStatus.PENDING);
-        assertThat(certificatedKey).isEqualTo("certificated");
+        assertThat(result.getDocUrl()).isEqualTo("certificated");
     }
 
     @Test
@@ -52,7 +52,7 @@ class FamilyApplyMapperTest {
         assertThat(result.getRequesterSubId()).isEqualTo(10L);
         assertThat(result.getFamilyId()).isEqualTo(1L);
         assertThat(result.getApplyType()).isEqualTo(ApplyType.ADD);
-        assertThat(certificatedKey).isEqualTo("certificated");
+        assertThat(result.getDocUrl()).isEqualTo("certificated");
     }
 
     @Test
