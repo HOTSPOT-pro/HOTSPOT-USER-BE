@@ -27,6 +27,8 @@ public enum NotificationType {
     SERVICE_ACCESS_BLOCKED(NotificationCategory.APP_SERVICE),
     SERVICE_ACCESS_RELEASED(NotificationCategory.APP_SERVICE),
     PRESENT_DATA(NotificationCategory.PRESENT),
+    FAMILY_CREATE_APPROVED(NotificationCategory.POLICY),
+    FAMILY_CREATE_REJECTED(NotificationCategory.POLICY),
     FAMILY_MEMBER_ADD_APPROVED(NotificationCategory.POLICY),
     FAMILY_MEMBER_ADD_REJECTED(NotificationCategory.POLICY),
     FAMILY_MEMBER_REMOVE_APPROVED(NotificationCategory.POLICY),
@@ -37,6 +39,23 @@ public enum NotificationType {
             FAMILY_MEMBER_ADD_REJECTED,
             FAMILY_MEMBER_REMOVE_APPROVED,
             FAMILY_MEMBER_REMOVE_REJECTED
+    );
+
+    private static final Set<NotificationType> SMS_ALLOWED_TYPES = EnumSet.of(
+            SINGLE_USAGE_THRESHOLD_50,
+            SINGLE_USAGE_THRESHOLD_30,
+            SINGLE_USAGE_THRESHOLD_10,
+            SINGLE_USAGE_EXHAUSTED,
+            FAMILY_USAGE_THRESHOLD_50,
+            FAMILY_USAGE_THRESHOLD_30,
+            FAMILY_USAGE_THRESHOLD_10,
+            FAMILY_USAGE_EXHAUSTED,
+            PRESENT_USAGE_THRESHOLD_50,
+            PRESENT_USAGE_THRESHOLD_30,
+            PRESENT_USAGE_THRESHOLD_10,
+            PRESENT_USAGE_EXHAUSTED,
+            FAMILY_CREATE_APPROVED,
+            FAMILY_CREATE_REJECTED
     );
 
     private final NotificationCategory category;
@@ -63,5 +82,13 @@ public enum NotificationType {
 
     public static boolean isAlwaysAllowed(String rawType) {
         return isAlwaysAllowed(from(rawType));
+    }
+
+    public static boolean isSmsAllowed(NotificationType type) {
+        return SMS_ALLOWED_TYPES.contains(type);
+    }
+
+    public static boolean isSmsAllowed(String rawType) {
+        return isSmsAllowed(from(rawType));
     }
 }
