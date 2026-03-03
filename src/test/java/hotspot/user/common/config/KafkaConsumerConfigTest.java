@@ -40,7 +40,7 @@ class KafkaConsumerConfigTest {
                   "subId": 1001,
                   "familyId": 2002,
                   "giftId": "3003",
-                  "targetName": "Kid A"
+                  "targetNames": ["Kid A", "Kid B"]
                 }
                 """;
 
@@ -60,7 +60,7 @@ class KafkaConsumerConfigTest {
         assertThat(event.subId()).isEqualTo(1001L);
         assertThat(event.familyId()).isEqualTo(2002L);
         assertThat(event.giftId()).isEqualTo("3003");
-        assertThat(event.targetName()).isEqualTo("Kid A");
+        assertThat(event.targetNames()).containsExactly("Kid A", "Kid B");
     }
 
     @Test
