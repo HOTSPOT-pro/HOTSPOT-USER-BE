@@ -24,7 +24,7 @@ import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.family.controller.port.FindFamilyInfoService;
 import hotspot.user.family.controller.response.FamilyInfoResponse;
-import hotspot.user.member.controller.response.MemberResponse;
+import hotspot.user.family.controller.response.FamilyMemberInfoResponse;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
 
@@ -65,26 +65,24 @@ class FamilyControllerTest {
     }
 
     @Test
-    @DisplayName("성공: 가족 정보 조회 API 호출 시 200 OK와 가족 구성원 정보를 반환한다")
+    @DisplayName("성공: 가족 정보 조회 API 호출 시 200 OK와 가족 구성원 정보를 반환한다 (이메일 제외)")
     void getFamilyInfoSuccess() throws Exception {
         // given
         Long familyId = 100L;
         setAuthentication(familyId);
 
-        MemberResponse member1 = MemberResponse.builder()
+        FamilyMemberInfoResponse member1 = FamilyMemberInfoResponse.builder()
                 .id(1L)
                 .name("홍길동")
-                .email("test@test.com")
                 .familyRole(FamilyRole.OWNER)
                 .familyId(familyId)
                 .subId(10L)
                 .status(Status.APPROVED)
                 .build();
 
-        MemberResponse member2 = MemberResponse.builder()
+        FamilyMemberInfoResponse member2 = FamilyMemberInfoResponse.builder()
                 .id(2L)
                 .name("김철수")
-                .email("chulsoo@test.com")
                 .familyRole(FamilyRole.CHILD)
                 .familyId(familyId)
                 .subId(11L)

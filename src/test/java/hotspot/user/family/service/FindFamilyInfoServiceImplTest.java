@@ -38,7 +38,7 @@ class FindFamilyInfoServiceImplTest {
     private FindFamilyInfoServiceImpl findFamilyInfoService;
 
     @Test
-    @DisplayName("성공: 가족 ID로 가족 및 구성원 전체 정보를 조회한다")
+    @DisplayName("성공: 가족 ID로 가족 및 구성원 전체 정보를 조회한다 (이메일 제외)")
     void findFamilyInfoByIdSuccess() {
         // given
         Long familyId = 1L;
@@ -56,7 +56,7 @@ class FindFamilyInfoServiceImplTest {
                 .build();
 
         given(familyRepository.findInfoById(familyId)).willReturn(Optional.of(detailInfo));
-        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); //  추가
+        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678");
 
         // when
         FamilyInfoResponse response = findFamilyInfoService.findFamilyInfoById(familyId);
@@ -65,8 +65,8 @@ class FindFamilyInfoServiceImplTest {
         assertThat(response.familyId()).isEqualTo(familyId);
         assertThat(response.familyNum()).isEqualTo(1);
         assertThat(response.memberInfoList()).hasSize(1);
-        assertThat(response.memberInfoList().get(0).email()).isEqualTo("test@test.com");
         assertThat(response.memberInfoList().get(0).phone()).isEqualTo("010-1234-5678");
+        // 이메일 검증은 더 이상 수행하지 않음 (FamilyMemberInfoResponse에는 필드 없음)
     }
 
     @Test
