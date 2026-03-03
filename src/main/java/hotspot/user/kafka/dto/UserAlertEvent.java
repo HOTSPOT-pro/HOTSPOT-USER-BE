@@ -1,6 +1,7 @@
 package hotspot.user.kafka.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -17,7 +18,7 @@ public record UserAlertEvent(
         String presentSenderName,
         String presentAmount,
         String giftId,
-        String targetName,
+        List<String> targetNames,
         LocalDateTime createdTime
 ) {
 }
