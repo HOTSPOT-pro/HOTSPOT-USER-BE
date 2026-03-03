@@ -1,7 +1,6 @@
 package hotspot.user.member.domain.mapper;
 
 import hotspot.user.family.controller.response.FamilyMemberInfoResponse;
-
 import hotspot.user.member.domain.MemberDetailInfo;
 
 /**

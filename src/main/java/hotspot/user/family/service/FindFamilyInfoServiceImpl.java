@@ -10,11 +10,11 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.controller.port.FindFamilyInfoService;
 import hotspot.user.family.controller.response.FamilyInfoResponse;
+import hotspot.user.family.controller.response.FamilyMemberInfoResponse;
 import hotspot.user.family.domain.FamilyDetailInfo;
 import hotspot.user.family.domain.mapper.FamilyMapper;
 import hotspot.user.family.service.port.FamilyRepository;
-import hotspot.user.member.controller.response.MemberResponse;
-import hotspot.user.member.domain.mapper.MemberMapper;
+import hotspot.user.member.domain.mapper.FamilyMemberInfoMapper;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -36,10 +36,10 @@ public class FindFamilyInfoServiceImpl implements FindFamilyInfoService {
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
 
         // 서비스 계층에서 리스트 내 각 멤버의 정보를 복호화하여 매핑
-        List<MemberResponse> memberInfoList = detailInfo.getMemberDetailInfoList().stream()
+        List<FamilyMemberInfoResponse> memberInfoList = detailInfo.getMemberDetailInfoList().stream()
                 .map(info -> {
                     String decryptedPhone = phoneDecryptor.decrypt(info.getPhone());
-                    return MemberMapper.toMemberResponse(info, decryptedPhone);
+                    return FamilyMemberInfoMapper.toFamilyMemberInfoResponse(info, decryptedPhone);
                 })
                 .toList();
 
