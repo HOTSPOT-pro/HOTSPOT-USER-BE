@@ -199,7 +199,8 @@ class CreateNewFamilyServiceImplTest {
                 .willReturn(Optional.of(Subscription.builder().id(100L).build()));
 
         FamilyMemberRequest memberReq = new FamilyMemberRequest("유령", "01012345678", FamilyRole.CHILD);
-        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "temp-s3-key", List.of(memberReq));
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE,
+                "temp-s3-key", List.of(memberReq));
 
         given(phoneHashIndexer.toHash(any())).willReturn("HASH");
         given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of()); // 아무도 못찾음
@@ -220,7 +221,8 @@ class CreateNewFamilyServiceImplTest {
         given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
 
         FamilyMemberRequest invalidReq = new FamilyMemberRequest("타인", "01011112222", FamilyRole.OWNER);
-        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "temp-s3-key", List.of(invalidReq));
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE,
+                "temp-s3-key", List.of(invalidReq));
 
         Subscription targetSub = Subscription.builder().id(200L).phoneHash("HASH").build();
         given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of(targetSub));
