@@ -20,7 +20,7 @@ import hotspot.user.auth.service.port.TokenRepository;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtProvider;
-import hotspot.user.dispatch.registry.SseEmitterRegistry;
+import hotspot.user.dispatch.sse.registry.SseEmitterRegistry;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
 import hotspot.user.subscription.domain.Subscription;
