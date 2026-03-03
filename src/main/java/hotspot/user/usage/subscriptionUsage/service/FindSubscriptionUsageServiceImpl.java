@@ -54,11 +54,13 @@ public class FindSubscriptionUsageServiceImpl implements FindSubscriptionUsageSe
                 presentDataRepository.findGiftGiverNames(giftIds);
 
         LocalDateTime now = LocalDateTime.now(clock);
+        String planName = subscription.getPlan().getName(); // 요금제 이름
 
         // Mapper에 전달
         return SubscriptionUsageMapper
                 .toSubscriptionUsageResponse(
                         usage,
+                        planName, // 요금제 이름
                         giftIdToUserName,
                         now
                 );
