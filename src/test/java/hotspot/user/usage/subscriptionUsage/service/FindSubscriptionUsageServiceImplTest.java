@@ -68,6 +68,7 @@ class FindSubscriptionUsageServiceImplTest {
         Long subscriptionId = 1L;
 
         Plan plan = Plan.builder()
+                .name("프리미엄 요금제")
                 .dataPeriod(DataPeriod.MONTH)
                 .build();
 
@@ -108,6 +109,7 @@ class FindSubscriptionUsageServiceImplTest {
         // then
         assertNotNull(response);
         assertEquals(subscriptionId, response.subId());
+        assertEquals("프리미엄 요금제", response.planName());
 
         assertEquals(1, response.giftUsages().size());
         assertEquals("김태연",
