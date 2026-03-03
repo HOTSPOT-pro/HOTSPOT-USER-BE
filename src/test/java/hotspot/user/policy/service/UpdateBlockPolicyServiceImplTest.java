@@ -2,12 +2,13 @@ package hotspot.user.policy.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.util.ArrayList;
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,143 +21,233 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
+import hotspot.user.common.exception.code.FamilyErrorCode;
+import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.common.exception.code.PolicyErrorCode;
-import hotspot.user.family.domain.Family;
-import hotspot.user.family.domain.FamilySubscription;
-import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
-import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
+import hotspot.user.member.domain.MemberDetailInfo;
+import hotspot.user.member.service.port.MemberRepository;
+import hotspot.user.policy.controller.request.BlockPolicyRequest;
+import hotspot.user.policy.controller.response.BlockPolicyResponse;
 import hotspot.user.policy.domain.BlockPolicy;
-import hotspot.user.policy.domain.PolicySub;
+import hotspot.user.policy.domain.PolicySnapshot;
+import hotspot.user.policy.domain.PolicyType;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
-import hotspot.user.policy.service.port.PolicySubRepository;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateBlockPolicyServiceImplTest {
-
-    @InjectMocks
-    private UpdateBlockPolicyServiceImpl updateBlockPolicyService;
-
-    @Mock
-    private PolicySubRepository policySubRepository;
-
-    @Mock
-    private FamilySubscriptionRepository familySubscriptionRepository;
 
     @Mock
     private BlockPolicyRepository blockPolicyRepository;
 
     @Mock
-    private NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
+    private MemberRepository memberRepository;
+
+    @InjectMocks
+    private UpdateBlockPolicyServiceImpl service;
+
+    private static final Long MEMBER_ID = 1L;
+    private static final Long FAMILY_ID = 100L;
+    private static final Long POLICY_ID = 10L;
 
     @Test
-    @DisplayName("성공: 유효한 요청일 경우 구성원에게 적용된 정책이 업데이트된다")
-    void updateBlockPolicySuccess() {
+    @DisplayName("성공: 우리 가족 정책을 수정한다")
+    void updateSuccess() {
         // given
-        Long familyId = 100L;
-        Long subId = 1L;
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(familyId, subId, List.of(1L));
+        BlockPolicyRequest request = new BlockPolicyRequest(
+                "수정된 이름", PolicyType.ONCE, null, "수정된 설명", false);
 
-        setAuthMock(familyId, subId);
+        MemberDetailInfo memberDetail = MemberDetailInfo.builder()
+                .familyId(FAMILY_ID)
+                .role(FamilyRole.OWNER)
+                .build();
+        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+                .willReturn(Optional.of(memberDetail));
 
-        BlockPolicy policy = BlockPolicy.builder().id(1L).name("Test Policy").build();
-        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(policy));
-        given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>());
+        BlockPolicy existingPolicy = BlockPolicy.builder()
+                .id(POLICY_ID)
+                .familyId(FAMILY_ID)
+                .name("기존 이름")
+                .policyType(PolicyType.ONCE)
+                .isActive(true)
+                .build();
+        given(blockPolicyRepository.findByBlockPolicyId(POLICY_ID)).willReturn(existingPolicy);
+        given(blockPolicyRepository.save(any(BlockPolicy.class))).willAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        UpdateBlockPolicyResponse response = updateBlockPolicyService.updateBlockPolicy(
-                request,
-                familyId,
-                FamilyRole.OWNER);
+        BlockPolicyResponse response = service.update(request, POLICY_ID, MEMBER_ID, FAMILY_ID);
 
         // then
-        assertThat(response.subId()).isEqualTo(subId);
-        verify(policySubRepository, times(1)).saveAll(anyList());
+        assertThat(response.name()).isEqualTo("수정된 이름");
+        assertThat(response.policyDescription()).isEqualTo("수정된 설명");
+        assertThat(response.isActive()).isFalse();
+        verify(blockPolicyRepository).save(any(BlockPolicy.class));
     }
 
     @Test
-    @DisplayName("성공: 기존 정책이 교체되고 새로운 정책이 추가된다")
-    void updateBlockPolicySuccessWithReplacement() {
+    @DisplayName("성공: 정책 스냅샷은 제공되나 정책 타입은 null인 경우 기존 타입을 사용한다")
+    void updateWithSnapshotAndNullTypeSuccess() {
         // given
-        Long familyId = 100L;
-        Long subId = 1L;
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(familyId, subId, List.of(2L));
+        PolicySnapshot snapshot = PolicySnapshot.builder()
+                .durationMinutes(30)
+                .build();
+        BlockPolicyRequest request = new BlockPolicyRequest(
+                "수정된 이름", null, snapshot, "수정된 설명", true);
 
-        setAuthMock(familyId, subId);
+        MemberDetailInfo memberDetail = MemberDetailInfo.builder()
+                .familyId(FAMILY_ID)
+                .role(FamilyRole.OWNER)
+                .build();
+        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+                .willReturn(Optional.of(memberDetail));
 
-        // 기존에 활성화된 정책 (ID: 1L)
-        PolicySub existingSub = PolicySub.builder().id(10L).policyId(1L).isDeleted(false).build();
-        given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>(List.of(existingSub)));
-
-        // 요청된 새로운 정책 (ID: 2L)
-        BlockPolicy newPolicy = BlockPolicy.builder().id(2L).name("New Policy").build();
-        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(newPolicy));
+        BlockPolicy existingPolicy = BlockPolicy.builder()
+                .id(POLICY_ID)
+                .familyId(FAMILY_ID)
+                .policyType(PolicyType.ONCE)
+                .build();
+        given(blockPolicyRepository.findByBlockPolicyId(POLICY_ID)).willReturn(existingPolicy);
+        given(blockPolicyRepository.save(any(BlockPolicy.class))).willAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        UpdateBlockPolicyResponse response = updateBlockPolicyService.updateBlockPolicy(
-                request,
-                familyId,
-                FamilyRole.OWNER);
+        BlockPolicyResponse response = service.update(request, POLICY_ID, MEMBER_ID, FAMILY_ID);
 
         // then
-        assertThat(response.blockedPolicyIdList()).containsExactly(2L);
-        assertThat(existingSub.isDeleted()).isTrue(); // 기존 정책은 삭제됨
-        verify(policySubRepository, times(1)).saveAll(anyList());
+        assertThat(response.name()).isEqualTo("수정된 이름");
+        verify(blockPolicyRepository).save(any(BlockPolicy.class));
     }
 
     @Test
-    @DisplayName("성공: 요청 목록에 없는 기존 정책은 삭제된다")
-    void updateBlockPolicySuccessWithDeletion() {
+    @DisplayName("실패: 관리자 정책은 수정할 수 없다")
+    void updateFailAdminPolicy() {
         // given
-        Long familyId = 100L;
-        Long subId = 1L;
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(familyId, subId, List.of()); // 요청은 비어있음
+        BlockPolicyRequest request = new BlockPolicyRequest("이름", PolicyType.ONCE, null, "설명", true);
 
-        setAuthMock(familyId, subId);
+        MemberDetailInfo memberDetail = MemberDetailInfo.builder()
+                .familyId(FAMILY_ID)
+                .role(FamilyRole.OWNER)
+                .build();
+        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+                .willReturn(Optional.of(memberDetail));
 
-        PolicySub existingSub = PolicySub.builder().id(10L).policyId(1L).isDeleted(false).build();
-        given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>(List.of(existingSub)));
-        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of());
-
-        // when
-        updateBlockPolicyService.updateBlockPolicy(request, familyId, FamilyRole.OWNER);
-
-        // then
-        assertThat(existingSub.isDeleted()).isTrue();
-        verify(policySubRepository, times(1)).saveAll(anyList());
-    }
-
-    @Test
-    @DisplayName("실패: OWNER 권한이 아닌 경우 예외가 발생한다")
-    void updateBlockPolicyFailByRole() {
-        // given
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L));
+        BlockPolicy adminPolicy = BlockPolicy.builder()
+                .id(POLICY_ID)
+                .familyId(null) // 관리자 정책
+                .build();
+        given(blockPolicyRepository.findByBlockPolicyId(POLICY_ID)).willReturn(adminPolicy);
 
         // when & then
-        assertThatThrownBy(() -> updateBlockPolicyService.updateBlockPolicy(request, 100L, FamilyRole.CHILD))
+        assertThatThrownBy(() -> service.update(request, POLICY_ID, MEMBER_ID, FAMILY_ID))
                 .isInstanceOf(ApplicationException.class)
-                .hasMessage(AuthErrorCode.ACCESS_DENIED.getMessage());
+                .hasFieldOrPropertyWithValue("code", PolicyErrorCode.POLICY_ACCESS_DENIED);
     }
 
     @Test
-    @DisplayName("실패: 요청한 정책 중 일부가 존재하지 않으면 예외가 발생한다")
-    void updateBlockPolicyFailByPolicyNotFound() {
+    @DisplayName("실패: 타인의 가족 정책은 수정할 수 없다")
+    void updateFailForeignPolicy() {
         // given
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L, 2L));
-        setAuthMock(100L, 1L);
-        given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(BlockPolicy.builder().id(1L).build()));
+        BlockPolicyRequest request = new BlockPolicyRequest("이름", PolicyType.ONCE, null, "설명", true);
+
+        MemberDetailInfo memberDetail = MemberDetailInfo.builder()
+                .familyId(FAMILY_ID)
+                .role(FamilyRole.OWNER)
+                .build();
+        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+                .willReturn(Optional.of(memberDetail));
+
+        BlockPolicy foreignPolicy = BlockPolicy.builder()
+                .id(POLICY_ID)
+                .familyId(200L) // 타인 가족
+                .build();
+        given(blockPolicyRepository.findByBlockPolicyId(POLICY_ID)).willReturn(foreignPolicy);
 
         // when & then
-        assertThatThrownBy(() -> updateBlockPolicyService.updateBlockPolicy(request, 100L, FamilyRole.OWNER))
+        assertThatThrownBy(() -> service.update(request, POLICY_ID, MEMBER_ID, FAMILY_ID))
                 .isInstanceOf(ApplicationException.class)
-                .hasMessage(PolicyErrorCode.POLICY_NOT_FOUND.getMessage());
+                .hasFieldOrPropertyWithValue("code", PolicyErrorCode.POLICY_ACCESS_DENIED);
     }
 
-    private void setAuthMock(Long familyId, Long subId) {
-        Family family = Family.builder().id(familyId).build();
-        FamilySubscription familySub = FamilySubscription.builder().family(family).build();
-        given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
+    @Test
+    @DisplayName("성공: 정책 스냅샷이 포함된 수정을 진행한다")
+    void updateWithSnapshotSuccess() {
+        // given
+        PolicySnapshot snapshot = PolicySnapshot.builder()
+                .days(List.of(DayOfWeek.MONDAY))
+                .startTime("09:00")
+                .endTime("18:00")
+                .build();
+        BlockPolicyRequest request = new BlockPolicyRequest(
+                "수정된 이름", PolicyType.SCHEDULED, snapshot, "수정된 설명", true);
+
+        MemberDetailInfo memberDetail = MemberDetailInfo.builder()
+                .familyId(FAMILY_ID)
+                .role(FamilyRole.OWNER)
+                .build();
+        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+                .willReturn(Optional.of(memberDetail));
+
+        BlockPolicy existingPolicy = BlockPolicy.builder()
+                .id(POLICY_ID)
+                .familyId(FAMILY_ID)
+                .policyType(PolicyType.SCHEDULED)
+                .build();
+        given(blockPolicyRepository.findByBlockPolicyId(POLICY_ID)).willReturn(existingPolicy);
+        given(blockPolicyRepository.save(any(BlockPolicy.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        BlockPolicyResponse response = service.update(request, POLICY_ID, MEMBER_ID, FAMILY_ID);
+
+        // then
+        assertThat(response.name()).isEqualTo("수정된 이름");
+        verify(blockPolicyRepository).save(any(BlockPolicy.class));
+    }
+
+    @Test
+    @DisplayName("실패: 회원을 찾을 수 없으면 예외가 발생한다")
+    void validateOwnerAuthorityFailMemberNotFound() {
+        // given
+        BlockPolicyRequest request = new BlockPolicyRequest("이름", PolicyType.ONCE, null, "설명", true);
+        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+                .willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> service.update(request, POLICY_ID, MEMBER_ID, FAMILY_ID))
+                .isInstanceOf(ApplicationException.class)
+                .hasFieldOrPropertyWithValue("code", MemberErrorCode.MEMBER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("실패: 소속 가족이 다르면 예외가 발생한다")
+    void validateOwnerAuthorityFailDifferentFamily() {
+        // given
+        BlockPolicyRequest request = new BlockPolicyRequest("이름", PolicyType.ONCE, null, "설명", true);
+        MemberDetailInfo memberDetail = MemberDetailInfo.builder()
+                .familyId(200L) // 다른 가족
+                .build();
+        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+                .willReturn(Optional.of(memberDetail));
+
+        // when & then
+        assertThatThrownBy(() -> service.update(request, POLICY_ID, MEMBER_ID, FAMILY_ID))
+                .isInstanceOf(ApplicationException.class)
+                .hasFieldOrPropertyWithValue("code", FamilyErrorCode.NOT_FAMILY_MEMBER);
+    }
+
+    @Test
+    @DisplayName("실패: OWNER 권한이 없으면 예외가 발생한다")
+    void validateOwnerAuthorityFailNotOwner() {
+        // given
+        BlockPolicyRequest request = new BlockPolicyRequest("이름", PolicyType.ONCE, null, "설명", true);
+        MemberDetailInfo memberDetail = MemberDetailInfo.builder()
+                .familyId(FAMILY_ID)
+                .role(FamilyRole.PARENT) // OWNER 아님
+                .build();
+        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+                .willReturn(Optional.of(memberDetail));
+
+        // when & then
+        assertThatThrownBy(() -> service.update(request, POLICY_ID, MEMBER_ID, FAMILY_ID))
+                .isInstanceOf(ApplicationException.class)
+                .hasFieldOrPropertyWithValue("code", AuthErrorCode.ACCESS_DENIED);
     }
 }

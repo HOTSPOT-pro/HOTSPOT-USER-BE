@@ -12,8 +12,21 @@ import hotspot.user.policy.infrastructure.entity.PolicySubEntity;
 public interface PolicySubJpaRepository extends JpaRepository<PolicySubEntity, Long> {
     List<PolicySubEntity> findBySubscriptionSubId(Long subId);
 
-    // N+1 SELECT를 방지하기 위한 벌크 UPDATE 쿼리
+    // 현재 활성화된 정책만 조회
+    List<PolicySubEntity> findBySubscriptionSubIdAndIsActiveTrue(Long subId);
+
+    // N+1 SELECT를 방지하기 위한 벌크 UPDATE 쿼리 (비활성화, isActive = false)
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE PolicySubEntity p SET p.isDeleted = true WHERE p.policySubId IN :ids")
-    void bulkSoftDelete(@Param("ids") List<Long> ids);
+    @Query("UPDATE PolicySubEntity p SET p.isActive = false WHERE p.policySubId IN :ids")
+    void bulkDeActive(@Param("ids") List<Long> ids);
+
+    // N+1 SELECT를 방지하기 위한 벌크 UPDATE 쿼리 (활성화, isActive = true)
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE PolicySubEntity p SET p.isActive = true WHERE p.policySubId IN :ids")
+    void bulkActivate(@Param("ids") List<Long> ids);
+
+    // 정책(BlockPolicy)이 비활성화될 때 해당 정책을 적용 중인 모든 회선 매핑 정보를 비활성화 처리
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE PolicySubEntity p SET p.isActive = false WHERE p.blockPolicy.blockPolicyId IN :blockPolicyIds")
+    void bulkDeActiveByBlockPolicyIds(@Param("blockPolicyIds") List<Long> blockPolicyIds);
 }

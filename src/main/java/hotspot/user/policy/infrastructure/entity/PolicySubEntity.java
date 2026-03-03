@@ -9,14 +9,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-import org.hibernate.type.SqlTypes;
+import jakarta.persistence.UniqueConstraint;
 
 import hotspot.user.common.BaseEntity;
-import hotspot.user.policy.domain.DateSnapshot;
 import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 import lombok.AccessLevel;
@@ -33,53 +28,62 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "policy_sub")
-@SQLDelete(sql = "UPDATE policy_sub SET is_deleted = true WHERE policy_sub_id = ?")
-@Where(clause = "is_deleted = false")
+// (subId, policyId)에 Unique Key 걸어서 같은 정책이 회선에 2번 적재되지 않도록 방지
+@Table(
+    name = "policy_sub",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_policy_sub_composite",
+            columnNames = {"sub_id", "block_policy_id"}
+        )
+    }
+)
 public class PolicySubEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long policySubId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sub_id")
+    @JoinColumn(name = "sub_id", nullable = false)
     private SubscriptionEntity subscription;
 
-    @Column(name = "policy_id")
-    private Long policyId;
+    @Column(name = "sub_id", nullable = false, insertable = false, updatable = false)
+    private Long subId; // 조회용
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb") // PostgreSQL
-    private DateSnapshot dateSnapshot;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "block_policy_id", nullable = false)
+    private BlockPolicyEntity blockPolicy;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(name = "block_policy_id", nullable = false, insertable = false, updatable = false)
+    private Long blockPolicyId; // 조회용
+
+    @Column(name = "is_active", nullable = false)
     @Builder.Default
-    private boolean isDeleted = false;
+    private Boolean isActive = true;
 
     public PolicySub entityToDomain() {
         return PolicySub.builder()
                 .id(this.policySubId)
-                .policyId(this.policyId)
-                .subId(this.subscription != null ? this.subscription.getSubId() : null)
-                .dateSnapshot(this.dateSnapshot)
-                .isDeleted(this.isDeleted)
+                .subId(this.subId)
+                .blockPolicyId(this.blockPolicyId)
+                .isActive(this.isActive)
                 .build();
     }
 
     public static PolicySubEntity domainToEntity(PolicySub policySub) {
 
-        // 연관관계(FK) 매핑을 위한 프록시(가짜) 엔티티 생성
-        // DB에서 전체 데이터를 읽어올 필요 없이, 외래키로 쓸 ID값만 세팅
-        SubscriptionEntity subscriptionProxy = SubscriptionEntity.builder()
-                .subId(policySub.getSubId()) // 도메인이 들고 있는 ID만 주입
-                .build();
+        // 연관관계(FK) 매핑을 위한 프록시 엔티티 생성
+        SubscriptionEntity subscriptionProxy = policySub.getSubId() != null ?
+                SubscriptionEntity.builder().subId(policySub.getSubId()).build() : null;
+
+        BlockPolicyEntity blockPolicyProxy = policySub.getBlockPolicyId() != null ?
+                BlockPolicyEntity.builder().blockPolicyId(policySub.getBlockPolicyId()).build() : null;
 
         return PolicySubEntity.builder()
                 .policySubId(policySub.getId())
-                .policyId(policySub.getPolicyId())
                 .subscription(subscriptionProxy)
-                .dateSnapshot(policySub.getDateSnapshot())
-                .isDeleted(policySub.isDeleted())
+                .blockPolicy(blockPolicyProxy)
+                .isActive(policySub.isActive())
                 .build();
     }
 }

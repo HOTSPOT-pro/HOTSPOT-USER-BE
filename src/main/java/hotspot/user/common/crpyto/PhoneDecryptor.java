@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class PhoneDecryptor {
-    private static final Pattern MOBILE_PATTERN = Pattern.compile("^01\\d{8,9}$");
+    private static final Pattern MOBILE_PATTERN = Pattern.compile("^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$");
     private final byte[] secretKey;
 
     public PhoneDecryptor(@Value("${app.crypto.secret-key}") String secretKeyBase64) {

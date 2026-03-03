@@ -11,9 +11,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
-import hotspot.user.family.controller.port.CreateFamilyApplyService;
-import hotspot.user.family.controller.request.CreateFamilyApplyRequest;
-import hotspot.user.family.controller.response.CreateFamilyApplyResponse;
+import hotspot.user.family.controller.port.AddFamilyMemberService;
+import hotspot.user.family.controller.port.CreateNewFamilyService;
+import hotspot.user.family.controller.port.RemoveFamilyMemberService;
+import hotspot.user.family.controller.request.AddFamilyMemberRequest;
+import hotspot.user.family.controller.request.CreateNewFamilyRequest;
+import hotspot.user.family.controller.request.RemoveFamilyMemberRequest;
+import hotspot.user.family.controller.response.AddFamilyMemberResponse;
+import hotspot.user.family.controller.response.CreateNewFamilyResponse;
+import hotspot.user.family.controller.response.RemoveFamilyMemberResponse;
 import hotspot.user.family.controller.swagger.FamilyApplyApi;
 import lombok.RequiredArgsConstructor;
 
@@ -25,22 +31,50 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/families")
 public class FamilyApplyController implements FamilyApplyApi {
 
-    private final CreateFamilyApplyService createFamilyApplyService; // 가족 구성원 추가 / 삭제 신청 서비스
+    private final CreateNewFamilyService createNewFamilyService; // 가족 신규 생성
+    private final AddFamilyMemberService addFamilyMemberService; // 가족 구성원 추가 신청
+    private final RemoveFamilyMemberService removeFamilyMemberService; // 가족 구성원 삭제 신청
 
-    // 가족 구성원 추가 / 삭제 신청
-    @PostMapping
-    public ResponseEntity<ApiResponse<CreateFamilyApplyResponse>> manageFamilyMember(
-            @Valid @RequestBody CreateFamilyApplyRequest request,
+    // 가족 신규 생성
+    @Override
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<CreateNewFamilyResponse>> createNewFamily(
+            @Valid @RequestBody CreateNewFamilyRequest request,
             @AuthenticationPrincipal PrincipalDetails principal) {
 
-        CreateFamilyApplyResponse response = createFamilyApplyService.manage(
+        CreateNewFamilyResponse response = createNewFamilyService.createNewFamily(
                 principal.getId(),
-                principal.getFamilyId(),
-                principal.getRole(),
                 request
         );
 
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
 
+    // 가족 구성원 추가 신청
+    @Override
+    @PostMapping("/add")
+    public ResponseEntity<ApiResponse<AddFamilyMemberResponse>> addFamilyMember(
+            @Valid @RequestBody AddFamilyMemberRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        AddFamilyMemberResponse response = addFamilyMemberService.addFamilyMember(
+                principal.getId(),
+                principal.getFamilyId(),
+                request
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // 가족 구성원 삭제 신청
+    @Override
+    @PostMapping("/delete")
+    public ResponseEntity<ApiResponse<RemoveFamilyMemberResponse>> removeFamilyMember(
+            @Valid @RequestBody RemoveFamilyMemberRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        RemoveFamilyMemberResponse response = removeFamilyMemberService.removeFamilyMember(principal.getId(), request);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

@@ -22,20 +22,30 @@ public class PolicySubRepositoryImpl implements PolicySubRepository {
                 .toList();
     }
 
+    @Override
+    public List<PolicySub> findActiveBySubId(Long subId) {
+        return policySubJpaRepository.findBySubscriptionSubIdAndIsActiveTrue(subId).stream()
+                .map(PolicySubEntity::entityToDomain)
+                .toList();
+    }
+
 
     // 정책-회선 매핑 리스트 저장
-    // 새로운 INSERT, 기존 isDeleted=true 분리해서 진행 (N+1 방지)
+    // 새로운 INSERT, 기존 isActive 업데이트 분리해서 진행 (N+1 방지)
     @Override
     public List<PolicySub> saveAll(List<PolicySub> policySubList) {
         List<PolicySubEntity> entitiesToInsert = new ArrayList<>();
-        List<Long> idsToUpdate = new ArrayList<>();
+        List<Long> idsToDeactivate = new ArrayList<>();
+        List<Long> idsToActivate = new ArrayList<>();
 
-        // 단 한 번의 순회로 Insert 대상과 Update(Delete) 대상을 분류
+        // 단 한 번의 순회로 Insert 대상과 Update(Delete/Activate) 대상을 분류
         policySubList.forEach(domain -> {
             if (domain.getId() == null) {
                 entitiesToInsert.add(PolicySubEntity.domainToEntity(domain));
-            } else if (domain.isDeleted()) {
-                idsToUpdate.add(domain.getId());
+            } else if (!domain.isActive()) {
+                idsToDeactivate.add(domain.getId());
+            } else {
+                idsToActivate.add(domain.getId());
             }
         });
 
@@ -46,13 +56,24 @@ public class PolicySubRepositoryImpl implements PolicySubRepository {
             savedEntities = policySubJpaRepository.saveAll(entitiesToInsert);
         }
 
-        // 2. 벌크 Soft Delete 실행
-        if (!idsToUpdate.isEmpty()) {
-            policySubJpaRepository.bulkSoftDelete(idsToUpdate);
+        // 2. 벌크 비활성화 실행 (isActive = false로 변경)
+        if (!idsToDeactivate.isEmpty()) {
+            policySubJpaRepository.bulkDeActive(idsToDeactivate);
+        }
+
+        // 3. 벌크 활성화 실행 (isActive = true로 변경)
+        if (!idsToActivate.isEmpty()) {
+            policySubJpaRepository.bulkActivate(idsToActivate);
         }
 
         return savedEntities.stream()
                 .map(PolicySubEntity::entityToDomain)
                 .toList();
+    }
+
+    // 비활성화된 정책이 적용되어 있는 policy_sub 모두 isActive = false로 만들기
+    @Override
+    public void bulkDeActiveByBlockPolicyIds(List<Long> blockPolicyIds) {
+        policySubJpaRepository.bulkDeActiveByBlockPolicyIds(blockPolicyIds);
     }
 }

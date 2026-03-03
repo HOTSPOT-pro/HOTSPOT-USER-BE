@@ -1,15 +1,11 @@
 package hotspot.user.policy.controller.port;
 
-import hotspot.user.member.domain.FamilyRole;
-import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
-import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
+import hotspot.user.policy.controller.request.BlockPolicyRequest;
+import hotspot.user.policy.controller.response.BlockPolicyResponse;
 
 /**
- * 구성원별 정책 업데이트 서비스 코드
+ * 정책 내용 업데이트
  */
 public interface UpdateBlockPolicyService {
-    UpdateBlockPolicyResponse updateBlockPolicy(
-            UpdateBlockPolicyRequest request,
-            Long requesterFamilyId,
-            FamilyRole requesterRole);
+    BlockPolicyResponse update(BlockPolicyRequest request, Long blockPolicyId, Long memberId, Long familyId);
 }

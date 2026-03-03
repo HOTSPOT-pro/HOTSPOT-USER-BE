@@ -1,5 +1,7 @@
 package hotspot.user.policy.domain;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.PolicyErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +15,43 @@ import lombok.Getter;
 public class BlockPolicy {
     private final Long id;
     private final String name;
+    private final Long familyId;
     private final PolicyType policyType;
-    private final PolicySnapshot policySnapshot;
+    private PolicySnapshot policySnapshot;
+    private String policyDescription;
+    private boolean isActive;
+    private boolean isDeleted;
+
+    /**
+     * 해당 가족이 이 정책에 접근하거나 적용할 권한이 있는지 확인
+     * @param requesterFamilyId 요청자의 가족 ID
+     * @return 관리자 정책(null)이거나 본인 가족 정책이면 true
+     */
+    public boolean isAllowedTo(Long requesterFamilyId) {
+        return this.familyId == null || this.familyId.equals(requesterFamilyId);
+    }
+
+    // 정책 상태 업데이트
+    public void updateIsActive(boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public BlockPolicy update(String name, String description, PolicyType policyType,
+                              PolicySnapshot snapshot, Boolean isActive) {
+        if (this.isDeleted) {
+            throw new ApplicationException(PolicyErrorCode.ALREADY_DELETED_POLICY);
+        }
+
+        return BlockPolicy.builder()
+                .id(this.id)
+                .familyId(this.familyId)
+                .policyType(policyType != null ? policyType : this.policyType)
+                .name(name != null ? name : this.name)
+                .policyDescription(description != null ? description : this.policyDescription)
+                .policySnapshot(snapshot != null ? snapshot : this.policySnapshot)
+                .isActive(isActive != null ? isActive : this.isActive)
+                .isDeleted(this.isDeleted)
+                .build();
+    }
 
 }

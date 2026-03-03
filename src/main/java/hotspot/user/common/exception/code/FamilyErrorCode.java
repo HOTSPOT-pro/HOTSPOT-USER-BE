@@ -29,6 +29,7 @@ public enum FamilyErrorCode implements BaseErrorCode {
     CANNOT_CHANGE_OWNER_ROLE(HttpStatus.BAD_REQUEST, "FAMILY_016", "가족 관리자(OWNER) 본인의 역할은 변경할 수 없습니다."),
     CANNOT_ASSIGN_OWNER_ROLE(HttpStatus.BAD_REQUEST, "FAMILY_017", "타인에게 OWNER 역할을 부여할 수 없습니다."),
     DATA_LIMIT_EXCEEDS_FAMILY_AMOUNT(HttpStatus.BAD_REQUEST, "FAMILY_018", "설정하려는 한도가 가족 전체 데이터 양을 초과합니다."),
+    INVALID_APPLY_TYPE(HttpStatus.BAD_REQUEST, "FAMILY_019", "유효하지 않은 신청 타입입니다."),
     ;
 
     private final HttpStatus httpStatus;

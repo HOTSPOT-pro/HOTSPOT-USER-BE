@@ -27,9 +27,9 @@ import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.app.AppBlockListUpdateEvent;
+import hotspot.user.outbox.notificationOutbox.service.port.UserAlertNotificationOutboxPort;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
 import hotspot.user.policy.domain.AppBlockedService;
@@ -49,7 +49,7 @@ class UpdateAppBlockedServiceServiceImplTest {
     private AppBlockedServiceRepository appBlockedServiceRepository;
 
     @Mock
-    private NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
+    private UserAlertNotificationOutboxPort userAlertNotificationOutboxPort;
 
     @Mock
     private ApplicationEventPublisher eventPublisher;

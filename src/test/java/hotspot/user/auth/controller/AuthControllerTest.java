@@ -168,7 +168,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("온보딩(onboarding) 실패: 잘못된 전화번호 형식일 경우 400 에러를 반환한다")
     void onboardingFailInvalidPhone() throws Exception {
-        OnboardingRequest request = new OnboardingRequest("010-1234-5678", "900101");
+        OnboardingRequest request = new OnboardingRequest("010-123-456", "900101");
 
         mockMvc.perform(post("/api/v1/auth/onboarding")
                         .contentType(MediaType.APPLICATION_JSON)

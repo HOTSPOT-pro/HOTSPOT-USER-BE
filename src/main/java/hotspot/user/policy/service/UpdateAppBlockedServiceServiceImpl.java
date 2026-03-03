@@ -17,9 +17,11 @@ import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
-import hotspot.user.kafka.outbox.NotificationUserAlertOutboxPublisher;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.outbox.consistencyOutbox.domain.event.subscription.app.AppBlockListUpdateEvent;
+import hotspot.user.outbox.notificationOutbox.domain.event.AlertAction;
+import hotspot.user.outbox.notificationOutbox.domain.event.ServiceAccessAlertOutboxEvent;
+import hotspot.user.outbox.notificationOutbox.service.port.UserAlertNotificationOutboxPort;
 import hotspot.user.policy.controller.port.UpdateAppBlockedServiceService;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
@@ -40,9 +42,9 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
     private final BlockedServiceSubRepository blockedServiceSubRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final AppBlockedServiceRepository appBlockedServiceRepository;
-    private final NotificationUserAlertOutboxPublisher userAlertOutboxPublisher;
+    private final UserAlertNotificationOutboxPort userAlertNotificationOutboxPort;
 
-    // ✅ 정책 동기화 outbox(스냅샷 이벤트)
+    // 정책 동기화 outbox(스냅샷 이벤트)
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -138,18 +140,20 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
         }
 
         for (Long serviceId : addedServiceIds) {
-            userAlertOutboxPublisher.publishServiceAccessApplied(
+            userAlertNotificationOutboxPort.appendServiceAccessAlert(new ServiceAccessAlertOutboxEvent(
                     subId,
                     familyId,
-                    serviceNameById.getOrDefault(serviceId, "service")
-            );
+                    serviceNameById.getOrDefault(serviceId, "service"),
+                    AlertAction.APPLIED
+            ));
         }
         for (Long serviceId : removedServiceIds) {
-            userAlertOutboxPublisher.publishServiceAccessReleased(
+            userAlertNotificationOutboxPort.appendServiceAccessAlert(new ServiceAccessAlertOutboxEvent(
                     subId,
                     familyId,
-                    serviceNameById.getOrDefault(serviceId, "service")
-            );
+                    serviceNameById.getOrDefault(serviceId, "service"),
+                    AlertAction.RELEASED
+            ));
         }
     }
 }

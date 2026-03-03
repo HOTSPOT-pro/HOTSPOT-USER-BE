@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class PhoneHashIndexer {
-    private static final Pattern MOBILE_PATTERN = Pattern.compile("^01\\d{8,9}$");
+    private static final Pattern MOBILE_PATTERN = Pattern.compile("^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$");
     private final byte[] hashKey;
 
     public PhoneHashIndexer(@Value("${app.crypto.hash-key}") String hashKeyBase64) {

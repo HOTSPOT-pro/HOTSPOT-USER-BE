@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
+import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
@@ -34,11 +35,11 @@ import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
-import hotspot.user.policy.controller.port.UpdateBlockPolicyService;
-import hotspot.user.policy.controller.request.UpdateBlockPolicyRequest;
+import hotspot.user.policy.controller.port.UpdatePolicySubService;
+import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
-import hotspot.user.policy.controller.response.UpdateBlockPolicyResponse;
+import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 
 @WebMvcTest(AppliedPolicyController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -57,7 +58,7 @@ class AppliedPolicyControllerTest {
     private FindFamilyAppliedPolicyService findFamilyAppliedPolicyService;
 
     @MockBean
-    private UpdateBlockPolicyService updateBlockPolicyService;
+    private UpdatePolicySubService updatePolicySubService;
 
     @MockBean
     private JwtFilter jwtFilter;
@@ -142,18 +143,18 @@ class AppliedPolicyControllerTest {
 
     @Test
     @DisplayName("구성원별 정책 업데이트 성공: OWNER 권한일 때")
-    void updateBlockPolicySuccess() throws Exception {
+    void updatePolicySubSuccess() throws Exception {
         // given
         setAuthentication(FamilyRole.OWNER);
-        UpdateBlockPolicyRequest request = new UpdateBlockPolicyRequest(100L, 1L, List.of(1L, 2L));
-        UpdateBlockPolicyResponse response = UpdateBlockPolicyResponse.builder()
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L, 2L));
+        UpdatePolicySubResponse response = UpdatePolicySubResponse.builder()
                 .familyId(100L)
                 .subId(1L)
                 .blockedPolicyIdList(List.of(1L, 2L))
                 .build();
 
-        given(updateBlockPolicyService.updateBlockPolicy(
-                any(UpdateBlockPolicyRequest.class),
+        given(updatePolicySubService.updatePolicySub(
+                any(UpdatePolicySubRequest.class),
                 eq(100L),
                 eq(FamilyRole.OWNER)))
                 .willReturn(response);
@@ -165,5 +166,49 @@ class AppliedPolicyControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.familyId").value(100L))
                 .andExpect(jsonPath("$.data.blockedPolicyIdList[0]").value(1L));
+    }
+
+    @Test
+    @DisplayName("구성원별 정책 업데이트 실패: 타 가족의 정책을 적용하려 할 때 (POLICY_ACCESS_DENIED)")
+    void updatePolicySubFailByAccessDenied() throws Exception {
+        // given
+        setAuthentication(FamilyRole.OWNER);
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(999L));
+
+        given(updatePolicySubService.updatePolicySub(any(), any(), any()))
+                .willThrow(new ApplicationException(PolicyErrorCode.POLICY_ACCESS_DENIED));
+
+        // when & then
+        mockMvc.perform(put("/api/v1/policies/apply")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(result -> {
+                    assertThat(result.getResolvedException())
+                            .isInstanceOf(ApplicationException.class)
+                            .hasMessage(PolicyErrorCode.POLICY_ACCESS_DENIED.getMessage());
+                });
+    }
+
+    @Test
+    @DisplayName("구성원별 정책 업데이트 실패: 비활성화된 정책을 적용하려 할 때 (INACTIVE_POLICY_CANNOT_APPLY)")
+    void updatePolicySubFailByInactivePolicy() throws Exception {
+        // given
+        setAuthentication(FamilyRole.OWNER);
+        UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L));
+
+        given(updatePolicySubService.updatePolicySub(any(), any(), any()))
+                .willThrow(new ApplicationException(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY));
+
+        // when & then
+        mockMvc.perform(put("/api/v1/policies/apply")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> {
+                    assertThat(result.getResolvedException())
+                            .isInstanceOf(ApplicationException.class)
+                            .hasMessage(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY.getMessage());
+                });
     }
 }

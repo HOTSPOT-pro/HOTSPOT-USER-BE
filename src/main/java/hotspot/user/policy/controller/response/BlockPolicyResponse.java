@@ -11,7 +11,10 @@ import lombok.Builder;
 public record BlockPolicyResponse(
         Long id,
         String name,
+        Long familyId,
         PolicyType policyType,
-        PolicySnapshot policySnapshot
+        PolicySnapshot policySnapshot,
+        String policyDescription,
+        boolean isActive
 ) {
 }

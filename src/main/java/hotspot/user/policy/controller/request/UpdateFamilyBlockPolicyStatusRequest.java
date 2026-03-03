@@ -4,15 +4,14 @@ import java.util.List;
 
 import jakarta.validation.constraints.NotNull;
 
-/**
- * 구성원별 정책 업데이트 request dto
+
+
+/** 가족 정책 상태 업데이트 (비/활성화)
  * @param familyId
- * @param subId
  * @param blockPolicyIdList
  */
-public record UpdateBlockPolicyRequest(
+public record UpdateFamilyBlockPolicyStatusRequest(
         @NotNull Long familyId,
-        @NotNull Long subId,
         @NotNull List<Long> blockPolicyIdList
 ) {
 }

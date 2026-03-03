@@ -26,6 +26,9 @@ public interface SubscriptionJpaRepository extends JpaRepository<SubscriptionEnt
     @EntityGraph(attributePaths = {"plan", "member"})
     Optional<SubscriptionEntity> findByPhoneHash(String phoneHash);
 
+    @EntityGraph(attributePaths = {"plan", "member"})
+    List<SubscriptionEntity> findAllByPhoneHashIn(List<String> phoneHashes);
+
     @Query("""
         select s
         from SubscriptionEntity s
