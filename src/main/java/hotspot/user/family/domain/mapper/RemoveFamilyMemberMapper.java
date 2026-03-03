@@ -1,14 +1,13 @@
 package hotspot.user.family.domain.mapper;
 
-import java.time.LocalDate;
 import java.util.List;
 
+import hotspot.user.family.controller.request.RemoveFamilyMemberRequest;
 import hotspot.user.family.controller.response.RemoveFamilyMemberResponse;
 import hotspot.user.family.domain.ApplyStatus;
 import hotspot.user.family.domain.ApplyType;
-import hotspot.user.family.domain.DeleteStatus;
 import hotspot.user.family.domain.FamilyApply;
-import hotspot.user.family.domain.FamilyRemoveSchedule;
+import hotspot.user.family.domain.FamilyApplyTarget;
 
 /**
  * 가족 구성원 삭제 신청 Mapper
@@ -16,7 +15,7 @@ import hotspot.user.family.domain.FamilyRemoveSchedule;
 public class RemoveFamilyMemberMapper {
 
     // request -> domain
-    public static FamilyApply toFamilyApply(Long requesterSubId, Long familyId) {
+    public static FamilyApply toFamilyApply(Long requesterSubId, Long familyId, RemoveFamilyMemberRequest request) {
         return FamilyApply.builder()
                 .requesterSubId(requesterSubId)
                 .familyId(familyId)
@@ -25,35 +24,19 @@ public class RemoveFamilyMemberMapper {
                 .build();
     }
 
-    // 개별 삭제 스케줄 생성
-    public static FamilyRemoveSchedule toFamilyRemoveSchedule(Long familyId, Long targetSubId, LocalDate scheduleDate) {
-        return FamilyRemoveSchedule.builder()
-                .familyId(familyId)
-                .targetSubId(targetSubId)
-                .scheduleDate(scheduleDate)
-                .status(DeleteStatus.SCHEDULED)
-                .build();
-    }
-
     // domain -> response
     public static RemoveFamilyMemberResponse toRemoveFamilyMemberResponse(
             FamilyApply familyApply,
-            List<FamilyRemoveSchedule> schedules) {
+            List<FamilyApplyTarget> targets) {
 
-        List<Long> subIdList = schedules.stream()
-                .map(FamilyRemoveSchedule::getTargetSubId)
+        List<Long> subIdList = targets.stream()
+                .map(FamilyApplyTarget::getTargetSubId)
                 .toList();
-
-        // 모든 스케줄의 날짜와 상태는 동일하므로 첫 번째 것을 참조
-        LocalDate scheduleDate = schedules.isEmpty() ? null : schedules.get(0).getScheduleDate();
-        DeleteStatus status = schedules.isEmpty() ? null : schedules.get(0).getStatus();
 
         return RemoveFamilyMemberResponse.builder()
                 .familyApplyId(familyApply.getId())
                 .familyId(familyApply.getFamilyId())
                 .subIdList(subIdList)
-                .status(status)
-                .scheduleDate(scheduleDate)
                 .build();
     }
 }

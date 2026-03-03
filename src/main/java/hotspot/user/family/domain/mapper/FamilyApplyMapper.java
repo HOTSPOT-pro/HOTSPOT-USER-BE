@@ -5,6 +5,7 @@ import java.util.Map;
 
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
 import hotspot.user.family.controller.request.CreateNewFamilyRequest;
+import hotspot.user.family.controller.request.RemoveFamilyMemberRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
 import hotspot.user.family.controller.response.CreateNewFamilyResponse;
 import hotspot.user.family.controller.response.FamilyMemberResponse;
@@ -42,7 +43,17 @@ public class FamilyApplyMapper {
                 .build();
     }
 
-    // 3. 타겟 도메인 생성
+    // 3. 삭제 신청용 (RemoveFamilyMemberRequest 대응)
+    public static FamilyApply toFamilyApply(Long requesterSubId, Long familyId, RemoveFamilyMemberRequest request) {
+        return FamilyApply.builder()
+                .requesterSubId(requesterSubId)
+                .familyId(familyId)
+                .applyType(ApplyType.REMOVE)
+                .status(ApplyStatus.PENDING)
+                .build();
+    }
+
+    // 4. 타겟 도메인 생성
     public static FamilyApplyTarget toFamilyApplyTarget(Long familyApplyId, Long targetSubId, FamilyRole role) {
         return FamilyApplyTarget.builder()
                 .familyApplyId(familyApplyId)

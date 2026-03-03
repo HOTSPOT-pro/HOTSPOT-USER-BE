@@ -40,7 +40,7 @@ class FindPlanServiceImplTest {
         Plan plan = Plan.builder()
                 .id(planId)
                 .name("베이직 요금제")
-                .dataAmount(10)
+                .dataAmount(100L)
                 .dataPeriod(DataPeriod.MONTH)
                 .build();
 
@@ -51,7 +51,7 @@ class FindPlanServiceImplTest {
 
         // then
         assertThat(result.name()).isEqualTo("베이직 요금제");
-        assertThat(result.dataAmount()).isEqualTo(10);
+        assertThat(result.dataAmount()).isEqualTo(100L);
         assertThat(result.dataPeriod()).isEqualTo(DataPeriod.MONTH);
     }
 
