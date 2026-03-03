@@ -14,8 +14,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.test.web.servlet.MockMvc;
 
-import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.S3ErrorCode;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.s3.controller.port.CreateS3PathService;
@@ -50,7 +48,7 @@ class S3ControllerTest {
                         "temp/2026-02-25/test.png"
                 );
 
-        when(createS3PathService.createS3Path("image/png"))
+        when(createS3PathService.createS3Path())
                 .thenReturn(response);
 
         mockMvc.perform(
@@ -60,19 +58,5 @@ class S3ControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.uploadUrl").value("https://mock-url"))
                 .andExpect(jsonPath("$.data.tempKey").value("temp/2026-02-25/test.png"));
-    }
-
-    @Test
-    @DisplayName("PNG가 아닌 경우 예외 반환")
-    void shouldFailWhenContentTypeIsNotPng() throws Exception {
-
-        when(createS3PathService.createS3Path("image/jpeg"))
-                .thenThrow(new ApplicationException(S3ErrorCode.EXTENSION_NOT_PNG));
-
-        mockMvc.perform(
-                        post("/api/v1/image/presigned-url")
-                                .param("contentType", "image/jpeg")
-                )
-                .andExpect(status().is4xxClientError());
     }
 }
