@@ -4,7 +4,7 @@ import hotspot.user.plan.domain.DataPeriod;
 
 public record PlanResponse(
         String name,
-        int dataAmount,
+        long dataAmount,
         DataPeriod dataPeriod
 ) {
 }
