@@ -70,7 +70,7 @@ public interface FamilyApplyApi {
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
 
     @Operation(summary = "가족 구성원 삭제 신청",
-               description = "가족 OWNER가 자신을 포함한 여러 명의 구성원을 가족에서 삭제하기 위한 신청을 생성합니다. (익월 1일 일괄 삭제 예정) (ApplyType: REMOVE)")
+               description = "가족 OWNER가 자신을 포함한 여러 명의 구성원을 가족에서 삭제하기 위한 신청을 생성합니다. (ApplyType: REMOVE)")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "신청 성공"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청\n"
