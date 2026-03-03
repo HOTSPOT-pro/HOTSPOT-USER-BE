@@ -21,6 +21,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.controller.request.RemoveFamilyMemberRequest;
 import hotspot.user.family.controller.response.RemoveFamilyMemberResponse;
+import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilyApply;
 import hotspot.user.family.domain.FamilyApplyTarget;
@@ -58,7 +59,8 @@ class RemoveFamilyMemberServiceImplTest {
         FamilySubscription requesterFs = createFs(familyId, requesterSubId, FamilyRole.OWNER);
         given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterFs));
 
-        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(List.of(requesterSubId, targetSubId));
+        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(
+                ApplyType.REMOVE, List.of(requesterSubId, targetSubId));
 
         FamilySubscription targetFs = createFs(familyId, targetSubId, FamilyRole.CHILD);
         given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of(requesterFs, targetFs));
@@ -87,12 +89,28 @@ class RemoveFamilyMemberServiceImplTest {
         FamilySubscription requesterFs = createFs(10L, 100L, FamilyRole.CHILD);
         given(familySubscriptionRepository.findByMemberId(anyLong())).willReturn(Optional.of(requesterFs));
 
-        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(List.of());
+        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(ApplyType.REMOVE, List.of());
 
         // when & then
         assertThatThrownBy(() -> removeFamilyMemberService.removeFamilyMember(1L, request))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(FamilyErrorCode.ONLY_OWNER_CAN_MANAGE.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패: 신청 타입이 REMOVE가 아니면 예외가 발생한다.")
+    void removeFamilyMemberFailInvalidType() {
+        // given
+        Long requesterMemberId = 1L;
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId))
+                .willReturn(Optional.of(createFs(10L, 100L, FamilyRole.OWNER)));
+
+        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(ApplyType.CREATE, List.of());
+
+        // when & then
+        assertThatThrownBy(() -> removeFamilyMemberService.removeFamilyMember(requesterMemberId, request))
+                .isInstanceOf(ApplicationException.class)
+                .hasMessage(FamilyErrorCode.INVALID_APPLY_TYPE.getMessage());
     }
 
     @Test
@@ -103,7 +121,7 @@ class RemoveFamilyMemberServiceImplTest {
         given(familySubscriptionRepository.findByMemberId(requesterMemberId))
                 .willReturn(Optional.of(createFs(10L, 100L, FamilyRole.OWNER)));
 
-        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(List.of(999L));
+        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(ApplyType.REMOVE, List.of(999L));
         given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of()); // 아무도 못찾음
 
         // when & then
@@ -122,7 +140,7 @@ class RemoveFamilyMemberServiceImplTest {
                 .willReturn(Optional.of(createFs(familyId, 100L, FamilyRole.OWNER)));
 
         Long targetSubId = 200L;
-        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(List.of(targetSubId));
+        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(ApplyType.REMOVE, List.of(targetSubId));
 
         given(familySubscriptionRepository.findAllBySubIdIn(anyList()))
                 .willReturn(List.of(createFs(familyId, targetSubId, FamilyRole.CHILD)));

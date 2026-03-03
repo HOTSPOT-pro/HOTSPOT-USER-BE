@@ -139,7 +139,7 @@ class FamilyApplyControllerTest {
     void removeFamilyMemberSuccess() throws Exception {
         // given
         setAuthentication(1L, 100L, FamilyRole.OWNER);
-        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(List.of(200L, 201L));
+        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(ApplyType.REMOVE, List.of(200L, 201L));
 
         RemoveFamilyMemberResponse response = RemoveFamilyMemberResponse.builder()
                 .familyApplyId(1L)

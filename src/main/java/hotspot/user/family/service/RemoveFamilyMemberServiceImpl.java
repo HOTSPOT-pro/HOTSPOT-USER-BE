@@ -12,6 +12,7 @@ import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.family.controller.port.RemoveFamilyMemberService;
 import hotspot.user.family.controller.request.RemoveFamilyMemberRequest;
 import hotspot.user.family.controller.response.RemoveFamilyMemberResponse;
+import hotspot.user.family.domain.ApplyType;
 import hotspot.user.family.domain.FamilyApply;
 import hotspot.user.family.domain.FamilyApplyTarget;
 import hotspot.user.family.domain.FamilySubscription;
@@ -46,9 +47,14 @@ public class RemoveFamilyMemberServiceImpl implements RemoveFamilyMemberService 
             throw new ApplicationException(FamilyErrorCode.ONLY_OWNER_CAN_MANAGE);
         }
 
+        // 2. 신청 타입 검증 (REMOVE만 허용)
+        if (request.applyType() != ApplyType.REMOVE) {
+            throw new ApplicationException(FamilyErrorCode.INVALID_APPLY_TYPE);
+        }
+
         Long familyId = requesterFs.getFamily().getId();
 
-        // 2. 요청 리스트 중복 제거 및 데이터 준비
+        // 3. 요청 리스트 중복 제거 및 데이터 준비
         List<Long> targetSubIds = request.targetSubIdList().stream()
                 .distinct()
                 .toList();
