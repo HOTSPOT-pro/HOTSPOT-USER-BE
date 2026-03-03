@@ -22,6 +22,7 @@ import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
+import hotspot.user.common.util.s3.S3Util;
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
 import hotspot.user.family.controller.request.FamilyMemberRequest;
 import hotspot.user.family.controller.response.AddFamilyMemberResponse;
@@ -62,6 +63,9 @@ class AddFamilyMemberServiceImplTest {
     @Mock
     private PhoneDecryptor phoneDecryptor;
 
+    @Mock
+    private S3Util s3Util;
+
     @Test
     @DisplayName("성공: 가족 OWNER가 새로운 구성원들을 추가 신청한다.")
     void addFamilyMemberSuccess() {
@@ -70,12 +74,14 @@ class AddFamilyMemberServiceImplTest {
         Long familyId = 10L;
         String phone = "01011112222";
         String hash = "HASH";
+        String tempKey = "temp-s3-key";
+        String certKey = "cert-s3-key";
 
         FamilySubscription requesterFs = createRequesterFs(familyId, 100L, FamilyRole.OWNER);
         given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterFs));
 
         FamilyMemberRequest memberReq = new FamilyMemberRequest("홍길동", phone, FamilyRole.CHILD);
-        AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, "url", List.of(memberReq));
+        AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, tempKey, List.of(memberReq));
 
         Subscription targetSub = Subscription.builder()
                 .id(200L).phoneHash(hash).phoneEnc("ENC")
@@ -86,6 +92,7 @@ class AddFamilyMemberServiceImplTest {
         given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of());
         given(familyApplyTargetRepository.findAllPendingByTargetSubIdIn(anyList())).willReturn(List.of());
 
+        given(s3Util.moveTempToCertificate(tempKey)).willReturn(certKey);
         given(familyApplyRepository.save(any())).willReturn(FamilyApply.builder().id(1L).build());
         given(familyApplyTargetRepository.saveAll(anyList())).willReturn(List.of(
                 FamilyApplyTarget.builder().targetSubId(200L).targetFamilyRole(FamilyRole.CHILD).build()

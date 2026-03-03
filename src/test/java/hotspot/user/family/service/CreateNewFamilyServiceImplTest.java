@@ -21,6 +21,7 @@ import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
+import hotspot.user.common.util.s3.S3Util;
 import hotspot.user.family.controller.request.CreateNewFamilyRequest;
 import hotspot.user.family.controller.request.FamilyMemberRequest;
 import hotspot.user.family.controller.response.CreateNewFamilyResponse;
@@ -60,6 +61,9 @@ class CreateNewFamilyServiceImplTest {
     @Mock
     private PhoneDecryptor phoneDecryptor;
 
+    @Mock
+    private S3Util s3Util;
+
     @Test
     @DisplayName("성공: 가족이 없는 사용자가 새로운 가족 생성을 신청하면 성공한다.")
     void createNewFamilySuccess() {
@@ -67,6 +71,8 @@ class CreateNewFamilyServiceImplTest {
         Long requesterMemberId = 1L;
         String phone = "01011112222";
         String hash = "HASH";
+        String tempKey = "temp-s3-key";
+        String certKey = "cert-s3-key";
 
         given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.empty());
 
@@ -77,7 +83,7 @@ class CreateNewFamilyServiceImplTest {
         given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
 
         FamilyMemberRequest memberReq = new FamilyMemberRequest("구성원1", phone, FamilyRole.CHILD);
-        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of(memberReq));
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, tempKey, List.of(memberReq));
 
         Subscription targetSub = Subscription.builder()
                 .id(200L).phoneHash(hash).phoneEnc("ENC_TARGET")
@@ -89,6 +95,7 @@ class CreateNewFamilyServiceImplTest {
         given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of());
         given(familyApplyTargetRepository.findAllPendingByTargetSubIdIn(anyList())).willReturn(List.of());
 
+        given(s3Util.moveTempToCertificate(tempKey)).willReturn(certKey);
         given(familyApplyRepository.save(any())).willReturn(FamilyApply.builder().id(1L).build());
         given(familyApplyTargetRepository.saveAll(anyList())).willReturn(List.of(
                 FamilyApplyTarget.builder().targetSubId(100L).targetFamilyRole(FamilyRole.OWNER).build(),
@@ -114,6 +121,8 @@ class CreateNewFamilyServiceImplTest {
         Long requesterMemberId = 1L;
         String selfPhone = "01000000000";
         String selfHash = "SELF_HASH";
+        String tempKey = "temp-s3-key";
+        String certKey = "cert-s3-key";
 
         given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.empty());
 
@@ -125,13 +134,14 @@ class CreateNewFamilyServiceImplTest {
 
         // 초대 목록에 본인(방장)의 번호를 넣음
         FamilyMemberRequest selfReq = new FamilyMemberRequest("방장", selfPhone, FamilyRole.CHILD);
-        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of(selfReq));
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, tempKey, List.of(selfReq));
 
         given(phoneHashIndexer.toHash(selfPhone)).willReturn(selfHash);
         given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of(requesterSub));
         given(familySubscriptionRepository.findAllBySubIdIn(anyList())).willReturn(List.of());
         given(familyApplyTargetRepository.findAllPendingByTargetSubIdIn(anyList())).willReturn(List.of());
 
+        given(s3Util.moveTempToCertificate(tempKey)).willReturn(certKey);
         given(familyApplyRepository.save(any())).willReturn(FamilyApply.builder().id(1L).build());
         // 결과 타겟은 중복 없이 1명(본인 OWNER)만 저장되어야 함
         given(familyApplyTargetRepository.saveAll(anyList())).willReturn(List.of(
@@ -156,7 +166,7 @@ class CreateNewFamilyServiceImplTest {
         given(familySubscriptionRepository.findByMemberId(requesterMemberId))
                 .willReturn(Optional.of(FamilySubscription.builder().build()));
 
-        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of());
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "temp-s3-key", List.of());
 
         // when & then
         assertThatThrownBy(() -> createNewFamilyService.createNewFamily(requesterMemberId, request))
@@ -171,7 +181,7 @@ class CreateNewFamilyServiceImplTest {
         Long requesterMemberId = 1L;
         given(familySubscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.empty());
 
-        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.ADD, "url", List.of());
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.ADD, "temp-s3-key", List.of());
 
         // when & then
         assertThatThrownBy(() -> createNewFamilyService.createNewFamily(requesterMemberId, request))
@@ -189,7 +199,8 @@ class CreateNewFamilyServiceImplTest {
                 .willReturn(Optional.of(Subscription.builder().id(100L).build()));
 
         FamilyMemberRequest memberReq = new FamilyMemberRequest("유령", "01012345678", FamilyRole.CHILD);
-        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of(memberReq));
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE,
+                "temp-s3-key", List.of(memberReq));
 
         given(phoneHashIndexer.toHash(any())).willReturn("HASH");
         given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of()); // 아무도 못찾음
@@ -210,7 +221,8 @@ class CreateNewFamilyServiceImplTest {
         given(subscriptionRepository.findByMemberId(requesterMemberId)).willReturn(Optional.of(requesterSub));
 
         FamilyMemberRequest invalidReq = new FamilyMemberRequest("타인", "01011112222", FamilyRole.OWNER);
-        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of(invalidReq));
+        CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE,
+                "temp-s3-key", List.of(invalidReq));
 
         Subscription targetSub = Subscription.builder().id(200L).phoneHash("HASH").build();
         given(subscriptionRepository.findAllByPhoneHashIn(anyList())).willReturn(List.of(targetSub));

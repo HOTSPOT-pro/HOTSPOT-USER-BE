@@ -14,6 +14,7 @@ import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
+import hotspot.user.common.util.s3.S3Util;
 import hotspot.user.family.controller.port.AddFamilyMemberService;
 import hotspot.user.family.controller.request.AddFamilyMemberRequest;
 import hotspot.user.family.controller.request.FamilyMemberRequest;
@@ -46,6 +47,7 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
     private final FamilyApplyTargetRepository familyApplyTargetRepository;
     private final PhoneHashIndexer phoneHashIndexer;
     private final PhoneDecryptor phoneDecryptor;
+    private final S3Util s3Util;
 
     @Override
     public AddFamilyMemberResponse addFamilyMember(
@@ -115,7 +117,11 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
         }
 
         // 7. 신청 저장
-        FamilyApply familyApply = FamilyApplyMapper.toFamilyApply(requesterSub.getId(), familyId, request);
+        // 전달 받은 S3 임시 버킷 -> 메인 버킷으로 변경
+        String certificatedKey = s3Util.moveTempToCertificate(request.s3TempKey());
+
+        FamilyApply familyApply = FamilyApplyMapper
+                .toFamilyApply(requesterSub.getId(), familyId, request, certificatedKey);
         FamilyApply savedApply = familyApplyRepository.save(familyApply);
 
         // 8. 신청 타겟들 저장

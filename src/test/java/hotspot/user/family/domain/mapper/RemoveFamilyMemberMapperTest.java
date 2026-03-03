@@ -21,7 +21,7 @@ class RemoveFamilyMemberMapperTest {
     @DisplayName("성공: 삭제 신청서(FamilyApply) 도메인으로 변환한다.")
     void toFamilyApplySuccess() {
         // given
-        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(List.of(20L));
+        RemoveFamilyMemberRequest request = new RemoveFamilyMemberRequest(ApplyType.REMOVE, List.of(20L));
 
         // when
         FamilyApply result = RemoveFamilyMemberMapper.toFamilyApply(10L, 1L, request);

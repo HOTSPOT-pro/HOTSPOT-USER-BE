@@ -14,6 +14,7 @@ import hotspot.user.common.crpyto.PhoneHashIndexer;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
+import hotspot.user.common.util.s3.S3Util;
 import hotspot.user.family.controller.port.CreateNewFamilyService;
 import hotspot.user.family.controller.request.CreateNewFamilyRequest;
 import hotspot.user.family.controller.request.FamilyMemberRequest;
@@ -45,6 +46,7 @@ public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
     private final FamilyApplyTargetRepository familyApplyTargetRepository;
     private final PhoneHashIndexer phoneHashIndexer;
     private final PhoneDecryptor phoneDecryptor;
+    private final S3Util s3Util;
 
     @Override
     public CreateNewFamilyResponse createNewFamily(
@@ -111,7 +113,10 @@ public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
         }
 
         // 7. 신청 정보 저장 (familyId는 신규 생성이므로 null)
-        FamilyApply familyApply = FamilyApplyMapper.toFamilyApply(requesterSub.getId(), null, request);
+        // 전달 받은 S3 임시 버킷 -> 메인 버킷으로 변경
+        String certificatedKey = s3Util.moveTempToCertificate(request.s3TempKey());
+
+        FamilyApply familyApply = FamilyApplyMapper.toFamilyApply(requesterSub.getId(), null, request, certificatedKey);
         FamilyApply savedApply = familyApplyRepository.save(familyApply);
 
         // 8. 타겟들 ID 연결 및 일괄 저장
