@@ -36,7 +36,7 @@ class PlanRepositoryImplTest {
         PlanEntity entity = PlanEntity.builder()
                 .planId(planId)
                 .planName("LTE 기본 요금제")
-                .planDataAmount(10)
+                .planDataAmount(100L)
                 .dataPeriod(DataPeriod.MONTH)
                 .build();
 
@@ -49,7 +49,7 @@ class PlanRepositoryImplTest {
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(planId);
         assertThat(result.get().getName()).isEqualTo("LTE 기본 요금제");
-        assertThat(result.get().getDataAmount()).isEqualTo(10);
+        assertThat(result.get().getDataAmount()).isEqualTo(100L);
         assertThat(result.get().getDataPeriod()).isEqualTo(DataPeriod.MONTH);
     }
 }
