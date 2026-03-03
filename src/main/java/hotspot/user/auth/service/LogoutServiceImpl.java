@@ -10,7 +10,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtProvider;
-import hotspot.user.dispatch.registry.SseEmitterRegistry;
+import hotspot.user.dispatch.sse.registry.SseEmitterRegistry;
 import hotspot.user.subscription.service.port.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 
