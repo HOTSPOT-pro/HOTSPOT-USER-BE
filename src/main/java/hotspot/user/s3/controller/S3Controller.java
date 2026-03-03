@@ -3,7 +3,6 @@ package hotspot.user.s3.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
@@ -21,11 +20,10 @@ public class S3Controller implements S3Api {
 
     @PostMapping("/presigned-url")
     public ResponseEntity<ApiResponse<S3PathResponse>> createPresignedUrl(
-            @RequestParam String contentType
     ) {
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        createS3PathService.createS3Path(contentType)
+                        createS3PathService.createS3Path()
                 )
         );
     }

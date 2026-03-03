@@ -1,13 +1,11 @@
 package hotspot.user.s3.controller.swagger;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ErrorResponse;
 import hotspot.user.s3.controller.response.S3PathResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -20,8 +18,6 @@ public interface S3Api {
             summary = "Presigned URL 생성",
             description = """
                     PNG 이미지 업로드를 위한 Presigned URL을 생성합니다.
-
-                    - contentType은 반드시 image/png 이어야 합니다.
                     - 생성된 URL은 5분간 유효합니다.
                     """
     )
@@ -30,17 +26,6 @@ public interface S3Api {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
                     description = "Presigned URL 생성 성공"
-            ),
-
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "400",
-                    description = """
-                            잘못된 요청
-                            - S3_001: 파일 확장자로 PNG만 가능합니다.
-                            """,
-                    content = @Content(
-                            schema = @Schema(implementation = ErrorResponse.class)
-                    )
             ),
 
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -55,12 +40,5 @@ public interface S3Api {
             )
     })
     ResponseEntity<ApiResponse<S3PathResponse>> createPresignedUrl(
-
-            @Parameter(
-                    description = "파일 Content-Type (image/png 고정)",
-                    example = "image/png",
-                    required = true
-            )
-            @RequestParam String contentType
     );
 }
