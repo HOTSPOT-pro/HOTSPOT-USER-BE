@@ -8,7 +8,6 @@ import lombok.Builder;
  * 가족 정보 조회 시 구성원 세부 정보
  * @param id
  * @param name
- * @param email
  * @param phone
  * @param familyRole
  * @param familyId
