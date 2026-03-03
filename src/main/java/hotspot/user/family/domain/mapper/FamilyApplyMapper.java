@@ -22,23 +22,29 @@ import hotspot.user.subscription.domain.Subscription;
 public class FamilyApplyMapper {
 
     // 1. 단건 신청용 (기존 CreateNewFamilyRequest 대응)
-    public static FamilyApply toFamilyApply(Long requesterSubId, Long familyId, CreateNewFamilyRequest request) {
+    public static FamilyApply toFamilyApply(Long requesterSubId,
+                                            Long familyId,
+                                            CreateNewFamilyRequest request,
+                                            String certificatedKey) {
         return FamilyApply.builder()
                 .requesterSubId(requesterSubId)
                 .familyId(familyId)
                 .applyType(request.applyType())
-                .docUrl(request.docUrl())
+                .docUrl(certificatedKey)
                 .status(ApplyStatus.PENDING)
                 .build();
     }
 
     // 2. 다건 신청용 (AddFamilyMemberRequest 대응)
-    public static FamilyApply toFamilyApply(Long requesterSubId, Long familyId, AddFamilyMemberRequest request) {
+    public static FamilyApply toFamilyApply(Long requesterSubId,
+                                            Long familyId,
+                                            AddFamilyMemberRequest request,
+                                            String certificatedKey) {
         return FamilyApply.builder()
                 .requesterSubId(requesterSubId)
                 .familyId(familyId)
                 .applyType(request.applyType())
-                .docUrl(request.docUrl())
+                .docUrl(certificatedKey)
                 .status(ApplyStatus.PENDING)
                 .build();
     }
