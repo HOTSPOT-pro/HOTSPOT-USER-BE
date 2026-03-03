@@ -27,14 +27,16 @@ class FamilyApplyMapperTest {
     void toFamilyApplyFromCreateNewRequestSuccess() {
         // given
         CreateNewFamilyRequest request = new CreateNewFamilyRequest(ApplyType.CREATE, "url", List.of());
+        String certificatedKey = "certificated";
 
         // when
-        FamilyApply result = FamilyApplyMapper.toFamilyApply(10L, null, request);
+        FamilyApply result = FamilyApplyMapper.toFamilyApply(10L, null, request, certificatedKey);
 
         // then
         assertThat(result.getRequesterSubId()).isEqualTo(10L);
         assertThat(result.getApplyType()).isEqualTo(ApplyType.CREATE);
         assertThat(result.getStatus()).isEqualTo(ApplyStatus.PENDING);
+        assertThat(certificatedKey).isEqualTo("certificated");
     }
 
     @Test
@@ -42,14 +44,15 @@ class FamilyApplyMapperTest {
     void toFamilyApplyFromAddRequestSuccess() {
         // given
         AddFamilyMemberRequest request = new AddFamilyMemberRequest(ApplyType.ADD, "url", List.of());
-
+        String certificatedKey = "certificated";
         // when
-        FamilyApply result = FamilyApplyMapper.toFamilyApply(10L, 1L, request);
+        FamilyApply result = FamilyApplyMapper.toFamilyApply(10L, 1L, request, certificatedKey);
 
         // then
         assertThat(result.getRequesterSubId()).isEqualTo(10L);
         assertThat(result.getFamilyId()).isEqualTo(1L);
         assertThat(result.getApplyType()).isEqualTo(ApplyType.ADD);
+        assertThat(certificatedKey).isEqualTo("certificated");
     }
 
     @Test
