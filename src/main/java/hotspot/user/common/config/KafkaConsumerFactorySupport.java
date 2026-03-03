@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 public class KafkaConsumerFactorySupport {
 
@@ -23,12 +22,11 @@ public class KafkaConsumerFactorySupport {
         cfg.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         cfg.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         cfg.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-
-        JsonDeserializer<T> valueDeserializer = new JsonDeserializer<>(clazz);
-        valueDeserializer.addTrustedPackages("*");
-        valueDeserializer.setUseTypeHeaders(false);
-
-        return new DefaultKafkaConsumerFactory<>(cfg, new StringDeserializer(), valueDeserializer);
+        return new DefaultKafkaConsumerFactory<>(
+                cfg,
+                new StringDeserializer(),
+                new LenientJsonOrStringDeserializer<>(clazz)
+        );
     }
 
     private KafkaConsumerFactorySupport() {
