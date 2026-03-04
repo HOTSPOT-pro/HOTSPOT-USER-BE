@@ -17,6 +17,10 @@ public class AppBlockedServiceMapper {
     // domain -> response
     // AppBlockedService(앱 차단 서비스 원본) 도메인을 AppBlockedServiceResponse DTO로 변환
     public static AppBlockedServiceResponse toAppBlockedServiceResponse(AppBlockedService appBlockedService) {
+        if (appBlockedService == null) {
+            return null;
+        }
+
         return AppBlockedServiceResponse.builder()
                 .id(appBlockedService.getId())
                 .name(appBlockedService.getName())
@@ -24,13 +28,9 @@ public class AppBlockedServiceMapper {
                 .build();
     }
 
-    // BlockedServiceSub(적용된 앱 차단) 도메인을 AppBlockedServiceResponse DTO로 변환
-    public static AppBlockedServiceResponse toAppBlockedServiceResponse(BlockedServiceSub blockedSub) {
-        return AppBlockedServiceResponse.builder()
-                .id(blockedSub.getAppBlockedService().getId())
-                .name(blockedSub.getAppBlockedService().getName())
-                .serviceCode(blockedSub.getAppBlockedService().getServiceCode())
-                .build();
+    // BlockedServiceSub와 AppBlockedService 상세 정보를 조합하여 DTO로 변환
+    public static AppBlockedServiceResponse toAppBlockedServiceResponse(BlockedServiceSub blockedSub, AppBlockedService appBlockedService) {
+        return toAppBlockedServiceResponse(appBlockedService);
     }
 
     // 앱 차단 서비스 업데이트 response dto로 변환
