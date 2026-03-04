@@ -48,6 +48,21 @@ public enum SmsErrorCode implements BaseErrorCode {
             "SMS_008",
             "SMS 리스너 처리 중 오류가 발생했습니다."
     ),
+    SMS_PROVIDER_CONFIG_INVALID(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "SMS_009",
+            "SMS 제공자 설정값이 올바르지 않습니다."
+    ),
+    SMS_PROVIDER_AUTH_FAILED(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "SMS_010",
+            "SMS 제공자 인증 헤더 생성에 실패했습니다."
+    ),
+    SMS_PROVIDER_REQUEST_FAILED(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "SMS_011",
+            "SMS 제공자 요청 처리에 실패했습니다."
+    ),
     ;
 
     private final HttpStatus httpStatus;

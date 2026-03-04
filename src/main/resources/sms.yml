@@ -1,8 +1,8 @@
 sms:
-  enabled: false
-  enabled2: false
-  enabled3: false
-  enabled4: false
-  enabled5: false
-  provider: noop
+  enabled: true
+  provider: solapi
   from: ${SMS_FROM_NUMBER:}
+  api-key: ${SOLAPI_API_KEY:}
+  api-secret: ${SOLAPI_API_SECRET:}
+  api-base-url: ${SOLAPI_API_BASE_URL:https://api.solapi.com}
+  send-path: ${SOLAPI_SEND_PATH:/messages/v4/send-many/detail}

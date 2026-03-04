@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SmsErrorCode;
 import hotspot.user.dispatch.sms.config.SmsProperties;
-import hotspot.user.dispatch.sms.infrastructure.SmsDispatchQueuePublisher;
+import hotspot.user.dispatch.sms.service.SmsDispatchQueuePublisher;
 import hotspot.user.kafka.dto.UserAlertNotificationsPersistedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,22 +23,6 @@ public class SmsPushService {
     // 저장된 알림 이벤트를 받아 SMS 디스패치 큐에 적재한다.
     public void onNotificationsPersisted(UserAlertNotificationsPersistedEvent event) {
         if (!smsProperties.isEnabled()) {
-            return;
-        }
-
-        if (!smsProperties.isEnabled2()) {
-            return;
-        }
-
-        if (!smsProperties.isEnabled3()) {
-            return;
-        }
-
-        if (!smsProperties.isEnabled4()) {
-            return;
-        }
-
-        if (!smsProperties.isEnabled5()) {
             return;
         }
 

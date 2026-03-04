@@ -16,7 +16,10 @@ class SmsMessageBuilderTest {
     @DisplayName("builds sms message with from and notification content")
     void buildMessage() {
         SmsMessageBuilder builder = new SmsMessageBuilder(
-                new SmsProperties(true, false, false, false, false, "noop", "HOTSPOT")
+                new SmsProperties(
+                        true, "noop", "HOTSPOT",
+                        "api-key", "api-secret", "https://api.solapi.com", "/messages/v4/send-many/detail"
+                )
         );
         Notification notification = Notification.builder()
                 .id(1L)

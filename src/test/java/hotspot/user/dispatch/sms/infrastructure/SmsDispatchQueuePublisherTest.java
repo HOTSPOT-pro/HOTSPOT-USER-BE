@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SmsErrorCode;
+import hotspot.user.dispatch.sms.service.SmsDispatchQueuePublisher;
 import hotspot.user.notification.domain.Notification;
 
 @ExtendWith(MockitoExtension.class)

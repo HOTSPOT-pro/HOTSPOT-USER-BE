@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SmsErrorCode;
 import hotspot.user.dispatch.sms.domain.SmsRecipientResolution;
-import hotspot.user.dispatch.sms.port.SmsSenderPort;
+import hotspot.user.dispatch.sms.infrastructure.SmsSenderPort;
 import hotspot.user.notification.domain.Notification;
 import hotspot.user.notification.domain.NotificationAllow;
 import hotspot.user.notification.domain.NotificationCategory;
