@@ -1,12 +1,11 @@
 package hotspot.user.policy.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -15,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
+import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
@@ -26,6 +26,7 @@ import hotspot.user.policy.controller.port.UpdateAppBlockedServiceService;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
 import hotspot.user.policy.domain.AppBlockedService;
+import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.policy.domain.mapper.AppBlockedServiceMapper;
 import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
@@ -53,58 +54,105 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
             Long requesterFamilyId,
             FamilyRole requesterRole) {
 
-        // 차단 서비스 변경은 OWNER만 가능하다.
-        if (requesterRole != FamilyRole.OWNER) {
-            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
+        // 1. 요청자의 권한과 가족 소속을 검증한다.
+        validateAuthorityAndFamily(request.subId(), requesterFamilyId, requesterRole);
+
+        List<Long> targetIdsList = request.blockedServiceIdList();
+
+        // 2. 해당 회선의 모든 정책 매핑 정보를 먼저 조회한다. (활성 + 비활성 포함)
+        List<BlockedServiceSub> existingSubs = blockedServiceSubRepository.findBySubId(request.subId());
+
+        // 3. 쿼리 최적화: 신규 요청 ID와 기존 등록된 ID를 합쳐 1번의 DB 조회를 수행한다.
+        // Set: 중복 방지
+        Set<Long> allRequiredBlockedServiceIds = existingSubs.stream()
+                .map(BlockedServiceSub::getAppBlockedServiceId)
+                .collect(Collectors.toSet());
+
+        allRequiredBlockedServiceIds.addAll(targetIdsList);
+
+        Map<Long, AppBlockedService> blockedServiceMap = Map.of();
+        if (!allRequiredBlockedServiceIds.isEmpty()) {
+            blockedServiceMap = appBlockedServiceRepository
+                    .findAllByAppBlockedServiceIds(new ArrayList<>(allRequiredBlockedServiceIds)).stream()
+                    .collect(Collectors.toMap(AppBlockedService::getId, p -> p));
         }
 
-        Long subId = request.subId();
-
-        // 대상 회선과 가족 소속을 검증한다.
-        FamilySubscription familySub = familySubscriptionRepository.findBySubId(subId)
-                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
-
-        if (!familySub.getFamily().getId().equals(requesterFamilyId)) {
-            throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
-        }
-
-        // 요청된 서비스 ID가 모두 유효한지 검증한다.
-        Set<Long> targetIds = new HashSet<>(request.blockedServiceIdList());
-        if (!targetIds.isEmpty()) {
-            long validCount = appBlockedServiceRepository.countByIdIn(targetIds);
-            if (validCount != targetIds.size()) {
+        // 4. 요청된 타겟 정책 검증 (Map을 이용한 O(1) 검증)
+        for (Long targetId : targetIdsList) {
+            AppBlockedService appBlockedService = blockedServiceMap.get(targetId);
+            if (appBlockedService == null) {
                 throw new ApplicationException(FamilyErrorCode.BLOCKED_SERVICE_NOT_FOUND);
+            }
+
+            if (!appBlockedService.isActive()) {
+                throw new ApplicationException(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY);
             }
         }
 
-        // 현재 활성 차단 서비스 ID 목록을 조회한다.
-        Set<Long> existingIds = new HashSet<>(blockedServiceSubRepository.findActiveServiceIdsBySubId(subId));
+        Map<Long, BlockedServiceSub> existingMap = existingSubs.stream()
+                .collect(Collectors.toMap(BlockedServiceSub::getAppBlockedServiceId, sub -> sub));
 
-        // 변경분 계산: 추가/해제 대상 서비스 ID.
-        Set<Long> toAddIds = new HashSet<>(targetIds);
-        toAddIds.removeAll(existingIds);
+        List<BlockedServiceSub> domainsToSave = new ArrayList<>();
+        List<AppBlockedService> appliedAlertBlockedServices = new ArrayList<>();
+        List<AppBlockedService> releasedAlertBlockedServices = new ArrayList<>();
 
-        Set<Long> toRemoveIds = new HashSet<>(existingIds);
-        toRemoveIds.removeAll(targetIds);
+        // 5. 요청된 정책들을 순회하며 신규 추가 또는 활성화 처리
+        for (Long targetId : targetIdsList) {
+            AppBlockedService appBlockedService = blockedServiceMap.get(targetId);
+            BlockedServiceSub sub = existingMap.remove(targetId);
 
-        if (!toAddIds.isEmpty()) {
-            blockedServiceSubRepository.saveAll(subId, toAddIds);
+            if (sub != null) {
+                // 비활성 상태인 경우에만 활성화 및 알림 대상 추가
+                if (!sub.isActive()) {
+                    sub.updateIsActive(true);
+                    domainsToSave.add(sub);
+                    appliedAlertBlockedServices.add(appBlockedService);
+                }
+            } else {
+                // DB에 아예 없는 경우 신규 생성 및 알림 대상 추가
+                BlockedServiceSub newSub = BlockedServiceSub.builder()
+                        .subId(request.subId())
+                        .appBlockedServiceId(targetId)
+                        .isActive(true)
+                        .build();
+                domainsToSave.add(newSub);
+                appliedAlertBlockedServices.add(appBlockedService);
+            }
         }
-        if (!toRemoveIds.isEmpty()) {
-            blockedServiceSubRepository.deleteAll(subId, toRemoveIds);
+
+        // 6. 요청에 없는데 DB에는 활성 상태로 남아있는 정책들을 비활성화 처리
+        for (BlockedServiceSub remainingSub : existingMap.values()) {
+            if (remainingSub.isActive()) {
+                remainingSub.updateIsActive(false);
+                domainsToSave.add(remainingSub);
+
+                // 미리 조회해둔 Map에서 AppBlockedService를 바로 꺼내 알림 대상에 추가
+                AppBlockedService appBlockedService = blockedServiceMap.get(remainingSub.getAppBlockedServiceId());
+                if (appBlockedService != null) {
+                    releasedAlertBlockedServices.add(appBlockedService);
+                }
+            }
         }
-        publishServiceAccessAlerts(subId, familySub.getFamily().getId(), toAddIds, toRemoveIds);
 
-        List<Long> finalBlockedIdList =
-                blockedServiceSubRepository.findActiveServiceIdsBySubId(subId);
+        // 7. 변경 사항이 있는 경우에만 저장 및 알림 발송
+        if (!domainsToSave.isEmpty()) {
+            blockedServiceSubRepository.saveAll(domainsToSave);
+            publishServiceAccessAlerts(
+                    request.subId(),
+                    requesterFamilyId,
+                    appliedAlertBlockedServices,
+                    releasedAlertBlockedServices
+            );
+        }
 
-        // Outbox 이벤트 발행: 스냅샷(list) 기반
-        publishAppBlockSnapshotEvent(subId, finalBlockedIdList);
+        // 8. 정책 동기화 이벤트 발행 및 응답 (변경 여부와 상관없이 최종 요청된 상태 반영)
+        publishAppBlockSnapshotEvent(request.subId(), targetIdsList);
 
         return AppBlockedServiceMapper.toUpdateAppBlockedServiceResponse(
-                familySub.getFamily().getId(),
-                subId,
-                finalBlockedIdList);
+                requesterFamilyId,
+                request.subId(),
+                targetIdsList
+        );
     }
 
     private void publishAppBlockSnapshotEvent(Long subId, List<Long> finalBlockedIds) {
@@ -118,42 +166,42 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
         );
     }
 
-    // 변경된 서비스 ID 기준으로 차단/해제 알림 outbox 이벤트를 발행한다.
+    // 변경된 서비스 도메인 기준으로 차단/해제 알림 outbox 이벤트를 발행한다.
     private void publishServiceAccessAlerts(
             Long subId,
             Long familyId,
-            Set<Long> addedServiceIds,
-            Set<Long> removedServiceIds
+            List<AppBlockedService> addedServices,
+            List<AppBlockedService> removedServices
     ) {
-        Set<Long> changedServiceIds = new HashSet<>(addedServiceIds);
-        changedServiceIds.addAll(removedServiceIds);
-        if (changedServiceIds.isEmpty()) {
-            return;
-        }
-
-        Map<Long, String> serviceNameById = new HashMap<>();
-        List<AppBlockedService> services = appBlockedServiceRepository.findAllByAppBlockedServiceIds(
-                new ArrayList<>(changedServiceIds)
-        );
-        for (AppBlockedService service : services) {
-            serviceNameById.put(service.getId(), service.getName());
-        }
-
-        for (Long serviceId : addedServiceIds) {
+        for (AppBlockedService service : addedServices) {
             userAlertNotificationOutboxPort.appendServiceAccessAlert(new ServiceAccessAlertOutboxEvent(
                     subId,
                     familyId,
-                    serviceNameById.getOrDefault(serviceId, "service"),
+                    service.getName(),
                     AlertAction.APPLIED
             ));
         }
-        for (Long serviceId : removedServiceIds) {
+        for (AppBlockedService service : removedServices) {
             userAlertNotificationOutboxPort.appendServiceAccessAlert(new ServiceAccessAlertOutboxEvent(
                     subId,
                     familyId,
-                    serviceNameById.getOrDefault(serviceId, "service"),
+                    service.getName(),
                     AlertAction.RELEASED
             ));
+        }
+    }
+
+    // 요청자 권한과 가족 소유 관계를 검증한다.
+    private void validateAuthorityAndFamily(Long subId, Long requesterFamilyId, FamilyRole requesterRole) {
+        if (requesterRole != FamilyRole.OWNER) {
+            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
+        }
+
+        FamilySubscription familySub = familySubscriptionRepository.findBySubId(subId)
+                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
+
+        if (!familySub.getFamily().getId().equals(requesterFamilyId)) {
+            throw new ApplicationException(FamilyErrorCode.NOT_FAMILY_MEMBER);
         }
     }
 }
