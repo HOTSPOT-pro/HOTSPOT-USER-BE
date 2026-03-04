@@ -28,7 +28,7 @@ public class SmsPushService {
 
         for (var notification : event.persistedNotifications()) {
             try {
-                smsDispatchQueuePublisher.enqueue(notification);
+                smsDispatchQueuePublisher.enqueue(notification, event.sourceEvent());
             } catch (Exception ex) {
                 log.error(
                         "Failed to enqueue SMS dispatch. notificationId={}, subId={}, reason={}",
