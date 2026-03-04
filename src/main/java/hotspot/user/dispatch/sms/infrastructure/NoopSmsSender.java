@@ -1,14 +1,15 @@
 package hotspot.user.dispatch.sms.infrastructure;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import hotspot.user.dispatch.sms.config.SmsProperties;
-import hotspot.user.dispatch.sms.port.SmsSenderPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(prefix = "sms", name = "provider", havingValue = "noop", matchIfMissing = true)
 @RequiredArgsConstructor
 public class NoopSmsSender implements SmsSenderPort {
 
