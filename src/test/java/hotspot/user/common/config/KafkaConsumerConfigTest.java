@@ -18,6 +18,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
+import hotspot.user.dispatch.sms.dto.SmsDispatchCommand;
 import hotspot.user.kafka.dto.UserAlertEvent;
 
 class KafkaConsumerConfigTest {
@@ -67,7 +68,10 @@ class KafkaConsumerConfigTest {
     @DisplayName("Builds consumer factory and listener factory with manual ack and error handler")
     void shouldBuildKafkaConsumerAndListenerFactory() {
         // given
-        KafkaConsumerConfig kafkaConsumerConfig = new KafkaConsumerConfig("user-alert-consumer-group");
+        KafkaConsumerConfig kafkaConsumerConfig = new KafkaConsumerConfig(
+                "user-alert-consumer-group",
+                "sms-dispatch-consumer-group"
+        );
 
         KafkaProperties kafkaProperties = new KafkaProperties();
         kafkaProperties.setBootstrapServers(List.of("localhost:9092"));
@@ -79,13 +83,21 @@ class KafkaConsumerConfigTest {
                 kafkaConsumerConfig.userAlertEventConsumerFactory(kafkaProperties, sslBundles);
         ConcurrentKafkaListenerContainerFactory<String, UserAlertEvent> listenerFactory =
                 kafkaConsumerConfig.userAlertKafkaListenerContainerFactory(consumerFactory);
+        ConsumerFactory<String, SmsDispatchCommand> smsConsumerFactory =
+                kafkaConsumerConfig.smsDispatchCommandConsumerFactory(kafkaProperties, sslBundles);
+        ConcurrentKafkaListenerContainerFactory<String, SmsDispatchCommand> smsListenerFactory =
+                kafkaConsumerConfig.smsDispatchKafkaListenerContainerFactory(smsConsumerFactory);
 
         Map<String, Object> props = consumerFactory.getConfigurationProperties();
+        Map<String, Object> smsProps = smsConsumerFactory.getConfigurationProperties();
 
         // then
         assertThat(props.get(ConsumerConfig.GROUP_ID_CONFIG)).isEqualTo("user-alert-consumer-group");
+        assertThat(smsProps.get(ConsumerConfig.GROUP_ID_CONFIG)).isEqualTo("sms-dispatch-consumer-group");
         assertThat(props.get(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG)).isEqualTo(false);
         assertThat(listenerFactory.getContainerProperties().getAckMode()).isEqualTo(ContainerProperties.AckMode.MANUAL);
+        assertThat(smsListenerFactory.getContainerProperties().getAckMode()).isEqualTo(ContainerProperties.AckMode.MANUAL);
         assertThat(listenerFactory).isNotNull();
+        assertThat(smsListenerFactory).isNotNull();
     }
 }
