@@ -46,10 +46,14 @@ class SmsPushServiceTest {
                 sourceEvent(),
                 List.of(notification)
         );
+        SmsDispatchQueuePublisher.SmsDispatchMetadata metadata =
+                new SmsDispatchQueuePublisher.SmsDispatchMetadata("요금제", "민수");
+        given(smsDispatchQueuePublisher.resolveMetadata(event.sourceEvent())).willReturn(metadata);
 
         smsPushService.onNotificationsPersisted(event);
 
-        then(smsDispatchQueuePublisher).should().enqueue(notification, event.sourceEvent());
+        then(smsDispatchQueuePublisher).should().resolveMetadata(event.sourceEvent());
+        then(smsDispatchQueuePublisher).should().enqueue(notification, event.sourceEvent(), metadata);
     }
 
     @Test
@@ -64,7 +68,12 @@ class SmsPushServiceTest {
 
         smsPushService.onNotificationsPersisted(event);
 
-        then(smsDispatchQueuePublisher).should(never()).enqueue(notification, event.sourceEvent());
+        then(smsDispatchQueuePublisher).should(never()).resolveMetadata(event.sourceEvent());
+        then(smsDispatchQueuePublisher).should(never()).enqueue(
+                org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any()
+        );
     }
 
     @Test
@@ -76,7 +85,12 @@ class SmsPushServiceTest {
                 sourceEvent(),
                 List.of(first)
         );
-        doThrow(new RuntimeException("unexpected")).when(smsDispatchQueuePublisher).enqueue(first, event.sourceEvent());
+        SmsDispatchQueuePublisher.SmsDispatchMetadata metadata =
+                new SmsDispatchQueuePublisher.SmsDispatchMetadata("요금제", "민수");
+        given(smsDispatchQueuePublisher.resolveMetadata(event.sourceEvent())).willReturn(metadata);
+        doThrow(new RuntimeException("unexpected"))
+                .when(smsDispatchQueuePublisher)
+                .enqueue(first, event.sourceEvent(), metadata);
 
         assertThatThrownBy(() -> smsPushService.onNotificationsPersisted(event))
                 .isInstanceOf(ApplicationException.class)
@@ -85,7 +99,8 @@ class SmsPushServiceTest {
                     assertThat(appEx.getCode()).isEqualTo(SmsErrorCode.SMS_LISTENER_FAILED);
                 });
 
-        then(smsDispatchQueuePublisher).should().enqueue(first, event.sourceEvent());
+        then(smsDispatchQueuePublisher).should().resolveMetadata(event.sourceEvent());
+        then(smsDispatchQueuePublisher).should().enqueue(first, event.sourceEvent(), metadata);
     }
 
     private void mockEnabled() {
