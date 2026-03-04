@@ -16,10 +16,10 @@ public interface BlockedServiceSubJpaRepository extends JpaRepository<BlockedSer
     List<BlockedServiceSubEntity> findBySubscriptionSubIdAndIsActiveTrue(Long subId);
 
     // is_Active = false인 데이터도 포함해서 조회 -> Upsert 위해서
-    @Query(value = """
-        SELECT * FROM blocked_service_sub b
-        WHERE b.sub_id = :subId
-        AND b.blocked_service_id IN (:serviceIds)
+    @Query("""
+        SELECT b FROM BlockedServiceSubEntity b
+        WHERE b.subscription.subId = :subId
+        AND b.appBlockedService.appBlockedServiceId IN :serviceIds
         """)
     List<BlockedServiceSubEntity> findBySubIdAndServiceIds(
             @Param("subId") Long subId, @Param("serviceIds") Set<Long> serviceIds);
