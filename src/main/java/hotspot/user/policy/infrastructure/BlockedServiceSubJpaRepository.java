@@ -13,31 +13,42 @@ import hotspot.user.policy.infrastructure.entity.BlockedServiceSubEntity;
 public interface BlockedServiceSubJpaRepository extends JpaRepository<BlockedServiceSubEntity, Long> {
     List<BlockedServiceSubEntity> findBySubscriptionSubId(Long subId);
 
-    // is_deleted = true인 데이터도 포함해서 조회 -> Upsert 위해서
-    // nativeQuery=true 해서 @Where부분 우회
-    @Query(value = """
-        SELECT * FROM blocked_service_sub b
-        WHERE b.sub_id = :subId
-        AND b.blocked_service_id IN (:serviceIds)
-        """, nativeQuery = true)
-    List<BlockedServiceSubEntity> findBySubIdAndServiceIdsIncludeDeleted(
+    List<BlockedServiceSubEntity> findBySubscriptionSubIdAndIsActiveTrue(Long subId);
+
+    // is_Active = false인 데이터도 포함해서 조회 -> Upsert 위해서
+    @Query("""
+        SELECT b FROM BlockedServiceSubEntity b
+        WHERE b.subscription.subId = :subId
+        AND b.appBlockedService.appBlockedServiceId IN :serviceIds
+        """)
+    List<BlockedServiceSubEntity> findBySubIdAndServiceIds(
             @Param("subId") Long subId, @Param("serviceIds") Set<Long> serviceIds);
 
 
+    // 앱 차단 서비스 구독 목록 비활성화
     @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE BlockedServiceSubEntity b
-            SET b.isDeleted = true
-            WHERE b.subscription.subId = :subId
-            AND b.appBlockedService.appBlockedServiceId IN :serviceIds
+            SET b.isActive = false
+            WHERE b.blockedServiceSubId IN :ids
             """)
-    void bulkSoftDelete(@Param("subId") Long subId, @Param("serviceIds") Set<Long> serviceIds);
+    void bulkDeactive(@Param("ids") List<Long> ids);
+
+    // 앱 차단 서비스 구독 목록 활성화
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE BlockedServiceSubEntity b
+            SET b.isActive = true
+            WHERE b.blockedServiceSubId IN :ids
+            """)
+    void bulkActivate(@Param("ids") List<Long> ids);
 
     // 활성화된 차단 서비스 ID 리스트만 조회 (Entity mapping에 의한 NPE 방지)
     @Query("""
             SELECT b.appBlockedService.appBlockedServiceId
             FROM BlockedServiceSubEntity b
             WHERE b.subscription.subId = :subId
+            AND b.isActive = true
             """)
     List<Long> findActiveServiceIdsBySubId(@Param("subId") Long subId);
 }

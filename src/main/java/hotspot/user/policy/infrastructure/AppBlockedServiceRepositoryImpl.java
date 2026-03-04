@@ -27,9 +27,10 @@ public class AppBlockedServiceRepositoryImpl implements AppBlockedServiceReposit
         return appBlockedServiceJpaRepository.countByAppBlockedServiceIdIn(ids);
     }
 
+    // 관리자가 만든 앱 차단 서비스 중 id에 해당하는 걸 리스트로 가져온다.
     @Override
     public List<AppBlockedService> findAllByAppBlockedServiceIds(List<Long> ids) {
-        return appBlockedServiceJpaRepository.findByIdInAndIsDeletedFalse(ids)
+        return appBlockedServiceJpaRepository.findByIdInAndIsActiveTrue(ids)
                 .stream()
                 .map(AppBlockedServiceEntity::entityToDomain)
                 .toList();

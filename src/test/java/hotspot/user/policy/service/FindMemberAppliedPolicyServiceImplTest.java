@@ -2,6 +2,7 @@ package hotspot.user.policy.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.policy.domain.PolicySub;
+import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
@@ -43,6 +45,8 @@ class FindMemberAppliedPolicyServiceImplTest {
     private BlockedServiceSubRepository blockedServiceSubRepository;
     @Mock
     private BlockPolicyRepository blockPolicyRepository;
+    @Mock
+    private AppBlockedServiceRepository appBlockedServiceRepository;
 
     @InjectMocks
     private FindMemberAppliedPolicyServiceImpl findMemberAppliedPolicyService;
@@ -54,12 +58,13 @@ class FindMemberAppliedPolicyServiceImplTest {
         Long memberId = 1L;
         Long subId = 100L;
         Long policyId = 50L;
+        Long appId = 200L;
 
         Member member = Member.builder().id(memberId).name("홍길동").build();
         Subscription sub = Subscription.builder().id(subId).member(member).build();
         FamilySubscription familySub = FamilySubscription.builder()
                 .subscription(sub)
-                .dataLimit(10)
+                .dataLimit(1024 * 1024) // 1GB
                 .priority(1)
                 .build();
 
@@ -68,13 +73,21 @@ class FindMemberAppliedPolicyServiceImplTest {
         // 정책 상세 정보
         BlockPolicy blockPolicy = BlockPolicy.builder().id(policyId).name("수면 모드").build();
 
-        AppBlockedService app = AppBlockedService.builder().name("YouTube").serviceCode("YOUTUBE").build();
-        BlockedServiceSub blockedSub = BlockedServiceSub.builder().id(20L).appBlockedService(app).build();
+        // 앱 차단 매핑 (ID 기반)
+        BlockedServiceSub blockedSub = BlockedServiceSub.builder()
+                .id(20L)
+                .subId(subId)
+                .appBlockedServiceId(appId)
+                .isActive(true)
+                .build();
+        // 앱 차단 상세 정보
+        AppBlockedService app = AppBlockedService.builder().id(appId).name("YouTube").serviceCode("YOUTUBE").build();
 
         given(familySubscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(familySub));
         given(policySubRepository.findActiveBySubId(subId)).willReturn(List.of(policySub));
-        given(blockedServiceSubRepository.findBySubId(subId)).willReturn(List.of(blockedSub));
+        given(blockedServiceSubRepository.findActiveBySubId(subId)).willReturn(List.of(blockedSub));
         given(blockPolicyRepository.findAllById(List.of(policyId))).willReturn(List.of(blockPolicy));
+        given(appBlockedServiceRepository.findAllByAppBlockedServiceIds(anyList())).willReturn(List.of(app));
 
         // when
         AppliedPolicyResponse response = findMemberAppliedPolicyService.findByMemberId(memberId);
@@ -85,6 +98,7 @@ class FindMemberAppliedPolicyServiceImplTest {
         assertThat(response.blockPolicyResponseList()).hasSize(1);
         assertThat(response.appBlockedServiceResponseList()).hasSize(1);
         assertThat(response.blockPolicyResponseList().get(0).name()).isEqualTo("수면 모드");
+        assertThat(response.appBlockedServiceResponseList().get(0).name()).isEqualTo("YouTube");
     }
 
     @Test

@@ -10,9 +10,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-
 import hotspot.user.common.BaseEntity;
 import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
@@ -32,8 +29,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "blocked_service_sub")
-@SQLDelete(sql = "UPDATE blocked_service_sub SET is_deleted = true WHERE blocked_service_sub_id = ?")
-@Where(clause = "is_deleted = false")
 public class BlockedServiceSubEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,15 +42,31 @@ public class BlockedServiceSubEntity extends BaseEntity {
     @JoinColumn(name = "blocked_service_id")
     private AppBlockedServiceEntity appBlockedService;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(nullable = false)
     @Builder.Default
-    private Boolean isDeleted = false;
+    private Boolean isActive = true; // 활성화 여부
 
     public BlockedServiceSub entityToDomain() {
         return BlockedServiceSub.builder()
                 .id(this.blockedServiceSubId)
-                .subscription(this.subscription.entityToDomain())
-                .appBlockedService(this.appBlockedService.entityToDomain())
+                .subId(this.subscription.getSubId())
+                .appBlockedServiceId(this.appBlockedService.getAppBlockedServiceId())
+                .isActive(this.isActive)
+                .build();
+    }
+
+    public static BlockedServiceSubEntity domainToEntity(BlockedServiceSub domain) {
+        SubscriptionEntity subscriptionProxy = SubscriptionEntity.builder()
+                .subId(domain.getSubId()).build();
+
+        AppBlockedServiceEntity appBlockedServiceProxy = AppBlockedServiceEntity.builder()
+                .appBlockedServiceId(domain.getAppBlockedServiceId()).build();
+
+        return BlockedServiceSubEntity.builder()
+                .blockedServiceSubId(domain.getId())
+                .subscription(subscriptionProxy)
+                .appBlockedService(appBlockedServiceProxy)
+                .isActive(domain.isActive())
                 .build();
     }
 }

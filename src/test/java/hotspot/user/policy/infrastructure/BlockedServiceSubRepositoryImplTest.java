@@ -1,16 +1,12 @@
 package hotspot.user.policy.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.List;
-import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,7 +32,7 @@ class BlockedServiceSubRepositoryImplTest {
     private BlockedServiceSubRepositoryImpl repository;
 
     @Test
-    @DisplayName("회선 ID로 차단된 앱 목록 조회 성공")
+    @DisplayName("회선 ID로 모든 차단된 앱 목록 조회 성공(비활성 포함)")
     void findBySubIdSuccess() {
         // given
         Long subId = 100L;
@@ -55,6 +51,7 @@ class BlockedServiceSubRepositoryImplTest {
                 .blockedServiceSubId(10L)
                 .subscription(subEntity)
                 .appBlockedService(appEntity)
+                .isActive(true)
                 .build();
 
         given(jpaRepository.findBySubscriptionSubId(subId)).willReturn(List.of(entity));
@@ -64,7 +61,40 @@ class BlockedServiceSubRepositoryImplTest {
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getAppBlockedService().getName()).isEqualTo("YouTube");
+        assertThat(result.get(0).getAppBlockedServiceId()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("회선 ID로 활성화된 앱 목록만 조회 성공")
+    void findActiveBySubIdSuccess() {
+        // given
+        Long subId = 100L;
+        SubscriptionEntity subEntity = SubscriptionEntity.builder()
+                .subId(subId)
+                .member(MemberEntity.builder().id(1L).build())
+                .plan(PlanEntity.builder().planId(1L).build())
+                .build();
+        AppBlockedServiceEntity appEntity = AppBlockedServiceEntity.builder()
+                .appBlockedServiceId(1L)
+                .blockedServiceName("YouTube")
+                .blockedServiceCode("YOUTUBE")
+                .build();
+
+        BlockedServiceSubEntity entity = BlockedServiceSubEntity.builder()
+                .blockedServiceSubId(10L)
+                .subscription(subEntity)
+                .appBlockedService(appEntity)
+                .isActive(true)
+                .build();
+
+        given(jpaRepository.findBySubscriptionSubIdAndIsActiveTrue(subId)).willReturn(List.of(entity));
+
+        // when
+        List<BlockedServiceSub> result = repository.findActiveBySubId(subId);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).isActive()).isTrue();
     }
 
     @Test
@@ -82,40 +112,21 @@ class BlockedServiceSubRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("성공: 새로운 서비스를 차단하거나 기존 이력을 복구한다 (saveAll)")
+    @DisplayName("성공: 도메인 리스트를 받아 신규 저장, 활성화, 비활성화를 일괄 처리한다")
     void saveAllSuccess() {
         // given
-        Long subId = 100L;
-        Set<Long> serviceIds = Set.of(1L);
-
-        BlockedServiceSubEntity existing = BlockedServiceSubEntity.builder()
-                .blockedServiceSubId(10L)
-                .isDeleted(true)
-                .appBlockedService(AppBlockedServiceEntity.builder().appBlockedServiceId(1L).build())
-                .subscription(SubscriptionEntity.builder().subId(subId).build())
-                .build();
-
-        given(jpaRepository.findBySubIdAndServiceIdsIncludeDeleted(eq(subId), anySet()))
-                .willReturn(List.of(existing));
+        List<BlockedServiceSub> domains = List.of(
+                BlockedServiceSub.builder().subId(100L).appBlockedServiceId(1L).isActive(true).build(), // 신규
+                BlockedServiceSub.builder().id(10L).subId(100L).appBlockedServiceId(2L).isActive(true).build(), // 활성화
+                BlockedServiceSub.builder().id(11L).subId(100L).appBlockedServiceId(3L).isActive(false).build() // 비활성화
+        );
 
         // when
-        repository.saveAll(subId, serviceIds);
+        repository.saveAll(domains);
 
         // then
-        verify(jpaRepository, times(1)).saveAll(any());
-    }
-
-    @Test
-    @DisplayName("성공: 요청받은 서비스들을 일괄 차단 해제한다 (deleteAll)")
-    void deleteAllSuccess() {
-        // given
-        Long subId = 100L;
-        Set<Long> serviceIds = Set.of(1L, 2L);
-
-        // when
-        repository.deleteAll(subId, serviceIds);
-
-        // then
-        verify(jpaRepository, times(1)).bulkSoftDelete(anyLong(), anySet());
+        verify(jpaRepository, times(1)).saveAll(anyList()); // 1건 신규 저장
+        verify(jpaRepository, times(1)).bulkActivate(anyList()); // 10L 활성화
+        verify(jpaRepository, times(1)).bulkDeactive(anyList()); // 11L 비활성화
     }
 }

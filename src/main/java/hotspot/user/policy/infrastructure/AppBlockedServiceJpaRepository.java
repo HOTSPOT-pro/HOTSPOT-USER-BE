@@ -12,13 +12,14 @@ import hotspot.user.policy.infrastructure.entity.AppBlockedServiceEntity;
 public interface AppBlockedServiceJpaRepository extends JpaRepository<AppBlockedServiceEntity, Long> {
     long countByAppBlockedServiceIdIn(Set<Long> ids);
 
+    // 관리자가 생성한 앱 차단 서비스 중 활성화된 것만 가져오기
     @Query("""
         select a
         from AppBlockedServiceEntity a
         where a.appBlockedServiceId in :ids
-          and a.isDeleted = false
+          and a.isActive = true
     """)
-    List<AppBlockedServiceEntity> findByIdInAndIsDeletedFalse(
+    List<AppBlockedServiceEntity> findByIdInAndIsActiveTrue(
             @Param("ids") List<Long> ids
     );
 }
