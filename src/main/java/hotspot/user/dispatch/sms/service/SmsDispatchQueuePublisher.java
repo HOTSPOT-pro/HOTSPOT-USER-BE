@@ -30,17 +30,31 @@ public class SmsDispatchQueuePublisher {
     @Value("${app.topics.sms-dispatch}")
     private String smsDispatchTopic;
 
-    // 알림 정보를 SMS 디스패치 Kafka 토픽에 전송한다.
-    public void enqueue(Notification notification, UserAlertEvent sourceEvent) {
-        try {
-            String planName = resolvePlanName(sourceEvent.subId());
-            String presentSenderName = resolvePresentSenderName(sourceEvent.giftId(), sourceEvent.presentSenderName());
+    public record SmsDispatchMetadata(
+            String planName,
+            String presentSenderName
+    ) {
+    }
 
+    // sourceEvent 기반으로 SMS 본문 확장값(요금제명/선물 발신자명)을 한 번 조회한다.
+    public SmsDispatchMetadata resolveMetadata(UserAlertEvent sourceEvent) {
+        String planName = resolvePlanName(sourceEvent.subId());
+        String presentSenderName = resolvePresentSenderName(sourceEvent.giftId(), sourceEvent.presentSenderName());
+        return new SmsDispatchMetadata(planName, presentSenderName);
+    }
+
+    // 미리 조회한 메타데이터를 사용해 SMS 디스패치 Kafka 토픽에 전송한다.
+    public void enqueue(
+            Notification notification,
+            UserAlertEvent sourceEvent,
+            SmsDispatchMetadata metadata
+    ) {
+        try {
             SmsDispatchCommand command = SmsDispatchCommand.from(
                     notification,
                     sourceEvent,
-                    planName,
-                    presentSenderName
+                    metadata.planName(),
+                    metadata.presentSenderName()
             );
             String payload = objectMapper.writeValueAsString(command);
             String key = notification.getSubId() + ":" + notification.getId();
