@@ -10,14 +10,17 @@ class SmsPropertiesTest {
     @Test
     @DisplayName("keeps configured sms properties")
     void propertiesValues() {
-        SmsProperties properties = new SmsProperties(true, false, false, false, false, "noop", "01012345678");
+        SmsProperties properties = new SmsProperties(
+                true, "noop", "01012345678",
+                "api-key", "api-secret", "https://api.solapi.com", "/messages/v4/send-many/detail"
+        );
 
         assertThat(properties.isEnabled()).isTrue();
-        assertThat(properties.isEnabled2()).isFalse();
-        assertThat(properties.isEnabled3()).isFalse();
-        assertThat(properties.isEnabled4()).isFalse();
-        assertThat(properties.isEnabled5()).isFalse();
         assertThat(properties.getProvider()).isEqualTo("noop");
         assertThat(properties.getFrom()).isEqualTo("01012345678");
+        assertThat(properties.getApiKey()).isEqualTo("api-key");
+        assertThat(properties.getApiSecret()).isEqualTo("api-secret");
+        assertThat(properties.getApiBaseUrl()).isEqualTo("https://api.solapi.com");
+        assertThat(properties.getSendPath()).isEqualTo("/messages/v4/send-many/detail");
     }
 }
