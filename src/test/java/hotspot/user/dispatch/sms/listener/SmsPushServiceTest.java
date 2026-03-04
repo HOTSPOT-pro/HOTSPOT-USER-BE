@@ -20,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SmsErrorCode;
 import hotspot.user.dispatch.sms.config.SmsProperties;
-import hotspot.user.dispatch.sms.infrastructure.SmsDispatchQueuePublisher;
+import hotspot.user.dispatch.sms.service.SmsDispatchQueuePublisher;
 import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.kafka.dto.UserAlertNotificationsPersistedEvent;
 import hotspot.user.notification.domain.Notification;
@@ -40,7 +40,7 @@ class SmsPushServiceTest {
     @Test
     @DisplayName("enqueues notifications when sms is enabled")
     void dispatchesWhenEnabled() {
-        mockAllEnabled();
+        mockEnabled();
         Notification notification = notification(1L, "IMMEDIATE_BLOCK_APPLIED");
         UserAlertNotificationsPersistedEvent event = new UserAlertNotificationsPersistedEvent(
                 sourceEvent(),
@@ -70,7 +70,7 @@ class SmsPushServiceTest {
     @Test
     @DisplayName("throws listener error when enqueue fails")
     void throwsWhenEnqueueFails() {
-        mockAllEnabled();
+        mockEnabled();
         Notification first = notification(1L, "IMMEDIATE_BLOCK_APPLIED");
         UserAlertNotificationsPersistedEvent event = new UserAlertNotificationsPersistedEvent(
                 sourceEvent(),
@@ -88,12 +88,8 @@ class SmsPushServiceTest {
         then(smsDispatchQueuePublisher).should().enqueue(first);
     }
 
-    private void mockAllEnabled() {
+    private void mockEnabled() {
         given(smsProperties.isEnabled()).willReturn(true);
-        given(smsProperties.isEnabled2()).willReturn(true);
-        given(smsProperties.isEnabled3()).willReturn(true);
-        given(smsProperties.isEnabled4()).willReturn(true);
-        given(smsProperties.isEnabled5()).willReturn(true);
     }
 
     private UserAlertEvent sourceEvent() {
