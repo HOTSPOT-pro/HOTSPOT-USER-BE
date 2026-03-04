@@ -14,4 +14,5 @@ public class AppBlockedService {
     private final Long id;
     private final String name;
     private final String serviceCode;
+    private final boolean isActive;
 }
