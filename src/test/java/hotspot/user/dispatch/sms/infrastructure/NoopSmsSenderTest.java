@@ -11,7 +11,10 @@ class NoopSmsSenderTest {
     @DisplayName("send does not throw")
     void sendNoop() {
         NoopSmsSender sender = new NoopSmsSender(
-                new SmsProperties(true, false, false, false, false, "noop", "01012345678")
+                new SmsProperties(
+                        true, "noop", "01012345678",
+                        "api-key", "api-secret", "https://api.solapi.com", "/messages/v4/send-many/detail"
+                )
         );
 
         sender.send("01012345678", "hello");
