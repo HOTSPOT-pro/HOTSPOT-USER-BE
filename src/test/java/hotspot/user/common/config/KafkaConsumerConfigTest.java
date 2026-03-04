@@ -95,8 +95,10 @@ class KafkaConsumerConfigTest {
         assertThat(props.get(ConsumerConfig.GROUP_ID_CONFIG)).isEqualTo("user-alert-consumer-group");
         assertThat(smsProps.get(ConsumerConfig.GROUP_ID_CONFIG)).isEqualTo("sms-dispatch-consumer-group");
         assertThat(props.get(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG)).isEqualTo(false);
-        assertThat(listenerFactory.getContainerProperties().getAckMode()).isEqualTo(ContainerProperties.AckMode.MANUAL);
-        assertThat(smsListenerFactory.getContainerProperties().getAckMode()).isEqualTo(ContainerProperties.AckMode.MANUAL);
+        assertThat(listenerFactory.getContainerProperties().getAckMode())
+                .isEqualTo(ContainerProperties.AckMode.MANUAL);
+        assertThat(smsListenerFactory.getContainerProperties().getAckMode())
+                .isEqualTo(ContainerProperties.AckMode.MANUAL);
         assertThat(listenerFactory).isNotNull();
         assertThat(smsListenerFactory).isNotNull();
     }

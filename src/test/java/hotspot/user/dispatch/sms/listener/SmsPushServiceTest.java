@@ -40,7 +40,7 @@ class SmsPushServiceTest {
     @Test
     @DisplayName("enqueues notifications when sms is enabled")
     void dispatchesWhenEnabled() {
-        given(smsProperties.isEnabled()).willReturn(true);
+        mockAllEnabled();
         Notification notification = notification(1L, "IMMEDIATE_BLOCK_APPLIED");
         UserAlertNotificationsPersistedEvent event = new UserAlertNotificationsPersistedEvent(
                 sourceEvent(),
@@ -70,7 +70,7 @@ class SmsPushServiceTest {
     @Test
     @DisplayName("throws listener error when enqueue fails")
     void throwsWhenEnqueueFails() {
-        given(smsProperties.isEnabled()).willReturn(true);
+        mockAllEnabled();
         Notification first = notification(1L, "IMMEDIATE_BLOCK_APPLIED");
         UserAlertNotificationsPersistedEvent event = new UserAlertNotificationsPersistedEvent(
                 sourceEvent(),
@@ -86,6 +86,14 @@ class SmsPushServiceTest {
                 });
 
         then(smsDispatchQueuePublisher).should().enqueue(first);
+    }
+
+    private void mockAllEnabled() {
+        given(smsProperties.isEnabled()).willReturn(true);
+        given(smsProperties.isEnabled2()).willReturn(true);
+        given(smsProperties.isEnabled3()).willReturn(true);
+        given(smsProperties.isEnabled4()).willReturn(true);
+        given(smsProperties.isEnabled5()).willReturn(true);
     }
 
     private UserAlertEvent sourceEvent() {
