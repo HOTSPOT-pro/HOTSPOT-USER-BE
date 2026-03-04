@@ -1,4 +1,4 @@
-package hotspot.user.dispatch.sms.infrastructure;
+package hotspot.user.dispatch.sms.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
