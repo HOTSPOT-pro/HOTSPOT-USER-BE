@@ -13,8 +13,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class BlockedServiceSub {
     private final Long id;
-    private final Subscription subscription;
-    private final AppBlockedService appBlockedService;
+    private final Long subId;
+    private final Long appBlockedServiceId;
     private boolean isActive;
 
     public void updateIsActive(boolean isActive) {

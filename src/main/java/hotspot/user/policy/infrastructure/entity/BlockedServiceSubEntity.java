@@ -52,9 +52,24 @@ public class BlockedServiceSubEntity extends BaseEntity {
     public BlockedServiceSub entityToDomain() {
         return BlockedServiceSub.builder()
                 .id(this.blockedServiceSubId)
-                .subscription(this.subscription.entityToDomain())
-                .appBlockedService(this.appBlockedService.entityToDomain())
+                .subId(this.subscription.getSubId())
+                .appBlockedServiceId(this.appBlockedService.getAppBlockedServiceId())
                 .isActive(this.isActive)
+                .build();
+    }
+
+    public static BlockedServiceSubEntity domainToEntity(BlockedServiceSub domain) {
+        SubscriptionEntity subscriptionProxy = SubscriptionEntity.builder()
+                .subId(domain.getSubId()).build();
+
+        AppBlockedServiceEntity appBlockedServiceProxy = AppBlockedServiceEntity.builder()
+                .appBlockedServiceId(domain.getAppBlockedServiceId()).build();
+
+        return BlockedServiceSubEntity.builder()
+                .blockedServiceSubId(domain.getId())
+                .subscription(subscriptionProxy)
+                .appBlockedService(appBlockedServiceProxy)
+                .isActive(domain.isActive())
                 .build();
     }
 }
