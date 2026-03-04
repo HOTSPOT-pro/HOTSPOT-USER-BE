@@ -25,6 +25,8 @@ spring:
 app:
   topics:
     user-alert-events: user-alert-events
+    sms-dispatch: sms-dispatch
 
   consumer-groups:
     user-alert: user-alert-consumer-group
+    sms-dispatch: sms-dispatch-consumer-group
