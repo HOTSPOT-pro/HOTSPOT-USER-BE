@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SmsErrorCode;
 import hotspot.user.dispatch.sms.domain.SmsRecipientResolution;
-import hotspot.user.dispatch.sms.port.SmsSenderPort;
+import hotspot.user.dispatch.sms.infrastructure.SmsSenderPort;
 import hotspot.user.kafka.domain.NotificationType;
 import hotspot.user.notification.domain.Notification;
 import hotspot.user.notification.domain.NotificationCategory;
