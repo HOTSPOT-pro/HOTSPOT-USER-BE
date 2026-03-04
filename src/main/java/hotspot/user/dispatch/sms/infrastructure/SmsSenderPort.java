@@ -1,4 +1,4 @@
-package hotspot.user.dispatch.sms.port;
+package hotspot.user.dispatch.sms.infrastructure;
 
 public interface SmsSenderPort {
 
