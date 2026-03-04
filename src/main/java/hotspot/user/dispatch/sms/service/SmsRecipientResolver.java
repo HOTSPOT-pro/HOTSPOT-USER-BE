@@ -17,11 +17,13 @@ public class SmsRecipientResolver {
 
     // 구독자 ID로 SMS 수신 전화번호를 조회하고 복호화 결과를 상태로 반환한다.
     public SmsRecipientResolution resolve(Long subId) {
-        Subscription subscription = subscriptionRepository.findById(subId).orElse(null);
-        if (subscription == null) {
-            return SmsRecipientResolution.subscriptionNotFound();
-        }
+        return subscriptionRepository.findById(subId)
+                .map(this::resolvePhoneNumber)
+                .orElseGet(SmsRecipientResolution::subscriptionNotFound);
+    }
 
+    // 구독 정보에서 전화번호 존재 여부와 복호화 성공 여부를 해석한다.
+    private SmsRecipientResolution resolvePhoneNumber(Subscription subscription) {
         String phoneEnc = subscription.getPhoneEnc();
         if (phoneEnc == null || phoneEnc.isBlank()) {
             return SmsRecipientResolution.phoneMissing();
