@@ -61,6 +61,29 @@ class SsePushServiceTest {
         then(sseEmitterRegistry).should(times(2)).sendAndCleanupOnFailure(eq(emitters.get(1)), any());
     }
 
+    @Test
+    @DisplayName("does not push family create notifications through SSE")
+    void skipsFamilyCreateNotifications() {
+        Notification familyCreate = notification(201L, 1L, "FAMILY_CREATE_APPROVED");
+        Notification normal = notification(202L, 1L, "SINGLE_USAGE_THRESHOLD_30");
+        UserAlertNotificationsPersistedEvent event = new UserAlertNotificationsPersistedEvent(
+                sourceEvent(),
+                List.of(familyCreate, normal)
+        );
+
+        List<SseEmitterRegistry.RegisteredEmitter> emitters = List.of(
+                new SseEmitterRegistry.RegisteredEmitter("e-1", new SseEmitter())
+        );
+        given(sseEmitterRegistry.findBySubId(1L)).willReturn(emitters);
+        given(notificationRepository.countUnreadBySubId(1L)).willReturn(5L);
+
+        notificationSsePushService.onNotificationsPersisted(event);
+
+        then(notificationRepository).should(times(1)).countUnreadBySubId(1L);
+        then(sseEmitterRegistry).should(times(1)).findBySubId(1L);
+        then(sseEmitterRegistry).should(times(1)).sendAndCleanupOnFailure(any(), any());
+    }
+
     private UserAlertEvent sourceEvent() {
         return new UserAlertEvent(
                 "alert-1",
