@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SmsErrorCode;
 import hotspot.user.dispatch.sms.domain.SmsRecipientResolution;
+import hotspot.user.dispatch.sms.dto.SmsDispatchCommand;
 import hotspot.user.dispatch.sms.infrastructure.SmsSenderPort;
 import hotspot.user.kafka.domain.NotificationType;
-import hotspot.user.notification.domain.Notification;
 import hotspot.user.notification.domain.NotificationCategory;
 import hotspot.user.notification.service.port.NotificationAllowRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,16 +22,16 @@ public class SmsDispatchService {
     private final NotificationAllowRepository notificationAllowRepository;
 
     // 알림 정보를 검증하고 수신자/메시지를 구성해 SMS를 발송한다.
-    public void dispatch(Notification notification) {
+    public void dispatch(SmsDispatchCommand command) {
         try {
-            NotificationType notificationType = parseNotificationType(notification);
+            NotificationType notificationType = parseNotificationType(command);
             validateSmsTargetType(notificationType);
-            validateDataAllow(notification, notificationType);
+            validateDataAllow(command, notificationType);
 
-            SmsRecipientResolution resolution = smsRecipientResolver.resolve(notification.getSubId());
+            SmsRecipientResolution resolution = smsRecipientResolver.resolve(command.subId());
             String phoneNumber = resolvePhoneNumber(resolution);
 
-            smsSenderPort.send(phoneNumber, smsMessageBuilder.build(notification));
+            smsSenderPort.send(phoneNumber, smsMessageBuilder.build(command, notificationType));
         } catch (ApplicationException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -52,9 +52,9 @@ public class SmsDispatchService {
     }
 
     // 알림 타입 문자열을 NotificationType으로 파싱한다.
-    private NotificationType parseNotificationType(Notification notification) {
+    private NotificationType parseNotificationType(SmsDispatchCommand command) {
         try {
-            return NotificationType.from(notification.getNotificationType());
+            return NotificationType.from(command.notificationType());
         } catch (RuntimeException ex) {
             throw new ApplicationException(SmsErrorCode.UNSUPPORTED_SMS_NOTIFICATION_TYPE, ex);
         }
@@ -68,9 +68,9 @@ public class SmsDispatchService {
     }
 
     // DATA 카테고리 알림의 수신 허용 상태를 검증한다.
-    private void validateDataAllow(Notification notification, NotificationType notificationType) {
+    private void validateDataAllow(SmsDispatchCommand command, NotificationType notificationType) {
         if (requiresDataAllowValidation(notificationType)
-                && !isAllowed(notification.getSubId(), NotificationCategory.DATA)) {
+                && !isAllowed(command.subId(), NotificationCategory.DATA)) {
             throw new ApplicationException(SmsErrorCode.SMS_NOTIFICATION_ALLOW_DISABLED);
         }
     }
