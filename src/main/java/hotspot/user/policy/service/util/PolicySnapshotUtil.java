@@ -1,0 +1,96 @@
+package hotspot.user.policy.service.util;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import hotspot.user.outbox.consistencyOutbox.domain.PolicyPayload;
+import hotspot.user.policy.domain.PolicySnapshot;
+import hotspot.user.policy.domain.PolicyType;
+
+public class PolicySnapshotUtil {
+
+    // 유틸리티 클래스이므로 인스턴스 생성을 방지한다.
+    private PolicySnapshotUtil() {}
+
+    /**
+     * 정책 도메인 정보를 Worker에서 사용할 수 있는 PolicyPayload 형태로 변환한다.
+     * 이렇게 생성된 PolicyPayload는 이후 Outbox → Kafka → Worker → Redis 정책 적용 흐름에서 사용.
+     */
+    public static PolicyPayload map(
+            Long policyId,
+            PolicyType type,
+            PolicySnapshot snapshot
+    ) {
+
+        if (type == PolicyType.SCHEDULED) {
+
+            String encoded =
+                    encodeDays(snapshot.getDays())
+                            + "|" + snapshot.getStartTime()
+                            + "|" + snapshot.getEndTime();
+
+            return PolicyPayload.scheduled(policyId, encoded);
+        }
+
+        if (type == PolicyType.ONCE) {
+
+            long expireEpoch = calculateExpireEpoch(snapshot);
+
+            return PolicyPayload.once(policyId, expireEpoch);
+        }
+
+        throw new IllegalArgumentException("Unknown policy type");
+    }
+
+    /**
+     * 요일 리스트를 Worker에서 사용할 수 있는 문자열 형태로 변환한다.
+     * 이 값은 이후 "요일|시작시간|종료시간" 형태의 정책 문자열을 구성할 때 사용
+     */
+    private static String encodeDays(List<DayOfWeek> days) {
+
+        return days.stream()
+                .map(day -> String.valueOf(day.getValue()))
+                .collect(Collectors.joining(","));
+    }
+
+    /**
+     * ONCE 정책의 만료 시점을 epoch(second) 기준으로 계산한다.
+     * 1. durationMinutes 기반 정책
+     *    현재 시각(now)에 durationMinutes를 더해 만료 시간을 계산한다.
+     *
+     * 2. endTime 기반 정책
+     *    오늘 날짜 + endTime으로 종료 시점을 계산한다.
+     *    만약 해당 시간이 이미 지난 경우에는 다음 날 동일한 시간으로 보정한다.
+     * 계산된 LocalDateTime은 Worker와 Redis Lua에서 사용하기 위해 UTC 기준 epoch(second) 값으로 변환된다.
+     */
+    private static long calculateExpireEpoch(PolicySnapshot snapshot) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (snapshot.getDurationMinutes() != null) {
+
+            return now.plusMinutes(snapshot.getDurationMinutes())
+                    .toEpochSecond(ZoneOffset.UTC);
+        }
+
+        if (snapshot.getEndLocalTime() != null) {
+
+            LocalDate today = LocalDate.now();
+
+            LocalDateTime endDateTime =
+                    LocalDateTime.of(today, snapshot.getEndLocalTime());
+
+            if (endDateTime.isBefore(now)) {
+                endDateTime = endDateTime.plusDays(1);
+            }
+
+            return endDateTime.toEpochSecond(ZoneOffset.UTC);
+        }
+
+        throw new IllegalArgumentException("Invalid ONCE policy snapshot");
+    }
+}
