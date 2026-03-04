@@ -65,7 +65,7 @@ public final class AlertMessageTemplateRegistry {
         put(
                 NotificationType.PRESENT_DATA,
                 "데이터 선물이 도착",
-                "\"%s\"님이 데이터 %sGB를 보내줬어요. 고마운 마음을 전해볼까요?"
+                "\"%s\"님이 데이터 %s를 보내줬어요. 고마운 마음을 전해볼까요?"
         );
 
         // Family
