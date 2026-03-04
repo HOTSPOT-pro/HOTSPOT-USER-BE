@@ -78,17 +78,17 @@ class AppBlockedServiceRepositoryImplTest {
                 .appBlockedServiceId(1L)
                 .blockedServiceName("YouTube")
                 .blockedServiceCode("YOUTUBE")
-                .isDeleted(false)
+                .isActive(true)
                 .build();
 
         AppBlockedServiceEntity entity2 = AppBlockedServiceEntity.builder()
                 .appBlockedServiceId(2L)
                 .blockedServiceName("TikTok")
                 .blockedServiceCode("TIKTOK")
-                .isDeleted(false)
+                .isActive(true)
                 .build();
 
-        given(appBlockedServiceJpaRepository.findByIdInAndIsDeletedFalse(ids))
+        given(appBlockedServiceJpaRepository.findByIdInAndIsActiveTrue(ids))
                 .willReturn(List.of(entity1, entity2));
 
         // when

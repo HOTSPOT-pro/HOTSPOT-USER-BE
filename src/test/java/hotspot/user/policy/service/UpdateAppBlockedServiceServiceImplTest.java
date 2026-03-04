@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,6 +31,7 @@ import hotspot.user.outbox.notificationOutbox.service.port.UserAlertNotification
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
 import hotspot.user.policy.domain.AppBlockedService;
+import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
 
@@ -64,20 +63,28 @@ class UpdateAppBlockedServiceServiceImplTest {
         Long familyId = 1L;
         Long subId = 100L;
         Long requesterFamilyId = 1L;
-        UpdateAppBlockedServiceRequest request = new UpdateAppBlockedServiceRequest(familyId, subId, List.of(2L, 3L));
+        List<Long> targetIds = List.of(2L, 3L);
+        UpdateAppBlockedServiceRequest request = new UpdateAppBlockedServiceRequest(familyId, subId, targetIds);
 
         FamilySubscription familySub = FamilySubscription.builder()
                 .family(Family.builder().id(familyId).build())
                 .build();
 
         given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
-        given(appBlockedServiceRepository.countByIdIn(anySet())).willReturn(2L); // 2개 요청 -> 2개 유효
-        given(blockedServiceSubRepository.findActiveServiceIdsBySubId(subId)).willReturn(List.of(1L, 2L));
+        
+        // 기존 상태: 1(활성), 2(활성)
+        List<BlockedServiceSub> existingSubs = List.of(
+                BlockedServiceSub.builder().id(10L).subId(subId).appBlockedServiceId(1L).isActive(true).build(),
+                BlockedServiceSub.builder().id(11L).subId(subId).appBlockedServiceId(2L).isActive(true).build()
+        );
+        given(blockedServiceSubRepository.findBySubId(subId)).willReturn(existingSubs);
+
+        // 모든 필요한 앱 서비스 정보 조회 (1, 2, 3)
         given(appBlockedServiceRepository.findAllByAppBlockedServiceIds(anyList()))
                 .willReturn(List.of(
-                        AppBlockedService.builder().id(1L).name("YouTube").build(),
-                        AppBlockedService.builder().id(2L).name("TikTok").build(),
-                        AppBlockedService.builder().id(3L).name("Instagram").build()
+                        AppBlockedService.builder().id(1L).name("YouTube").isActive(true).build(),
+                        AppBlockedService.builder().id(2L).name("TikTok").isActive(true).build(),
+                        AppBlockedService.builder().id(3L).name("Instagram").isActive(true).build()
                 ));
 
         // when
@@ -86,11 +93,14 @@ class UpdateAppBlockedServiceServiceImplTest {
 
         // then
         assertThat(response.subId()).isEqualTo(subId);
-        verify(blockedServiceSubRepository, times(1)).saveAll(anyLong(), anySet());
-        verify(blockedServiceSubRepository, times(1)).deleteAll(anyLong(), anySet());
-
-        verify(eventPublisher, times(1))
-                .publishEvent(any(AppBlockListUpdateEvent.class));
+        assertThat(response.blockedServiceIdList()).containsExactlyInAnyOrder(2L, 3L);
+        
+        // 변경분 검증: 
+        // 1번: 활성 -> 비활성
+        // 2번: 활성 유지 (변경 없음)
+        // 3번: 신규 추가 (활성)
+        verify(blockedServiceSubRepository, times(1)).saveAll(anyList());
+        verify(eventPublisher, times(1)).publishEvent(any(AppBlockListUpdateEvent.class));
     }
 
     @Test
@@ -106,7 +116,10 @@ class UpdateAppBlockedServiceServiceImplTest {
                 .build();
 
         given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
-        given(appBlockedServiceRepository.countByIdIn(anySet())).willReturn(0L); // 1개 요청 -> 0개 유효
+        given(blockedServiceSubRepository.findBySubId(subId)).willReturn(List.of());
+        
+        // 999L은 DB에 없음
+        given(appBlockedServiceRepository.findAllByAppBlockedServiceIds(anyList())).willReturn(List.of());
 
         // when & then
         assertThatThrownBy(() -> service.updateAppBlockedService(request, 1L, FamilyRole.OWNER))
