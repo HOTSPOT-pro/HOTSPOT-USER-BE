@@ -10,6 +10,7 @@ import hotspot.user.policy.domain.BlockedServiceSub;
  */
 public interface BlockedServiceSubRepository {
     List<BlockedServiceSub> findBySubId(Long subId);
+    List<BlockedServiceSub> findActiveBySubId(Long subId);
     List<Long> findActiveServiceIdsBySubId(Long subId); // 활성화된 앱 차단 서비스 id만 리턴
     List<BlockedServiceSub> saveAll(List<BlockedServiceSub> blockedServiceSubList);
 }

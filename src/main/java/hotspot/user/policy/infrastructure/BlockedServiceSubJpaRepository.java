@@ -13,6 +13,8 @@ import hotspot.user.policy.infrastructure.entity.BlockedServiceSubEntity;
 public interface BlockedServiceSubJpaRepository extends JpaRepository<BlockedServiceSubEntity, Long> {
     List<BlockedServiceSubEntity> findBySubscriptionSubId(Long subId);
 
+    List<BlockedServiceSubEntity> findBySubscriptionSubIdAndIsActiveTrue(Long subId);
+
     // is_Active = false인 데이터도 포함해서 조회 -> Upsert 위해서
     @Query(value = """
         SELECT * FROM blocked_service_sub b

@@ -29,6 +29,13 @@ public class BlockedServiceSubRepositoryImpl implements BlockedServiceSubReposit
     }
 
     @Override
+    public List<BlockedServiceSub> findActiveBySubId(Long subId) {
+        return jpaRepository.findBySubscriptionSubIdAndIsActiveTrue(subId).stream()
+                .map(BlockedServiceSubEntity::entityToDomain)
+                .toList();
+    }
+
+    @Override
     public List<Long> findActiveServiceIdsBySubId(Long subId) {
         return jpaRepository.findActiveServiceIdsBySubId(subId);
     }
