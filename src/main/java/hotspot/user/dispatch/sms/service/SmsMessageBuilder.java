@@ -86,18 +86,27 @@ public class SmsMessageBuilder {
 
     // 타입별로 사용량 안내 소개 문장을 만든다(개인/가족/선물).
     private String resolveUsageIntro(SmsDispatchCommand command, NotificationType notificationType) {
-        if (isSingleUsage(notificationType)) {
-            String planName = defaultIfBlank(command.planName(), "요금제");
-            return "고객님, 「" + planName + "」 요금제의 기본 데이터 사용량을 안내해 드립니다.";
-        }
-        if (isFamilyUsage(notificationType)) {
-            return "고객님, 가족 공유 데이터 사용량을 안내해 드립니다.";
-        }
-        if (isPresentUsage(notificationType)) {
-            String senderName = defaultIfBlank(command.presentSenderName(), "지인");
-            return "고객님, " + senderName + "님께 선물 받은 데이터 사용량을 안내해 드립니다.";
-        }
-        throw new ApplicationException(SmsErrorCode.SMS_TEMPLATE_NOT_FOUND);
+        return switch (notificationType) {
+            case SINGLE_USAGE_THRESHOLD_50,
+                    SINGLE_USAGE_THRESHOLD_30,
+                    SINGLE_USAGE_THRESHOLD_10,
+                    SINGLE_USAGE_EXHAUSTED -> {
+                String planName = defaultIfBlank(command.planName(), "요금제");
+                yield "고객님, 「" + planName + "」 요금제의 기본 데이터 사용량을 안내해 드립니다.";
+            }
+            case FAMILY_USAGE_THRESHOLD_50,
+                    FAMILY_USAGE_THRESHOLD_30,
+                    FAMILY_USAGE_THRESHOLD_10,
+                    FAMILY_USAGE_EXHAUSTED -> "고객님, 가족 공유 데이터 사용량을 안내해 드립니다.";
+            case PRESENT_USAGE_THRESHOLD_50,
+                    PRESENT_USAGE_THRESHOLD_30,
+                    PRESENT_USAGE_THRESHOLD_10,
+                    PRESENT_USAGE_EXHAUSTED -> {
+                String senderName = defaultIfBlank(command.presentSenderName(), "지인");
+                yield "고객님, " + senderName + "님께 선물 받은 데이터 사용량을 안내해 드립니다.";
+            }
+            default -> throw new ApplicationException(SmsErrorCode.SMS_TEMPLATE_NOT_FOUND);
+        };
     }
 
     // 가족 생성 승인/반려에 사용하는 전용 본문 포맷을 생성한다.
@@ -121,39 +130,6 @@ public class SmsMessageBuilder {
                 guide,
                 DEFAULT_LINK
         ).trim();
-    }
-
-    // 개인 요금제 사용량 알림 타입인지 확인한다.
-    private boolean isSingleUsage(NotificationType type) {
-        return switch (type) {
-            case SINGLE_USAGE_THRESHOLD_50,
-                    SINGLE_USAGE_THRESHOLD_30,
-                    SINGLE_USAGE_THRESHOLD_10,
-                    SINGLE_USAGE_EXHAUSTED -> true;
-            default -> false;
-        };
-    }
-
-    // 가족 공유풀 사용량 알림 타입인지 확인한다.
-    private boolean isFamilyUsage(NotificationType type) {
-        return switch (type) {
-            case FAMILY_USAGE_THRESHOLD_50,
-                    FAMILY_USAGE_THRESHOLD_30,
-                    FAMILY_USAGE_THRESHOLD_10,
-                    FAMILY_USAGE_EXHAUSTED -> true;
-            default -> false;
-        };
-    }
-
-    // 선물 데이터 사용량 알림 타입인지 확인한다.
-    private boolean isPresentUsage(NotificationType type) {
-        return switch (type) {
-            case PRESENT_USAGE_THRESHOLD_50,
-                    PRESENT_USAGE_THRESHOLD_30,
-                    PRESENT_USAGE_THRESHOLD_10,
-                    PRESENT_USAGE_EXHAUSTED -> true;
-            default -> false;
-        };
     }
 
     // null/blank 값을 기본 문자열로 치환한다.
