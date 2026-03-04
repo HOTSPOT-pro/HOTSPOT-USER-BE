@@ -1,6 +1,5 @@
 package hotspot.user.policy.domain;
 
-import hotspot.user.subscription.domain.Subscription;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

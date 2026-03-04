@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import hotspot.user.policy.domain.AppBlockedService;
-import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +13,12 @@ import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
+import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.policy.domain.mapper.AppliedPolicyMapper;
+import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
@@ -52,11 +52,20 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
                 .collect(Collectors.toMap(BlockPolicy::getId, p -> p));
 
         // 앱 차단 서비스 상세 정보 조회 (N+1 방지)
-        List<Long> appBlockedServiceIds = blockedServiceSubs.stream().map(BlockedServiceSub::getAppBlockedServiceId).toList();
-        Map<Long, AppBlockedService> appBlockedServiceMap = appBlockedServiceRepository.findAllByAppBlockedServiceIds(appBlockedServiceIds).stream()
+        List<Long> appBlockedServiceIds = blockedServiceSubs.stream()
+                .map(BlockedServiceSub::getAppBlockedServiceId)
+                .toList();
+        Map<Long, AppBlockedService> appBlockedServiceMap = appBlockedServiceRepository
+                .findAllByAppBlockedServiceIds(appBlockedServiceIds).stream()
                 .collect(Collectors.toMap(AppBlockedService::getId, s -> s));
 
         // 매퍼의 통합 조립 메서드 호출
-        return AppliedPolicyMapper.toAppliedPolicyResponse(familySub, policySubs, blockedServiceSubs, policyMap, appBlockedServiceMap);
+        return AppliedPolicyMapper.toAppliedPolicyResponse(
+                familySub,
+                policySubs,
+                blockedServiceSubs,
+                policyMap,
+                appBlockedServiceMap
+        );
     }
 }

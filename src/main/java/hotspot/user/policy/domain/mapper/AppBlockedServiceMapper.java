@@ -29,7 +29,10 @@ public class AppBlockedServiceMapper {
     }
 
     // BlockedServiceSub와 AppBlockedService 상세 정보를 조합하여 DTO로 변환
-    public static AppBlockedServiceResponse toAppBlockedServiceResponse(BlockedServiceSub blockedSub, AppBlockedService appBlockedService) {
+    public static AppBlockedServiceResponse toAppBlockedServiceResponse(
+            BlockedServiceSub blockedSub,
+            AppBlockedService appBlockedService
+    ) {
         return toAppBlockedServiceResponse(appBlockedService);
     }
 

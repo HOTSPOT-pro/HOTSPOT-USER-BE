@@ -7,9 +7,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import hotspot.user.common.exception.code.PolicyErrorCode;
-import hotspot.user.policy.domain.AppBlockedService;
-import hotspot.user.policy.domain.BlockedServiceSub;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
+import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
@@ -27,6 +25,8 @@ import hotspot.user.outbox.notificationOutbox.service.port.UserAlertNotification
 import hotspot.user.policy.controller.port.UpdateAppBlockedServiceService;
 import hotspot.user.policy.controller.request.UpdateAppBlockedServiceRequest;
 import hotspot.user.policy.controller.response.UpdateAppBlockedServiceResponse;
+import hotspot.user.policy.domain.AppBlockedService;
+import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.policy.domain.mapper.AppBlockedServiceMapper;
 import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
@@ -72,7 +72,8 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
 
         Map<Long, AppBlockedService> blockedServiceMap = Map.of();
         if (!allRequiredBlockedServiceIds.isEmpty()) {
-            blockedServiceMap = appBlockedServiceRepository.findAllByAppBlockedServiceIds(new ArrayList<>(allRequiredBlockedServiceIds)).stream()
+            blockedServiceMap = appBlockedServiceRepository
+                    .findAllByAppBlockedServiceIds(new ArrayList<>(allRequiredBlockedServiceIds)).stream()
                     .collect(Collectors.toMap(AppBlockedService::getId, p -> p));
         }
 
@@ -136,7 +137,12 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
         // 7. 변경 사항이 있는 경우에만 저장 및 알림 발송
         if (!domainsToSave.isEmpty()) {
             blockedServiceSubRepository.saveAll(domainsToSave);
-            publishServiceAccessAlerts(request.subId(), requesterFamilyId, appliedAlertBlockedServices, releasedAlertBlockedServices);
+            publishServiceAccessAlerts(
+                    request.subId(),
+                    requesterFamilyId,
+                    appliedAlertBlockedServices,
+                    releasedAlertBlockedServices
+            );
         }
 
         // 8. 정책 동기화 이벤트 발행 및 응답 (변경 여부와 상관없이 최종 요청된 상태 반영)

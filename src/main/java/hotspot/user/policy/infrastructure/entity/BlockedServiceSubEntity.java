@@ -10,9 +10,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-
 import hotspot.user.common.BaseEntity;
 import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;

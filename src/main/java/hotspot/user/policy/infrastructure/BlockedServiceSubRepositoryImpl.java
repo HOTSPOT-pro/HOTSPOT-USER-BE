@@ -2,18 +2,13 @@ package hotspot.user.policy.infrastructure;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.policy.domain.BlockedServiceSub;
-import hotspot.user.policy.infrastructure.entity.AppBlockedServiceEntity;
 import hotspot.user.policy.infrastructure.entity.BlockedServiceSubEntity;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
-import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 import lombok.RequiredArgsConstructor;
 
 @Repository
