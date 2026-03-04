@@ -69,8 +69,9 @@ class SmsDispatchQueuePublisherTest {
                 .willReturn(Map.of(777L, "민수"));
         given(objectMapper.writeValueAsString(any()))
                 .willReturn("{\"notificationId\":1}");
+        SmsDispatchQueuePublisher.SmsDispatchMetadata metadata = publisher.resolveMetadata(sourceEvent);
 
-        publisher.enqueue(notification, sourceEvent);
+        publisher.enqueue(notification, sourceEvent, metadata);
 
         then(kafkaTemplate).should().send("sms-dispatch", "1:1", "{\"notificationId\":1}");
         then(subscriptionRepository).should().findById(1L);
@@ -86,8 +87,9 @@ class SmsDispatchQueuePublisherTest {
         given(presentDataRepository.findGiftGiverNames(List.of(777L))).willReturn(Map.of());
         given(objectMapper.writeValueAsString(org.mockito.ArgumentMatchers.any()))
                 .willThrow(new RuntimeException("serialize failed"));
+        SmsDispatchQueuePublisher.SmsDispatchMetadata metadata = publisher.resolveMetadata(sourceEvent);
 
-        assertThatThrownBy(() -> publisher.enqueue(notification, sourceEvent))
+        assertThatThrownBy(() -> publisher.enqueue(notification, sourceEvent, metadata))
                 .isInstanceOf(ApplicationException.class)
                 .satisfies(ex -> {
                     ApplicationException appEx = (ApplicationException) ex;
