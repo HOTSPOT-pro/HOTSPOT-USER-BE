@@ -28,6 +28,7 @@ spring:
       - classpath:jwt.yml
       - classpath:crypto.yml
       - classpath:s3.yml
+      - classpath:sms.yml
 
   web:
     resources:

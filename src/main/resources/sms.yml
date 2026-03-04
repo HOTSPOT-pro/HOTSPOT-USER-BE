@@ -1,0 +1,8 @@
+sms:
+  enabled: false
+  enabled2: false
+  enabled3: false
+  enabled4: false
+  enabled5: false
+  provider: noop
+  from: ${SMS_FROM_NUMBER:}

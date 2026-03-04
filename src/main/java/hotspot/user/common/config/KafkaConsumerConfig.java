@@ -11,6 +11,7 @@ import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.ExponentialBackOff;
 
+import hotspot.user.dispatch.sms.dto.SmsDispatchCommand;
 import hotspot.user.kafka.dto.UserAlertEvent;
 
 @Configuration
@@ -23,9 +24,14 @@ public class KafkaConsumerConfig {
     private static final long BACKOFF_MAX_ELAPSED_MS = 60_000L;
 
     private final String userAlertConsumerGroup;
+    private final String smsDispatchConsumerGroup;
 
-    public KafkaConsumerConfig(@Value("${app.consumer-groups.user-alert}") String userAlertConsumerGroup) {
+    public KafkaConsumerConfig(
+            @Value("${app.consumer-groups.user-alert}") String userAlertConsumerGroup,
+            @Value("${app.consumer-groups.sms-dispatch}") String smsDispatchConsumerGroup
+    ) {
         this.userAlertConsumerGroup = userAlertConsumerGroup;
+        this.smsDispatchConsumerGroup = smsDispatchConsumerGroup;
     }
 
     @Bean
@@ -45,9 +51,35 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, UserAlertEvent> userAlertKafkaListenerContainerFactory(
             ConsumerFactory<String, UserAlertEvent> userAlertEventConsumerFactory
     ) {
-        ConcurrentKafkaListenerContainerFactory<String, UserAlertEvent> factory =
+        return buildListenerFactory(userAlertEventConsumerFactory);
+    }
+
+    @Bean
+    public ConsumerFactory<String, SmsDispatchCommand> smsDispatchCommandConsumerFactory(
+            KafkaProperties kafkaProperties,
+            SslBundles sslBundles
+    ) {
+        return KafkaConsumerFactorySupport.createConsumerFactory(
+                kafkaProperties,
+                sslBundles,
+                SmsDispatchCommand.class,
+                smsDispatchConsumerGroup
+        );
+    }
+
+    @Bean(name = "smsDispatchKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, SmsDispatchCommand> smsDispatchKafkaListenerContainerFactory(
+            ConsumerFactory<String, SmsDispatchCommand> smsDispatchCommandConsumerFactory
+    ) {
+        return buildListenerFactory(smsDispatchCommandConsumerFactory);
+    }
+
+    private <T> ConcurrentKafkaListenerContainerFactory<String, T> buildListenerFactory(
+            ConsumerFactory<String, T> consumerFactory
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, T> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(userAlertEventConsumerFactory);
+        factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(CONCURRENCY);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
