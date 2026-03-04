@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.user.common.exception.ApplicationException;
@@ -30,8 +29,6 @@ public class SmsDispatchQueuePublisher {
             String payload = objectMapper.writeValueAsString(command);
             String key = notification.getSubId() + ":" + notification.getId();
             kafkaTemplate.send(smsDispatchTopic, key, payload);
-        } catch (JsonProcessingException ex) {
-            throw new ApplicationException(SmsErrorCode.SMS_LISTENER_FAILED, ex);
         } catch (Exception ex) {
             throw new ApplicationException(SmsErrorCode.SMS_LISTENER_FAILED, ex);
         }
