@@ -35,54 +35,37 @@ public class BlockedServiceSubRepositoryImpl implements BlockedServiceSubReposit
 
     @Override
     @Transactional
-    public void saveAll(Long subId, Set<Long> serviceIds) {
-        if (serviceIds.isEmpty()) {
-            return;
-        }
+    public List<BlockedServiceSub> saveAll(List<BlockedServiceSub> domains) {
+        List<BlockedServiceSubEntity> entitiesToInsert = new ArrayList<>();
+        List<Long> idsToDeactivate = new ArrayList<>();
+        List<Long> idsToActivate = new ArrayList<>();
 
-        // 1. 복구할 수 있는 기존 데이터(삭제상태 포함)를 한 번에 조회
-        List<BlockedServiceSubEntity> existingEntities =
-                jpaRepository.findBySubIdAndServiceIdsIncludeDeleted(subId, serviceIds);
-
-        Map<Long, BlockedServiceSubEntity> existingMap = existingEntities.stream()
-                .collect(Collectors.toMap(
-                        e -> e.getAppBlockedService().getAppBlockedServiceId(),
-                        e -> e
-                ));
-
-        List<BlockedServiceSubEntity> toSave = new ArrayList<>();
-
-        // 2. 서비스에서 넘겨준 '추가 대상' ID들을 돌며 복구 또는 신규 생성
-        for (Long serviceId : serviceIds) {
-            if (existingMap.containsKey(serviceId)) {
-                // 이미 이력이 있으면 -> isDeleted만 false로 바꿔서 저장 (Update)
-                BlockedServiceSubEntity existing = existingMap.get(serviceId);
-                toSave.add(BlockedServiceSubEntity.builder()
-                        .blockedServiceSubId(existing.getBlockedServiceSubId())
-                        .subscription(existing.getSubscription())
-                        .appBlockedService(existing.getAppBlockedService())
-                        .isDeleted(false)
-                        .build());
+        domains.forEach(domain -> {
+            if (domain.getId() == null) {
+                entitiesToInsert.add(BlockedServiceSubEntity.domainToEntity(domain));
+            } else if (!domain.isActive()) {
+                idsToDeactivate.add(domain.getId());
             } else {
-                // 이력이 아예 없으면 -> 신규 생성 (Insert)
-                toSave.add(BlockedServiceSubEntity.builder()
-                        .subscription(SubscriptionEntity.builder().subId(subId).build())
-                        .appBlockedService(AppBlockedServiceEntity.builder()
-                                .appBlockedServiceId(serviceId).build())
-                        .isDeleted(false)
-                        .build());
+                idsToActivate.add(domain.getId());
             }
+        });
+
+        List<BlockedServiceSubEntity> savedEntities = new ArrayList<>();
+
+        if (!entitiesToInsert.isEmpty()) {
+            savedEntities = jpaRepository.saveAll(entitiesToInsert);
         }
 
-        jpaRepository.saveAll(toSave);
-    }
-
-    // // 서비스에서 넘겨준 삭제 대상 ID들을 한 번에 비활성화 (Bulk Update)
-    @Override
-    public void deleteAll(Long subId, Set<Long> serviceIds) {
-        if (!serviceIds.isEmpty()) {
-
-            jpaRepository.bulkSoftDelete(subId, serviceIds);
+        if (!idsToDeactivate.isEmpty()) {
+            jpaRepository.bulkDeactive(idsToDeactivate);
         }
+
+        if (!idsToActivate.isEmpty()) {
+            jpaRepository.bulkActivate(idsToActivate);
+        }
+
+        return savedEntities.stream()
+                .map(BlockedServiceSubEntity::entityToDomain)
+                .toList();
     }
 }
