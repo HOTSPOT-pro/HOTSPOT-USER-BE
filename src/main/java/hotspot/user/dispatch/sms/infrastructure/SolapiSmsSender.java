@@ -69,9 +69,10 @@ public class SolapiSmsSender implements SmsSenderPort {
                 throw new ApplicationException(SmsErrorCode.SMS_PROVIDER_REQUEST_FAILED);
             }
 
-        } catch (ApplicationException ex) {
-            throw ex;
         } catch (Exception ex) {
+            if (ex instanceof ApplicationException) {
+                throw (ApplicationException) ex;
+            }
             throw new ApplicationException(SmsErrorCode.SMS_PROVIDER_REQUEST_FAILED, ex);
         }
     }
