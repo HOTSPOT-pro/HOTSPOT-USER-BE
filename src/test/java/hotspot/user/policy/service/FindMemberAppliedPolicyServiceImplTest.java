@@ -20,7 +20,6 @@ import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.Member;
-import hotspot.user.member.infrastructure.entity.MemberEntity;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.domain.BlockPolicy;
@@ -31,7 +30,6 @@ import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
 import hotspot.user.subscription.domain.Subscription;
-import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
 
 /**
  * 구성원 1명 적용 정책 조회 Service 단위 테스트
@@ -76,7 +74,12 @@ class FindMemberAppliedPolicyServiceImplTest {
         BlockPolicy blockPolicy = BlockPolicy.builder().id(policyId).name("수면 모드").build();
 
         // 앱 차단 매핑 (ID 기반)
-        BlockedServiceSub blockedSub = BlockedServiceSub.builder().id(20L).subId(subId).appBlockedServiceId(appId).isActive(true).build();
+        BlockedServiceSub blockedSub = BlockedServiceSub.builder()
+                .id(20L)
+                .subId(subId)
+                .appBlockedServiceId(appId)
+                .isActive(true)
+                .build();
         // 앱 차단 상세 정보
         AppBlockedService app = AppBlockedService.builder().id(appId).name("YouTube").serviceCode("YOUTUBE").build();
 

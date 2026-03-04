@@ -71,7 +71,7 @@ class UpdateAppBlockedServiceServiceImplTest {
                 .build();
 
         given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
-        
+
         // 기존 상태: 1(활성), 2(활성)
         List<BlockedServiceSub> existingSubs = List.of(
                 BlockedServiceSub.builder().id(10L).subId(subId).appBlockedServiceId(1L).isActive(true).build(),
@@ -94,8 +94,8 @@ class UpdateAppBlockedServiceServiceImplTest {
         // then
         assertThat(response.subId()).isEqualTo(subId);
         assertThat(response.blockedServiceIdList()).containsExactlyInAnyOrder(2L, 3L);
-        
-        // 변경분 검증: 
+
+        // 변경분 검증:
         // 1번: 활성 -> 비활성
         // 2번: 활성 유지 (변경 없음)
         // 3번: 신규 추가 (활성)
@@ -117,7 +117,7 @@ class UpdateAppBlockedServiceServiceImplTest {
 
         given(familySubscriptionRepository.findBySubId(subId)).willReturn(Optional.of(familySub));
         given(blockedServiceSubRepository.findBySubId(subId)).willReturn(List.of());
-        
+
         // 999L은 DB에 없음
         given(appBlockedServiceRepository.findAllByAppBlockedServiceIds(anyList())).willReturn(List.of());
 
