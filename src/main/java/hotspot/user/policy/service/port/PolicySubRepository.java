@@ -16,4 +16,6 @@ public interface PolicySubRepository {
 
     // 비활성화된 정책이 적용되어 있는 policy_sub 모두 isActive = false로 만들기
     void bulkDeActiveByBlockPolicyIds(List<Long> blockPolicyIds);
+
+    List<Long> findActiveSubIdsByBlockPolicyId(Long blockPolicyId);
 }

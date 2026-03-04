@@ -76,4 +76,11 @@ public class PolicySubRepositoryImpl implements PolicySubRepository {
     public void bulkDeActiveByBlockPolicyIds(List<Long> blockPolicyIds) {
         policySubJpaRepository.bulkDeActiveByBlockPolicyIds(blockPolicyIds);
     }
+
+    @Override
+    public List<Long> findActiveSubIdsByBlockPolicyId(Long blockPolicyId) {
+
+        return policySubJpaRepository
+                .findActiveSubIdsByBlockPolicyId(blockPolicyId);
+    }
 }
