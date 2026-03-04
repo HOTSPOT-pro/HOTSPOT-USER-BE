@@ -16,10 +16,10 @@ public enum NotificationType {
     FAMILY_USAGE_THRESHOLD_30(NotificationCategory.DATA),
     FAMILY_USAGE_THRESHOLD_10(NotificationCategory.DATA),
     FAMILY_USAGE_EXHAUSTED(NotificationCategory.DATA),
-    PRESENT_USAGE_THRESHOLD_50(NotificationCategory.PRESENT),
-    PRESENT_USAGE_THRESHOLD_30(NotificationCategory.PRESENT),
-    PRESENT_USAGE_THRESHOLD_10(NotificationCategory.PRESENT),
-    PRESENT_USAGE_EXHAUSTED(NotificationCategory.PRESENT),
+    PRESENT_USAGE_THRESHOLD_50(NotificationCategory.DATA),
+    PRESENT_USAGE_THRESHOLD_30(NotificationCategory.DATA),
+    PRESENT_USAGE_THRESHOLD_10(NotificationCategory.DATA),
+    PRESENT_USAGE_EXHAUSTED(NotificationCategory.DATA),
     TIME_WINDOW_POLICY_APPLIED(NotificationCategory.POLICY),
     TIME_WINDOW_POLICY_RELEASED(NotificationCategory.POLICY),
     IMMEDIATE_BLOCK_APPLIED(NotificationCategory.POLICY),
@@ -35,6 +35,8 @@ public enum NotificationType {
     FAMILY_MEMBER_REMOVE_REJECTED(NotificationCategory.POLICY);
 
     private static final Set<NotificationType> ALWAYS_ALLOWED_TYPES = EnumSet.of(
+            FAMILY_CREATE_APPROVED,
+            FAMILY_CREATE_REJECTED,
             FAMILY_MEMBER_ADD_APPROVED,
             FAMILY_MEMBER_ADD_REJECTED,
             FAMILY_MEMBER_REMOVE_APPROVED,
