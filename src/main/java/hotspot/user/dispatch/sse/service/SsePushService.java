@@ -25,6 +25,10 @@ public class SsePushService {
     public void onNotificationsPersisted(UserAlertNotificationsPersistedEvent event) {
         Map<Long, Long> unreadCountsBySubId = new HashMap<>();
         for (Notification notification : event.persistedNotifications()) {
+            if (isFamilyCreateNotification(notification.getNotificationType())) {
+                continue;
+            }
+
             Long unreadCount = unreadCountsBySubId.computeIfAbsent(
                     notification.getSubId(),
                     notificationRepository::countUnreadBySubId
@@ -48,5 +52,10 @@ public class SsePushService {
                                     .data(payload)
                     ));
         }
+    }
+
+    private boolean isFamilyCreateNotification(String notificationType) {
+        return "FAMILY_CREATE_APPROVED".equals(notificationType)
+                || "FAMILY_CREATE_REJECTED".equals(notificationType);
     }
 }
