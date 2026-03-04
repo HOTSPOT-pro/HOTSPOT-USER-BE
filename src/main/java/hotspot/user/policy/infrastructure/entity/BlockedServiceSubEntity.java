@@ -32,8 +32,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "blocked_service_sub")
-@SQLDelete(sql = "UPDATE blocked_service_sub SET is_deleted = true WHERE blocked_service_sub_id = ?")
-@Where(clause = "is_deleted = false")
 public class BlockedServiceSubEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,15 +45,16 @@ public class BlockedServiceSubEntity extends BaseEntity {
     @JoinColumn(name = "blocked_service_id")
     private AppBlockedServiceEntity appBlockedService;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(nullable = false)
     @Builder.Default
-    private Boolean isDeleted = false;
+    private Boolean isActive = true; // 활성화 여부
 
     public BlockedServiceSub entityToDomain() {
         return BlockedServiceSub.builder()
                 .id(this.blockedServiceSubId)
                 .subscription(this.subscription.entityToDomain())
                 .appBlockedService(this.appBlockedService.entityToDomain())
+                .isActive(this.isActive)
                 .build();
     }
 }
