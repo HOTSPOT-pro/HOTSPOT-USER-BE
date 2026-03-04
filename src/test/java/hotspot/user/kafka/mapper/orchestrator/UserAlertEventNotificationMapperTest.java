@@ -64,6 +64,9 @@ class UserAlertEventNotificationMapperTest {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
                 List.of("Alice"),
                 LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
@@ -82,6 +85,9 @@ class UserAlertEventNotificationMapperTest {
                 "REJECTED",
                 null,
                 200L,
+                null,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -112,6 +118,9 @@ class UserAlertEventNotificationMapperTest {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
                 List.of("Smith"),
                 LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
@@ -131,6 +140,9 @@ class UserAlertEventNotificationMapperTest {
                 101L,
                 null,
                 "30",
+                null,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -177,6 +189,9 @@ class UserAlertEventNotificationMapperTest {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
                 LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
 
@@ -201,6 +216,9 @@ class UserAlertEventNotificationMapperTest {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
                 LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
 
@@ -217,6 +235,9 @@ class UserAlertEventNotificationMapperTest {
                 100L,
                 null,
                 threshold,
+                null,
+                null,
+                null,
                 null,
                 null,
                 null,

@@ -18,8 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SmsErrorCode;
 import hotspot.user.dispatch.sms.domain.SmsRecipientResolution;
+import hotspot.user.dispatch.sms.dto.SmsDispatchCommand;
 import hotspot.user.dispatch.sms.infrastructure.SmsSenderPort;
-import hotspot.user.notification.domain.Notification;
+import hotspot.user.kafka.domain.NotificationType;
 import hotspot.user.notification.domain.NotificationAllow;
 import hotspot.user.notification.domain.NotificationCategory;
 import hotspot.user.notification.service.port.NotificationAllowRepository;
@@ -45,7 +46,7 @@ class SmsDispatchServiceTest {
     @Test
     @DisplayName("sends sms for target type with resolved recipient")
     void sendsSmsForTargetType() {
-        Notification notification = notification("SINGLE_USAGE_THRESHOLD_50");
+        SmsDispatchCommand command = command("SINGLE_USAGE_THRESHOLD_50");
         given(notificationAllowRepository.findBySubIdAndCategory(1L, NotificationCategory.DATA))
                 .willReturn(Optional.of(NotificationAllow.builder()
                         .subId(1L)
@@ -53,19 +54,20 @@ class SmsDispatchServiceTest {
                         .notificationAllow(true)
                         .build()));
         given(smsRecipientResolver.resolve(1L)).willReturn(SmsRecipientResolution.found("010-1234-5678"));
-        given(smsMessageBuilder.build(notification)).willReturn("[HOTSPOT] title-1 - content-1");
+        given(smsMessageBuilder.build(command, NotificationType.SINGLE_USAGE_THRESHOLD_50))
+                .willReturn("[HOTSPOT] sms-content");
 
-        smsDispatchService.dispatch(notification);
+        smsDispatchService.dispatch(command);
 
-        then(smsSenderPort).should().send("010-1234-5678", "[HOTSPOT] title-1 - content-1");
+        then(smsSenderPort).should().send("010-1234-5678", "[HOTSPOT] sms-content");
     }
 
     @Test
     @DisplayName("skips sms for non-target type")
     void skipsForNonTargetType() {
-        Notification notification = notification("IMMEDIATE_BLOCK_APPLIED");
+        SmsDispatchCommand command = command("IMMEDIATE_BLOCK_APPLIED");
 
-        assertThatThrownBy(() -> smsDispatchService.dispatch(notification))
+        assertThatThrownBy(() -> smsDispatchService.dispatch(command))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(SmsErrorCode.SMS_NOTIFICATION_TYPE_NOT_TARGET.getMessage());
 
@@ -76,7 +78,7 @@ class SmsDispatchServiceTest {
     @Test
     @DisplayName("skips sms when recipient resolution fails")
     void skipsWhenResolverFails() {
-        Notification notification = notification("FAMILY_USAGE_THRESHOLD_10");
+        SmsDispatchCommand command = command("FAMILY_USAGE_THRESHOLD_10");
         given(notificationAllowRepository.findBySubIdAndCategory(1L, NotificationCategory.DATA))
                 .willReturn(Optional.of(NotificationAllow.builder()
                         .subId(1L)
@@ -85,7 +87,7 @@ class SmsDispatchServiceTest {
                         .build()));
         given(smsRecipientResolver.resolve(1L)).willReturn(SmsRecipientResolution.decryptFailed());
 
-        assertThatThrownBy(() -> smsDispatchService.dispatch(notification))
+        assertThatThrownBy(() -> smsDispatchService.dispatch(command))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(SmsErrorCode.SMS_RECIPIENT_DECRYPT_FAILED.getMessage());
 
@@ -96,7 +98,7 @@ class SmsDispatchServiceTest {
     @Test
     @DisplayName("skips data threshold sms when notification allow is disabled")
     void skipsDataThresholdWhenAllowDisabled() {
-        Notification notification = notification("SINGLE_USAGE_THRESHOLD_30");
+        SmsDispatchCommand command = command("SINGLE_USAGE_THRESHOLD_30");
         given(notificationAllowRepository.findBySubIdAndCategory(1L, NotificationCategory.DATA))
                 .willReturn(Optional.of(NotificationAllow.builder()
                         .subId(1L)
@@ -104,7 +106,7 @@ class SmsDispatchServiceTest {
                         .notificationAllow(false)
                         .build()));
 
-        assertThatThrownBy(() -> smsDispatchService.dispatch(notification))
+        assertThatThrownBy(() -> smsDispatchService.dispatch(command))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(SmsErrorCode.SMS_NOTIFICATION_ALLOW_DISABLED.getMessage());
 
@@ -116,21 +118,22 @@ class SmsDispatchServiceTest {
     @Test
     @DisplayName("sends family create sms regardless of data notification allow")
     void sendsFamilyCreateWithoutDataAllowValidation() {
-        Notification notification = notification("FAMILY_CREATE_APPROVED");
+        SmsDispatchCommand command = command("FAMILY_CREATE_APPROVED");
         given(smsRecipientResolver.resolve(1L)).willReturn(SmsRecipientResolution.found("010-1234-5678"));
-        given(smsMessageBuilder.build(notification)).willReturn("[HOTSPOT] title-1 - content-1");
+        given(smsMessageBuilder.build(command, NotificationType.FAMILY_CREATE_APPROVED))
+                .willReturn("[HOTSPOT] sms-content");
 
-        smsDispatchService.dispatch(notification);
+        smsDispatchService.dispatch(command);
 
         then(notificationAllowRepository).should(never())
                 .findBySubIdAndCategory(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any());
-        then(smsSenderPort).should().send("010-1234-5678", "[HOTSPOT] title-1 - content-1");
+        then(smsSenderPort).should().send("010-1234-5678", "[HOTSPOT] sms-content");
     }
 
     @Test
     @DisplayName("sends present usage sms when data notification allow is enabled")
     void sendsPresentUsageWhenDataAllowEnabled() {
-        Notification notification = notification("PRESENT_USAGE_THRESHOLD_10");
+        SmsDispatchCommand command = command("PRESENT_USAGE_THRESHOLD_10");
         given(notificationAllowRepository.findBySubIdAndCategory(1L, NotificationCategory.DATA))
                 .willReturn(Optional.of(NotificationAllow.builder()
                         .subId(1L)
@@ -138,17 +141,18 @@ class SmsDispatchServiceTest {
                         .notificationAllow(true)
                         .build()));
         given(smsRecipientResolver.resolve(1L)).willReturn(SmsRecipientResolution.found("010-1234-5678"));
-        given(smsMessageBuilder.build(notification)).willReturn("[HOTSPOT] title-1 - content-1");
+        given(smsMessageBuilder.build(command, NotificationType.PRESENT_USAGE_THRESHOLD_10))
+                .willReturn("[HOTSPOT] sms-content");
 
-        smsDispatchService.dispatch(notification);
+        smsDispatchService.dispatch(command);
 
-        then(smsSenderPort).should().send("010-1234-5678", "[HOTSPOT] title-1 - content-1");
+        then(smsSenderPort).should().send("010-1234-5678", "[HOTSPOT] sms-content");
     }
 
     @Test
     @DisplayName("skips present usage sms when data notification allow is disabled")
     void skipsPresentUsageWhenDataAllowDisabled() {
-        Notification notification = notification("PRESENT_USAGE_EXHAUSTED");
+        SmsDispatchCommand command = command("PRESENT_USAGE_EXHAUSTED");
         given(notificationAllowRepository.findBySubIdAndCategory(1L, NotificationCategory.DATA))
                 .willReturn(Optional.of(NotificationAllow.builder()
                         .subId(1L)
@@ -156,7 +160,7 @@ class SmsDispatchServiceTest {
                         .notificationAllow(false)
                         .build()));
 
-        assertThatThrownBy(() -> smsDispatchService.dispatch(notification))
+        assertThatThrownBy(() -> smsDispatchService.dispatch(command))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(SmsErrorCode.SMS_NOTIFICATION_ALLOW_DISABLED.getMessage());
 
@@ -168,23 +172,27 @@ class SmsDispatchServiceTest {
     @Test
     @DisplayName("throws when notification type is unsupported")
     void throwsWhenUnsupportedNotificationType() {
-        Notification notification = notification("UNKNOWN_TYPE");
+        SmsDispatchCommand command = command("UNKNOWN_TYPE");
 
-        assertThatThrownBy(() -> smsDispatchService.dispatch(notification))
+        assertThatThrownBy(() -> smsDispatchService.dispatch(command))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(SmsErrorCode.UNSUPPORTED_SMS_NOTIFICATION_TYPE.getMessage());
     }
 
-    private Notification notification(String type) {
-        return Notification.builder()
-                .id(1L)
-                .subId(1L)
-                .eventId("evt-1")
-                .notificationType(type)
-                .title("title-1")
-                .content("content-1")
-                .isRead(false)
-                .createdTime(LocalDateTime.of(2026, 2, 23, 10, 15, 30))
-                .build();
+    private SmsDispatchCommand command(String type) {
+        return new SmsDispatchCommand(
+                1L,
+                1L,
+                "evt-1",
+                type,
+                "이번 달 데이터 사용량 안내",
+                "content-1",
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30),
+                "유쓰 5G 데이터 플러스",
+                "110GB",
+                "80%",
+                "88.02GB",
+                null
+        );
     }
 }

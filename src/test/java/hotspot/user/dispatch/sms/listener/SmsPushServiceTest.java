@@ -49,7 +49,7 @@ class SmsPushServiceTest {
 
         smsPushService.onNotificationsPersisted(event);
 
-        then(smsDispatchQueuePublisher).should().enqueue(notification);
+        then(smsDispatchQueuePublisher).should().enqueue(notification, event.sourceEvent());
     }
 
     @Test
@@ -64,7 +64,7 @@ class SmsPushServiceTest {
 
         smsPushService.onNotificationsPersisted(event);
 
-        then(smsDispatchQueuePublisher).should(never()).enqueue(notification);
+        then(smsDispatchQueuePublisher).should(never()).enqueue(notification, event.sourceEvent());
     }
 
     @Test
@@ -76,7 +76,7 @@ class SmsPushServiceTest {
                 sourceEvent(),
                 List.of(first)
         );
-        doThrow(new RuntimeException("unexpected")).when(smsDispatchQueuePublisher).enqueue(first);
+        doThrow(new RuntimeException("unexpected")).when(smsDispatchQueuePublisher).enqueue(first, event.sourceEvent());
 
         assertThatThrownBy(() -> smsPushService.onNotificationsPersisted(event))
                 .isInstanceOf(ApplicationException.class)
@@ -85,7 +85,7 @@ class SmsPushServiceTest {
                     assertThat(appEx.getCode()).isEqualTo(SmsErrorCode.SMS_LISTENER_FAILED);
                 });
 
-        then(smsDispatchQueuePublisher).should().enqueue(first);
+        then(smsDispatchQueuePublisher).should().enqueue(first, event.sourceEvent());
     }
 
     private void mockEnabled() {
@@ -100,6 +100,9 @@ class SmsPushServiceTest {
                 1L,
                 null,
                 "30",
+                null,
+                null,
+                null,
                 null,
                 null,
                 null,

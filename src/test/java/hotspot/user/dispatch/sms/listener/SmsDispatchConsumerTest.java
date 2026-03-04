@@ -20,7 +20,6 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SmsErrorCode;
 import hotspot.user.dispatch.sms.dto.SmsDispatchCommand;
 import hotspot.user.dispatch.sms.service.SmsDispatchService;
-import hotspot.user.notification.domain.Notification;
 
 @ExtendWith(MockitoExtension.class)
 class SmsDispatchConsumerTest {
@@ -41,7 +40,7 @@ class SmsDispatchConsumerTest {
 
         smsDispatchConsumer.consume(command, acknowledgment);
 
-        then(smsDispatchService).should().dispatch(any(Notification.class));
+        then(smsDispatchService).should().dispatch(any(SmsDispatchCommand.class));
         then(acknowledgment).should().acknowledge();
     }
 
@@ -51,7 +50,7 @@ class SmsDispatchConsumerTest {
         SmsDispatchCommand command = command(1L, 100L);
         willThrow(new ApplicationException(SmsErrorCode.SMS_NOTIFICATION_ALLOW_DISABLED))
                 .given(smsDispatchService)
-                .dispatch(any(Notification.class));
+                .dispatch(any(SmsDispatchCommand.class));
 
         smsDispatchConsumer.consume(command, acknowledgment);
 
@@ -64,7 +63,7 @@ class SmsDispatchConsumerTest {
         SmsDispatchCommand command = command(1L, 100L);
         willThrow(new ApplicationException(SmsErrorCode.SMS_DISPATCH_FAILED))
                 .given(smsDispatchService)
-                .dispatch(any(Notification.class));
+                .dispatch(any(SmsDispatchCommand.class));
 
         assertThatThrownBy(() -> smsDispatchConsumer.consume(command, acknowledgment))
                 .isInstanceOf(ApplicationException.class);
@@ -80,7 +79,12 @@ class SmsDispatchConsumerTest {
                 "SINGLE_USAGE_THRESHOLD_30",
                 "title",
                 "content",
-                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30),
+                null,
+                null,
+                null,
+                null,
+                null
         );
     }
 }
