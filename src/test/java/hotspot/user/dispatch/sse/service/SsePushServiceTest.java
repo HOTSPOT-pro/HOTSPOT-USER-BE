@@ -1,4 +1,4 @@
-package hotspot.user.dispatch.service;
+package hotspot.user.dispatch.sse.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import hotspot.user.dispatch.registry.SseEmitterRegistry;
+import hotspot.user.dispatch.sse.registry.SseEmitterRegistry;
 import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.kafka.dto.UserAlertNotificationsPersistedEvent;
 import hotspot.user.notification.domain.Notification;
@@ -59,6 +59,29 @@ class SsePushServiceTest {
         then(sseEmitterRegistry).should(times(4)).sendAndCleanupOnFailure(any(), any());
         then(sseEmitterRegistry).should(times(2)).sendAndCleanupOnFailure(eq(emitters.get(0)), any());
         then(sseEmitterRegistry).should(times(2)).sendAndCleanupOnFailure(eq(emitters.get(1)), any());
+    }
+
+    @Test
+    @DisplayName("does not push family create notifications through SSE")
+    void skipsFamilyCreateNotifications() {
+        Notification familyCreate = notification(201L, 1L, "FAMILY_CREATE_APPROVED");
+        Notification normal = notification(202L, 1L, "SINGLE_USAGE_THRESHOLD_30");
+        UserAlertNotificationsPersistedEvent event = new UserAlertNotificationsPersistedEvent(
+                sourceEvent(),
+                List.of(familyCreate, normal)
+        );
+
+        List<SseEmitterRegistry.RegisteredEmitter> emitters = List.of(
+                new SseEmitterRegistry.RegisteredEmitter("e-1", new SseEmitter())
+        );
+        given(sseEmitterRegistry.findBySubId(1L)).willReturn(emitters);
+        given(notificationRepository.countUnreadBySubId(1L)).willReturn(5L);
+
+        notificationSsePushService.onNotificationsPersisted(event);
+
+        then(notificationRepository).should(times(1)).countUnreadBySubId(1L);
+        then(sseEmitterRegistry).should(times(1)).findBySubId(1L);
+        then(sseEmitterRegistry).should(times(1)).sendAndCleanupOnFailure(any(), any());
     }
 
     private UserAlertEvent sourceEvent() {

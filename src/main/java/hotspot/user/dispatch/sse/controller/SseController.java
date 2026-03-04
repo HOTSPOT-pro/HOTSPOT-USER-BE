@@ -1,4 +1,4 @@
-package hotspot.user.dispatch.controller;
+package hotspot.user.dispatch.sse.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import hotspot.user.common.security.PrincipalDetails;
-import hotspot.user.dispatch.controller.port.SubscribeSseService;
-import hotspot.user.dispatch.controller.swagger.SseApi;
+import hotspot.user.dispatch.sse.controller.port.SubscribeSseService;
+import hotspot.user.dispatch.sse.controller.swagger.SseApi;
 import lombok.RequiredArgsConstructor;
 
 @RestController

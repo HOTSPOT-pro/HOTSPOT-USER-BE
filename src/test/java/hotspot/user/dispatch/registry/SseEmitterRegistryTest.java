@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import hotspot.user.dispatch.sse.registry.SseEmitterRegistry;
+
 class SseEmitterRegistryTest {
 
     private final SseEmitterRegistry sseEmitterRegistry = new SseEmitterRegistry();

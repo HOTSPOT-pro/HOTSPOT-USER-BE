@@ -107,6 +107,31 @@ class UserAlertEventsConsumerTest {
     }
 
     @Test
+    @DisplayName("present usage notification checks DATA category allow")
+    void consumePresentUsageChecksDataAllow() {
+        UserAlertEvent event = event(101L, null, "evt-present-usage");
+        Notification notification = Notification.builder()
+                .subId(101L)
+                .eventId("evt-present-usage")
+                .notificationType("PRESENT_USAGE_THRESHOLD_10")
+                .title("present usage")
+                .content("present usage 10%")
+                .isRead(false)
+                .createdTime(LocalDateTime.of(2026, 2, 23, 10, 15, 30))
+                .build();
+        given(mapper.toNotification(event, 101L)).willReturn(notification);
+        given(notificationAllowRepository.findBySubIdAndCategory(101L, NotificationCategory.DATA))
+                .willReturn(Optional.empty());
+
+        consumer.consume(event, acknowledgment);
+
+        then(notificationAllowRepository).should().findBySubIdAndCategory(101L, NotificationCategory.DATA);
+        then(notificationRepository).shouldHaveNoInteractions();
+        then(applicationEventPublisher).shouldHaveNoInteractions();
+        then(acknowledgment).should().acknowledge();
+    }
+
+    @Test
     @DisplayName("familyId target: fan-out and publish only successfully inserted notifications")
     void consumeWithFamilyFanOut() {
         UserAlertEvent event = event(null, 200L, "evt-family");
@@ -190,15 +215,15 @@ class UserAlertEventsConsumerTest {
     }
 
     @Test
-    @DisplayName("family apply result notifications are persisted even without allow setting")
-    void consumeFamilyApplyResultAlwaysAllowed() {
+    @DisplayName("family create notifications are persisted even without allow setting")
+    void consumeFamilyCreateResultAlwaysAllowed() {
         UserAlertEvent event = event(101L, null, "evt-family-apply");
         Notification notification = Notification.builder()
                 .subId(101L)
                 .eventId("evt-family-apply")
-                .notificationType("FAMILY_MEMBER_ADD_APPROVED")
+                .notificationType("FAMILY_CREATE_APPROVED")
                 .title("approved")
-                .content("add approved")
+                .content("family create approved")
                 .isRead(false)
                 .createdTime(LocalDateTime.of(2026, 2, 23, 10, 15, 30))
                 .build();
@@ -215,15 +240,15 @@ class UserAlertEventsConsumerTest {
     }
 
     @Test
-    @DisplayName("family remove result notifications are persisted even without allow setting")
-    void consumeFamilyRemoveResultAlwaysAllowed() {
+    @DisplayName("family add result notifications are persisted even without allow setting")
+    void consumeFamilyAddResultAlwaysAllowed() {
         UserAlertEvent event = event(101L, null, "evt-family-remove");
         Notification notification = Notification.builder()
                 .subId(101L)
                 .eventId("evt-family-remove")
-                .notificationType("FAMILY_MEMBER_REMOVE_APPROVED")
+                .notificationType("FAMILY_MEMBER_ADD_APPROVED")
                 .title("approved")
-                .content("remove approved")
+                .content("add approved")
                 .isRead(false)
                 .createdTime(LocalDateTime.of(2026, 2, 23, 10, 15, 30))
                 .build();

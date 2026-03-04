@@ -1,4 +1,4 @@
-package hotspot.user.dispatch.controller.swagger;
+package hotspot.user.dispatch.sse.controller.swagger;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestHeader;

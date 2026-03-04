@@ -1,4 +1,4 @@
-package hotspot.user.dispatch;
+package hotspot.user.dispatch.sse.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -20,8 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.NotificationErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
-import hotspot.user.dispatch.registry.SseEmitterRegistry;
-import hotspot.user.dispatch.service.SubscribeSseServiceImpl;
+import hotspot.user.dispatch.sse.registry.SseEmitterRegistry;
 import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.SubscriptionService;
 

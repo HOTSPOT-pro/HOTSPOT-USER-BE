@@ -50,7 +50,7 @@ class UserAlertEventNotificationMapperTest {
     }
 
     @Test
-    @DisplayName("maps family member apply approved with targetName")
+    @DisplayName("maps family member apply approved with targetNames")
     void mapFamilyMemberApplyApproved() {
         UserAlertEvent event = new UserAlertEvent(
                 "alert-2",
@@ -64,7 +64,7 @@ class UserAlertEventNotificationMapperTest {
                 null,
                 null,
                 null,
-                "Alice",
+                List.of("Alice"),
                 LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
 
@@ -74,7 +74,7 @@ class UserAlertEventNotificationMapperTest {
     }
 
     @Test
-    @DisplayName("maps family member remove rejected with targetName")
+    @DisplayName("maps family member remove rejected with targetNames")
     void mapFamilyMemberRemoveRejected() {
         UserAlertEvent event = new UserAlertEvent(
                 "alert-3",
@@ -88,13 +88,36 @@ class UserAlertEventNotificationMapperTest {
                 null,
                 null,
                 null,
-                "Bob",
+                List.of("Bob"),
                 LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
 
         assertThat(mapper.map(event).notificationType())
                 .isEqualTo(NotificationType.FAMILY_MEMBER_REMOVE_REJECTED);
         assertThat(mapper.map(event).content().body()).contains("Bob");
+    }
+
+    @Test
+    @DisplayName("maps family create approved")
+    void mapFamilyCreateApproved() {
+        UserAlertEvent event = new UserAlertEvent(
+                "alert-4",
+                "FAMILY_CREATE",
+                "APPROVED",
+                null,
+                200L,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of("Smith"),
+                LocalDateTime.of(2026, 2, 23, 10, 15, 30)
+        );
+
+        assertThat(mapper.map(event).notificationType())
+                .isEqualTo(NotificationType.FAMILY_CREATE_APPROVED);
     }
 
     @Test

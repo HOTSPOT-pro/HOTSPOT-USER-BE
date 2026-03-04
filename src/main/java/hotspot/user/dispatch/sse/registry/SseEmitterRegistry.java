@@ -1,4 +1,4 @@
-package hotspot.user.dispatch.registry;
+package hotspot.user.dispatch.sse.registry;
 
 import java.io.IOException;
 import java.util.List;

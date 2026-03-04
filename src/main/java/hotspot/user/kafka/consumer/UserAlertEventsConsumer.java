@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.KafkaErrorCode;
+import hotspot.user.common.exception.code.UserAlertConsumerErrorCode;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.kafka.domain.NotificationType;
 import hotspot.user.kafka.dto.UserAlertEvent;
@@ -45,15 +46,8 @@ public class UserAlertEventsConsumer {
         List<Long> targetSubIds;
         try {
             targetSubIds = resolveTargetSubIds(event);
-        } catch (ApplicationException ex) {
-            log.warn(
-                    "Skip invalid target for event. eventId={}, subId={}, familyId={}, errorCode={}, reason={}",
-                    event.alertId(),
-                    event.subId(),
-                    event.familyId(),
-                    ex.getCode().getCustomCode(),
-                    ex.getMessage()
-            );
+        } catch (Exception ex) {
+            logSkip("target", event, event.subId(), ex, UserAlertConsumerErrorCode.TARGET_RESOLUTION_FAILED);
             acknowledgment.acknowledge();
             return;
         }
@@ -63,14 +57,8 @@ public class UserAlertEventsConsumer {
             Notification notification;
             try {
                 notification = mapper.toNotification(event, targetSubId);
-            } catch (ApplicationException ex) {
-                log.warn(
-                        "Skip invalid notification mapping. subId={}, eventId={}, errorCode={}, reason={}",
-                        targetSubId,
-                        event.alertId(),
-                        ex.getCode().getCustomCode(),
-                        ex.getMessage()
-                );
+            } catch (Exception ex) {
+                logSkip("mapping", event, targetSubId, ex, UserAlertConsumerErrorCode.NOTIFICATION_MAPPING_FAILED);
                 continue;
             }
             NotificationCategory category;
@@ -80,24 +68,12 @@ public class UserAlertEventsConsumer {
                 category = NotificationType.isAlwaysAllowed(notificationType)
                         ? null
                         : notificationType.category();
-            } catch (ApplicationException ex) {
-                log.warn(
-                        "Skip invalid notification type. subId={}, eventId={}, notificationType={}, errorCode={}",
-                        targetSubId,
-                        event.alertId(),
-                        notification.getNotificationType(),
-                        ex.getCode().getCustomCode()
-                );
+            } catch (Exception ex) {
+                logSkip("type", event, targetSubId, ex, UserAlertConsumerErrorCode.NOTIFICATION_TYPE_RESOLUTION_FAILED);
                 continue;
             }
 
             if (category != null && !isNotificationAllowed(targetSubId, category)) {
-                log.info(
-                        "Skip disallowed notification. subId={}, category={}, eventId={}",
-                        targetSubId,
-                        category,
-                        notification.getEventId()
-                );
                 continue;
             }
 
@@ -139,5 +115,30 @@ public class UserAlertEventsConsumer {
         return notificationAllowRepository.findBySubIdAndCategory(subId, category)
                 .map(notificationAllow -> Boolean.TRUE.equals(notificationAllow.getNotificationAllow()))
                 .orElse(false);
+    }
+
+    private String resolveErrorCode(Exception ex, UserAlertConsumerErrorCode fallbackCode) {
+        if (ex instanceof ApplicationException appEx) {
+            return appEx.getCode().getCustomCode();
+        }
+        return fallbackCode.getCustomCode();
+    }
+
+    private void logSkip(
+            String stage,
+            UserAlertEvent event,
+            Long subId,
+            Exception ex,
+            UserAlertConsumerErrorCode fallbackCode
+    ) {
+        log.warn(
+                "Skip user alert consume. stage={}, eventId={}, subId={}, familyId={}, errorCode={}, reason={}",
+                stage,
+                event.alertId(),
+                subId,
+                event.familyId(),
+                resolveErrorCode(ex, fallbackCode),
+                ex.getMessage()
+        );
     }
 }

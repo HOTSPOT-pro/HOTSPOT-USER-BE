@@ -1,4 +1,4 @@
-package hotspot.user.dispatch.domain;
+package hotspot.user.dispatch.sse.domain;
 
 import java.time.LocalDateTime;
 
