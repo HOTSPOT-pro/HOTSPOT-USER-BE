@@ -39,7 +39,6 @@ public class AppliedPolicyMapper {
                         .toList())
                 .appBlockedServiceResponseList(blockedServiceSubs.stream()
                         .map(sub -> AppBlockedServiceMapper.toAppBlockedServiceResponse(
-                                sub,
                                 appBlockedServiceMap.get(sub.getAppBlockedServiceId())
                         ))
                         .filter(Objects::nonNull)

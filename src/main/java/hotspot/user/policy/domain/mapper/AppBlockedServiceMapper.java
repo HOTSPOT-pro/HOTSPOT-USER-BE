@@ -28,14 +28,6 @@ public class AppBlockedServiceMapper {
                 .build();
     }
 
-    // BlockedServiceSub와 AppBlockedService 상세 정보를 조합하여 DTO로 변환
-    public static AppBlockedServiceResponse toAppBlockedServiceResponse(
-            BlockedServiceSub blockedSub,
-            AppBlockedService appBlockedService
-    ) {
-        return toAppBlockedServiceResponse(appBlockedService);
-    }
-
     // 앱 차단 서비스 업데이트 response dto로 변환
     public static UpdateAppBlockedServiceResponse toUpdateAppBlockedServiceResponse(
             Long familyId, Long subId, List<Long> blockedServiceIdList) {
