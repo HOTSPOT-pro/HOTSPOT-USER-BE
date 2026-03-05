@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -90,7 +91,12 @@ class UpdatePolicySubServiceImplTest {
         setAuthMock(familyId, subId);
 
         // 1. 기존 비활성 매핑 (ID: 1L)
-        PolicySub existingSub = PolicySub.builder().id(10L).blockPolicyId(1L).isActive(false).build();
+        PolicySub existingSub = PolicySub.builder()
+                .id(10L)
+                .blockPolicyId(1L)
+                .isActive(false)
+                .modifiedTime(LocalDateTime.now().minusDays(1))
+                .build();
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>(List.of(existingSub)));
 
         // 2. 통합 정책 상세 조회 (기존/요청 1L 조회)
@@ -116,7 +122,12 @@ class UpdatePolicySubServiceImplTest {
         setAuthMock(familyId, subId);
 
         // 1. 기존 활성 매핑 (ID: 1L)
-        PolicySub existingSub = PolicySub.builder().id(10L).blockPolicyId(1L).isActive(true).build();
+        PolicySub existingSub = PolicySub.builder()
+                .id(10L)
+                .blockPolicyId(1L)
+                .isActive(true)
+                .modifiedTime(LocalDateTime.now())
+                .build();
         given(policySubRepository.findBySubId(subId)).willReturn(new ArrayList<>(List.of(existingSub)));
 
         // 2. 통합 정책 상세 조회 (기존 1L 조회)
