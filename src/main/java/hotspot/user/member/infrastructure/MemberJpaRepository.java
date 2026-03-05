@@ -18,21 +18,38 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
     // MemberDetailInfoDto로 바로 변환해야함 But, Builder는 JPQL에서 불가능
     // [To-Do] 1:N 관계(다중 회선) 발생 시 중복 행 문제 해결 필요
     // - Subscription: 현재는 1:1로 가정하나, 다중 회선 확장 시 최신/대표 회선 필터링 조건 추가 필요
-            @Query("""
-                   SELECT new hotspot.user.member.infrastructure.entity.MemberDetailInfoDto(
-                       m, :email, s.phoneEnc, s.subId, fs.familyRole, fs.family.familyId
-                   )
-                   FROM MemberEntity m
-                   LEFT JOIN SubscriptionEntity s ON s.member = m
-                        AND s.subId = (SELECT MAX(s2.subId) FROM SubscriptionEntity s2 WHERE s2.member = m)
-                   LEFT JOIN FamilySubscriptionEntity fs ON fs.subscription = s
-                   WHERE m.id = :memberId
-                     AND m.isDeleted = false
-                     AND (:email IS NULL OR EXISTS (
-                         SELECT 1 FROM SocialAccountEntity sa
-                         WHERE sa.member = m AND sa.email = :email
-                     ))
-                   """)
-            Optional<MemberDetailInfoDto> findDetailQueryResult(@Param("memberId") Long memberId,
-                                                                @Param("email") String email);
-        }
+    // [보안 강화] 이메일 소유권까지 엄격하게 검증하여 조회 (외부 API용)
+    @Query("""
+           SELECT new hotspot.user.member.infrastructure.entity.MemberDetailInfoDto(
+               m, :email, s.phoneEnc, s.subId, fs.familyRole, fs.family.familyId
+           )
+           FROM MemberEntity m
+           LEFT JOIN SubscriptionEntity s ON s.member = m
+                AND s.isDeleted = false
+                AND s.subId = (SELECT MAX(s2.subId) FROM SubscriptionEntity s2 WHERE s2.member = m AND s2.isDeleted = false)
+           LEFT JOIN FamilySubscriptionEntity fs ON fs.subscription = s
+           WHERE m.id = :memberId
+             AND m.isDeleted = false
+             AND EXISTS (
+                 SELECT 1 FROM SocialAccountEntity sa
+                 WHERE sa.member = m AND sa.email = :email AND sa.isDeleted = false
+             )
+           """)
+    Optional<MemberDetailInfoDto> findDetailByIdAndEmail(@Param("memberId") Long memberId, @Param("email") String email);
+
+    // [내부 전용] 이메일 검증 없이 ID만으로 상세 정보 조회 (이미 권한이 검증된 내부 로직용)
+    @Query("""
+           SELECT new hotspot.user.member.infrastructure.entity.MemberDetailInfoDto(
+               m, null, s.phoneEnc, s.subId, fs.familyRole, fs.family.familyId
+           )
+           FROM MemberEntity m
+           LEFT JOIN SubscriptionEntity s ON s.member = m
+                AND s.isDeleted = false
+                AND s.subId = (SELECT MAX(s2.subId) FROM SubscriptionEntity s2 WHERE s2.member = m AND s2.isDeleted = false)
+           LEFT JOIN FamilySubscriptionEntity fs ON fs.subscription = s
+           WHERE m.id = :memberId
+             AND m.isDeleted = false
+           """)
+    Optional<MemberDetailInfoDto> findDetailById(@Param("memberId") Long memberId);
+}
+                
