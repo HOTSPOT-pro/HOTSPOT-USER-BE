@@ -58,6 +58,9 @@ class UsageThresholdAlertEventMappingStrategyTest {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
                 LocalDateTime.of(2026, 2, 23, 10, 15, 30)
         );
     }

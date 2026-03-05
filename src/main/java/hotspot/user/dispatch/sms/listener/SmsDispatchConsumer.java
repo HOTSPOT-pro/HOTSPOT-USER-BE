@@ -26,7 +26,7 @@ public class SmsDispatchConsumer {
     // SMS 디스패치 커맨드를 소비해 실제 발송 서비스를 호출한다.
     public void consume(SmsDispatchCommand command, Acknowledgment acknowledgment) {
         try {
-            smsDispatchService.dispatch(command.toNotification());
+            smsDispatchService.dispatch(command);
             acknowledgment.acknowledge();
         } catch (ApplicationException ex) {
             SmsErrorCode errorCode = resolveErrorCode(ex);

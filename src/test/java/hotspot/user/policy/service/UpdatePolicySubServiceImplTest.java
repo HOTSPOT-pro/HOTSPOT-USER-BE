@@ -91,6 +91,7 @@ class UpdatePolicySubServiceImplTest {
                         FamilyRole.OWNER
                 );
 
+        // then
         assertThat(response.subId()).isEqualTo(subId);
 
         verify(policySubRepository, times(1)).saveAll(anyList());

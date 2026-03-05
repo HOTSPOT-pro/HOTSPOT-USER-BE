@@ -26,9 +26,13 @@ public class SmsPushService {
             return;
         }
 
+        SmsDispatchQueuePublisher.SmsDispatchMetadata metadata = smsDispatchQueuePublisher.resolveMetadata(
+                event.sourceEvent()
+        );
+
         for (var notification : event.persistedNotifications()) {
             try {
-                smsDispatchQueuePublisher.enqueue(notification);
+                smsDispatchQueuePublisher.enqueue(notification, event.sourceEvent(), metadata);
             } catch (Exception ex) {
                 log.error(
                         "Failed to enqueue SMS dispatch. notificationId={}, subId={}, reason={}",

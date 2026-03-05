@@ -63,6 +63,11 @@ public enum SmsErrorCode implements BaseErrorCode {
             "SMS_011",
             "SMS 제공자 요청 처리에 실패했습니다."
     ),
+    SMS_TEMPLATE_NOT_FOUND(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "SMS_012",
+            "SMS 메시지 템플릿을 찾을 수 없습니다."
+    ),
     ;
 
     private final HttpStatus httpStatus;
