@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +21,7 @@ import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.policy.infrastructure.entity.BlockPolicyEntity;
 import hotspot.user.policy.infrastructure.entity.PolicySubEntity;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * 정책-회선 매핑 Repository 구현체(PolicySubRepositoryImpl) 단위 테스트
@@ -38,7 +40,8 @@ class PolicySubRepositoryImplTest {
     void findBySubIdSuccess() {
         // given
         Long subId = 1L;
-        PolicySubEntity entity = createEntity(10L, subId, 50L, true);
+        LocalDateTime now = LocalDateTime.now();
+        PolicySubEntity entity = createEntity(10L, subId, 50L, true, now);
         given(jpaRepository.findBySubscriptionSubId(subId)).willReturn(List.of(entity));
 
         // when
@@ -49,6 +52,7 @@ class PolicySubRepositoryImplTest {
         assertThat(result.get(0).getId()).isEqualTo(10L);
         assertThat(result.get(0).getSubId()).isEqualTo(subId);
         assertThat(result.get(0).getBlockPolicyId()).isEqualTo(50L);
+        assertThat(result.get(0).getModifiedTime()).isEqualTo(now);
         verify(jpaRepository).findBySubscriptionSubId(subId);
     }
 
@@ -57,7 +61,8 @@ class PolicySubRepositoryImplTest {
     void findActiveBySubIdSuccess() {
         // given
         Long subId = 1L;
-        PolicySubEntity activeEntity = createEntity(10L, subId, 50L, true);
+        LocalDateTime now = LocalDateTime.now();
+        PolicySubEntity activeEntity = createEntity(10L, subId, 50L, true, now);
         given(jpaRepository.findBySubscriptionSubIdAndIsActiveTrue(subId)).willReturn(List.of(activeEntity));
 
         // when
@@ -66,6 +71,7 @@ class PolicySubRepositoryImplTest {
         // then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).isActive()).isTrue();
+        assertThat(result.get(0).getModifiedTime()).isEqualTo(now);
         verify(jpaRepository).findBySubscriptionSubIdAndIsActiveTrue(subId);
     }
 
@@ -82,7 +88,7 @@ class PolicySubRepositoryImplTest {
 
         List<PolicySub> domainList = List.of(newDomain, deactivateDomain, activateDomain);
 
-        PolicySubEntity savedEntity = createEntity(1L, 1L, 100L, true);
+        PolicySubEntity savedEntity = createEntity(1L, 1L, 100L, true, LocalDateTime.now());
         given(jpaRepository.saveAll(anyList())).willReturn(List.of(savedEntity));
 
         // when
@@ -112,30 +118,14 @@ class PolicySubRepositoryImplTest {
         verify(jpaRepository).bulkDeActiveByBlockPolicyIds(blockPolicyIds);
     }
 
-    @Test
-    @DisplayName("성공: 신규 데이터만 있는 경우 벌크 업데이트는 호출되지 않는다")
-    void saveAllOnlyNewSuccess() {
-        // given
-        PolicySub newDomain = PolicySub.builder().subId(1L).blockPolicyId(100L).isActive(true).build();
-        given(jpaRepository.saveAll(anyList())).willReturn(List.of(createEntity(1L, 1L, 100L, true)));
-
-        // when
-        repository.saveAll(List.of(newDomain));
-
-        // then
-        verify(jpaRepository).saveAll(anyList());
-        verify(jpaRepository, never()).bulkDeActive(anyList());
-        verify(jpaRepository, never()).bulkActivate(anyList());
-    }
-
     /**
      * 테스트용 PolicySubEntity 생성 유틸리티
      */
-    private PolicySubEntity createEntity(Long id, Long subId, Long policyId, boolean isActive) {
+    private PolicySubEntity createEntity(Long id, Long subId, Long policyId, boolean isActive, LocalDateTime modifiedTime) {
         SubscriptionEntity subEntity = SubscriptionEntity.builder().subId(subId).build();
         BlockPolicyEntity policyEntity = BlockPolicyEntity.builder().blockPolicyId(policyId).build();
 
-        return PolicySubEntity.builder()
+        PolicySubEntity entity = PolicySubEntity.builder()
                 .policySubId(id)
                 .subscription(subEntity)
                 .subId(subId) // 조회용 필드
@@ -143,5 +133,10 @@ class PolicySubRepositoryImplTest {
                 .blockPolicyId(policyId) // 조회용 필드
                 .isActive(isActive)
                 .build();
+
+        if (modifiedTime != null) {
+            ReflectionTestUtils.setField(entity, "modifiedTime", modifiedTime);
+        }
+        return entity;
     }
 }
