@@ -2,8 +2,12 @@ package hotspot.user.dispatch.sms.dto;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import hotspot.user.kafka.dto.UserAlertEvent;
 import hotspot.user.notification.domain.Notification;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record SmsDispatchCommand(
         Long notificationId,
         Long subId,
@@ -11,10 +15,20 @@ public record SmsDispatchCommand(
         String notificationType,
         String title,
         String content,
-        LocalDateTime createdTime
+        LocalDateTime createdTime,
+        String planName,
+        String providedAmount,
+        String usedPercent,
+        String usedAmount,
+        String presentSenderName
 ) {
     // Notification 도메인 객체를 큐 전송용 커맨드로 변환한다.
-    public static SmsDispatchCommand from(Notification notification) {
+    public static SmsDispatchCommand from(
+            Notification notification,
+            UserAlertEvent sourceEvent,
+            String planName,
+            String presentSenderName
+    ) {
         return new SmsDispatchCommand(
                 notification.getId(),
                 notification.getSubId(),
@@ -22,7 +36,12 @@ public record SmsDispatchCommand(
                 notification.getNotificationType(),
                 notification.getTitle(),
                 notification.getContent(),
-                notification.getCreatedTime()
+                notification.getCreatedTime(),
+                planName,
+                sourceEvent.providedAmount(),
+                sourceEvent.usedPercent(),
+                sourceEvent.usedAmount(),
+                presentSenderName
         );
     }
 
