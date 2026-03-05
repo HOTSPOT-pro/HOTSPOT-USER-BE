@@ -26,7 +26,11 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
            FROM MemberEntity m
            LEFT JOIN SubscriptionEntity s ON s.member = m
                 AND s.isDeleted = false
-                AND s.subId = (SELECT MAX(s2.subId) FROM SubscriptionEntity s2 WHERE s2.member = m AND s2.isDeleted = false)
+                AND s.subId = (
+                    SELECT MAX(s2.subId)
+                    FROM SubscriptionEntity s2
+                    WHERE s2.member = m AND s2.isDeleted = false
+                )
            LEFT JOIN FamilySubscriptionEntity fs ON fs.subscription = s
            WHERE m.id = :memberId
              AND m.isDeleted = false
@@ -35,7 +39,10 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
                  WHERE sa.member = m AND sa.email = :email AND sa.isDeleted = false
              )
            """)
-    Optional<MemberDetailInfoDto> findDetailByIdAndEmail(@Param("memberId") Long memberId, @Param("email") String email);
+    Optional<MemberDetailInfoDto> findDetailByIdAndEmail(
+            @Param("memberId") Long memberId,
+            @Param("email") String email
+    );
 
     // [내부 전용] 이메일 검증 없이 ID만으로 상세 정보 조회 (이미 권한이 검증된 내부 로직용)
     @Query("""
@@ -45,11 +52,14 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
            FROM MemberEntity m
            LEFT JOIN SubscriptionEntity s ON s.member = m
                 AND s.isDeleted = false
-                AND s.subId = (SELECT MAX(s2.subId) FROM SubscriptionEntity s2 WHERE s2.member = m AND s2.isDeleted = false)
+                AND s.subId = (
+                    SELECT MAX(s2.subId)
+                    FROM SubscriptionEntity s2
+                    WHERE s2.member = m AND s2.isDeleted = false
+                )
            LEFT JOIN FamilySubscriptionEntity fs ON fs.subscription = s
            WHERE m.id = :memberId
              AND m.isDeleted = false
            """)
     Optional<MemberDetailInfoDto> findDetailById(@Param("memberId") Long memberId);
 }
-                
