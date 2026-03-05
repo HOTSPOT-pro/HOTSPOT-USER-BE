@@ -21,6 +21,7 @@ spring:
 
     listener:
       ack-mode: manual
+      auto-startup: false
 
 app:
   topics:
