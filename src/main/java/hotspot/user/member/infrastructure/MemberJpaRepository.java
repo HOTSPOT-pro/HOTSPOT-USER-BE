@@ -20,10 +20,9 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
     // - Subscription: 현재는 1:1로 가정하나, 다중 회선 확장 시 최신/대표 회선 필터링 조건 추가 필요
     @Query("""
            SELECT DISTINCT new hotspot.user.member.infrastructure.entity.MemberDetailInfoDto(
-               m, sa.email, s.phoneEnc, s.subId, fs.familyRole, fs.family.familyId
+               m, :email, s.phoneEnc, s.subId, fs.familyRole, fs.family.familyId
            )
            FROM MemberEntity m
-           JOIN SocialAccountEntity sa ON sa.member = m AND sa.email = :email
            LEFT JOIN SubscriptionEntity s ON s.member = m
            LEFT JOIN FamilySubscriptionEntity fs ON fs.subscription = s
            WHERE m.id = :memberId
