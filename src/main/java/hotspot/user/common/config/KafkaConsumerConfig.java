@@ -9,19 +9,20 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
-import org.springframework.util.backoff.ExponentialBackOff;
+import org.springframework.kafka.support.serializer.DeserializationException;
+import org.springframework.util.backoff.FixedBackOff;
 
 import hotspot.user.dispatch.sms.dto.SmsDispatchCommand;
 import hotspot.user.kafka.dto.UserAlertEvent;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
+@Slf4j
 public class KafkaConsumerConfig {
 
     private static final int CONCURRENCY = 6;
-    private static final long BACKOFF_INITIAL_INTERVAL_MS = 500L;
-    private static final double BACKOFF_MULTIPLIER = 2.0;
-    private static final long BACKOFF_MAX_INTERVAL_MS = 10_000L;
-    private static final long BACKOFF_MAX_ELAPSED_MS = 60_000L;
+    private static final long RETRY_INTERVAL_MS = 1_000L;
+    private static final long RETRY_MAX_ATTEMPTS = 2L;
 
     private final String userAlertConsumerGroup;
     private final String smsDispatchConsumerGroup;
@@ -82,12 +83,26 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(CONCURRENCY);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
-
-        ExponentialBackOff backOff = new ExponentialBackOff(BACKOFF_INITIAL_INTERVAL_MS, BACKOFF_MULTIPLIER);
-        backOff.setMaxInterval(BACKOFF_MAX_INTERVAL_MS);
-        backOff.setMaxElapsedTime(BACKOFF_MAX_ELAPSED_MS);
-
-        factory.setCommonErrorHandler(new DefaultErrorHandler(backOff));
+        factory.setCommonErrorHandler(buildErrorHandler());
         return factory;
+    }
+
+    private DefaultErrorHandler buildErrorHandler() {
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(
+                (record, ex) -> log.warn(
+                        "Recovered and skipped Kafka record. topic={}, partition={}, offset={}, key={}, exception={}",
+                        record.topic(),
+                        record.partition(),
+                        record.offset(),
+                        record.key(),
+                        ex.getClass().getSimpleName()
+                ),
+                new FixedBackOff(RETRY_INTERVAL_MS, RETRY_MAX_ATTEMPTS)
+        );
+
+        // Deserialization poison messages should not loop forever.
+        errorHandler.addNotRetryableExceptions(DeserializationException.class);
+        errorHandler.setCommitRecovered(true);
+        return errorHandler;
     }
 }
