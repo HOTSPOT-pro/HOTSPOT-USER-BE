@@ -23,7 +23,7 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
                        m, :email, s.phoneEnc, s.subId, fs.familyRole, fs.family.familyId
                    )
                    FROM MemberEntity m
-                   LEFT JOIN SubscriptionEntity s ON s.member = m 
+                   LEFT JOIN SubscriptionEntity s ON s.member = m
                         AND s.subId = (SELECT MAX(s2.subId) FROM SubscriptionEntity s2 WHERE s2.member = m)
                    LEFT JOIN FamilySubscriptionEntity fs ON fs.subscription = s
                    WHERE m.id = :memberId
@@ -33,6 +33,6 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
                          WHERE sa.member = m AND sa.email = :email
                      ))
                    """)
-            Optional<MemberDetailInfoDto> findDetailQueryResult(@Param("memberId") Long memberId, @Param("email") String email);
+            Optional<MemberDetailInfoDto> findDetailQueryResult(@Param("memberId") Long memberId,
+                                                                @Param("email") String email);
         }
-        
