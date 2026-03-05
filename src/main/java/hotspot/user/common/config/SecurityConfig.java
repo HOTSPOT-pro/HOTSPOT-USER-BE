@@ -70,7 +70,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                        "/", "/health", "/login/**", "/oauth2/**", "/oauth/**",
+                        "/", "/health", "/error", "/error/**", "/login/**", "/oauth2/**", "/oauth/**",
                         "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                         "/actuator/health", "/api/v1/auth/reissue"
                 ).permitAll()

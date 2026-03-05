@@ -77,7 +77,11 @@ public class SseEmitterRegistry {
             registeredEmitter.emitter().send(eventBuilder);
         } catch (IOException | IllegalStateException ex) {
             remove(registeredEmitter.emitterId());
-            registeredEmitter.emitter().complete();
+            try {
+                registeredEmitter.emitter().complete();
+            } catch (RuntimeException ignored) {
+                // Emitter may already be completed/errored by container async lifecycle.
+            }
         }
     }
 
