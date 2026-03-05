@@ -1,5 +1,7 @@
 package hotspot.user.policy.domain;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +17,8 @@ public class PolicySub {
     private final Long subId;
     private final Long blockPolicyId;
     private boolean isActive;
+    private LocalDateTime createdTime;
+    private LocalDateTime modifiedTime;
 
     // 논리 삭제 메서드
     public void updateIsActive(boolean isActive) {
