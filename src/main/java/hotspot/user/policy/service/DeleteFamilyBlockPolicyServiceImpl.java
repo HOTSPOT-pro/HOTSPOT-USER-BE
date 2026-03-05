@@ -47,7 +47,7 @@ public class DeleteFamilyBlockPolicyServiceImpl implements DeleteFamilyBlockPoli
 
     // 요청자가 OWNER인지 권한 검증
     private void validateOwnerAuthority(Long memberId, Long requesterFamilyId) {
-        MemberDetailInfo memberDetail = memberRepository.findDetailByIdAndEmail(memberId, null)
+        MemberDetailInfo memberDetail = memberRepository.findDetailById(memberId)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (!Objects.equals(memberDetail.getFamilyId(), requesterFamilyId)) {

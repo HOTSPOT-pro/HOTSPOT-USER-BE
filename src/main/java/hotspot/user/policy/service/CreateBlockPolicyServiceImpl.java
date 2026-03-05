@@ -51,7 +51,7 @@ public class CreateBlockPolicyServiceImpl implements CreateBlockPolicyService {
     }
 
     private void validateOwnerAuthority(Long memberId, Long requesterFamilyId) {
-        MemberDetailInfo memberDetail = memberRepository.findDetailByIdAndEmail(memberId, null)
+        MemberDetailInfo memberDetail = memberRepository.findDetailById(memberId)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (!Objects.equals(memberDetail.getFamilyId(), requesterFamilyId)) {
