@@ -29,8 +29,15 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
     }
 
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response,
-                       AccessDeniedException accessDeniedException) throws IOException, ServletException {
+    public void handle(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AccessDeniedException accessDeniedException
+    ) throws IOException, ServletException {
+        if (response.isCommitted()) {
+            log.debug("Response already committed. Skip AccessDenied handling. uri={}", request.getRequestURI());
+            return;
+        }
 
         log.error("인가 실패(권한 없음) - URI: {}, 사유: {}", request.getRequestURI(), accessDeniedException.getMessage());
 
