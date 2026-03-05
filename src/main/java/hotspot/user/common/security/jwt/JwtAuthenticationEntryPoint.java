@@ -29,8 +29,18 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     }
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response,
-                         AuthenticationException authException) throws IOException, ServletException {
+    public void commence(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException authException
+    ) throws IOException, ServletException {
+        if (response.isCommitted()) {
+            log.debug(
+                    "Response already committed. Skip AuthenticationEntryPoint handling. uri={}",
+                    request.getRequestURI()
+            );
+            return;
+        }
 
         log.error("인증 예외 발생: {}, ExceptionAdvice로 위임합니다.", authException.getMessage());
 
