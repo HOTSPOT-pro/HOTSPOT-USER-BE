@@ -15,6 +15,15 @@ public interface PolicySubJpaRepository extends JpaRepository<PolicySubEntity, L
     // 현재 활성화된 정책만 조회
     List<PolicySubEntity> findBySubscriptionSubIdAndIsActiveTrue(Long subId);
 
+    // 정책에 해당되있는 회선 ID 목록 조회
+    @Query("""
+       SELECT p.subscription.subId
+       FROM PolicySubEntity p
+       WHERE p.blockPolicy.blockPolicyId = :blockPolicyId
+       AND p.isActive = true
+       """)
+    List<Long> findActiveSubIdsByBlockPolicyId(@Param("blockPolicyId") Long blockPolicyId);
+
     // N+1 SELECT를 방지하기 위한 벌크 UPDATE 쿼리 (비활성화, isActive = false)
     @Modifying(clearAutomatically = true)
     @Query("""

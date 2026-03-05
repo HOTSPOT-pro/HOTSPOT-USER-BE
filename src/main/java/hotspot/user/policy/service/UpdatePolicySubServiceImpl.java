@@ -27,6 +27,7 @@ import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.policy.domain.mapper.PolicySubMapper;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
+import hotspot.user.policy.service.util.PolicyBlockSnapshotPublisher;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -41,6 +42,8 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final BlockPolicyRepository blockPolicyRepository;
     private final UserAlertNotificationOutboxPort userAlertNotificationOutboxPort;
+    private final PolicyBlockSnapshotPublisher policyBlockSnapshotPublisher;
+
 
     @Override
     public UpdatePolicySubResponse updatePolicySub(
@@ -134,6 +137,16 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
             policySubRepository.saveAll(domainsToSave);
             publishPolicyAppliedAlerts(appliedAlertPolicies, request.subId(), requesterFamilyId);
             publishPolicyReleasedAlerts(releasedAlertPolicies, request.subId(), requesterFamilyId);
+
+
+            // subId에 적용된 정책 목록 조회
+            List<PolicySub> activeSubs =
+                    policySubRepository.findActiveBySubId(request.subId());
+
+            policyBlockSnapshotPublisher.publish(
+                    request.subId(),
+                    activeSubs
+            );
         }
 
         return PolicySubMapper.toUpdatePolicySubResponse(
