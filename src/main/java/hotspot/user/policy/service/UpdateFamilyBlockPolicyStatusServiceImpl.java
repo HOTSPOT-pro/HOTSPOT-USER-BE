@@ -24,7 +24,9 @@ import hotspot.user.policy.controller.response.UpdateFamilyBlockPolicyStatusResp
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
+import hotspot.user.policy.service.util.FamilyPolicyDeactivatePublisher;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 우리 가족이 생성한 정책의 상태 (비/활성화) 업데이트하는 서비스 구현체
@@ -32,11 +34,13 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class UpdateFamilyBlockPolicyStatusServiceImpl implements UpdateFamilyBlockPolicyStatusService {
 
     private final MemberRepository memberRepository;
     private final BlockPolicyRepository blockPolicyRepository;
     private final PolicySubRepository policySubRepository;
+    private final FamilyPolicyDeactivatePublisher familyPolicyDeactivatePublisher;
 
     @Override
     public UpdateFamilyBlockPolicyStatusResponse updateFamilyBlockPolicyStatus(
@@ -65,16 +69,23 @@ public class UpdateFamilyBlockPolicyStatusServiceImpl implements UpdateFamilyBlo
                 .map(BlockPolicy::getId)
                 .collect(Collectors.toList());
 
+        log.info("toActivate: {}", toActivate.size());
+
         List<Long> toDeactivate = partitionedPolicies.get(false).stream()
                 .filter(BlockPolicy::isActive) // 현재 켜져있는 것만 끔
                 .map(BlockPolicy::getId)
                 .collect(Collectors.toList());
+
+        log.info("toDeactivate: {}", toDeactivate.size());
 
         // 5. 벌크 업데이트 수행
         if (!toActivate.isEmpty()) {
             blockPolicyRepository.bulkActivate(toActivate);
         }
         if (!toDeactivate.isEmpty()) {
+
+            familyPolicyDeactivatePublisher.publish(toDeactivate, requesterFamilyId);
+
             blockPolicyRepository.bulkDeActive(toDeactivate);
             // 정책이 비활성화되면 해당 정책을 적용 중인 모든 회선 매핑 정보도 비활성화 처리
             policySubRepository.bulkDeActiveByBlockPolicyIds(toDeactivate);
