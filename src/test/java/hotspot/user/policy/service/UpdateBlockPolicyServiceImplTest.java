@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -71,7 +70,7 @@ class UpdateBlockPolicyServiceImplTest {
                 .role(FamilyRole.OWNER)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy existingPolicy = BlockPolicy.builder()
@@ -116,7 +115,7 @@ class UpdateBlockPolicyServiceImplTest {
                 .role(FamilyRole.OWNER)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy existingPolicy = BlockPolicy.builder()
@@ -152,7 +151,7 @@ class UpdateBlockPolicyServiceImplTest {
                 .role(FamilyRole.OWNER)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy adminPolicy = BlockPolicy.builder()
@@ -181,7 +180,7 @@ class UpdateBlockPolicyServiceImplTest {
                 .role(FamilyRole.OWNER)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy foreignPolicy = BlockPolicy.builder()
@@ -216,7 +215,7 @@ class UpdateBlockPolicyServiceImplTest {
                 .role(FamilyRole.OWNER)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy existingPolicy = BlockPolicy.builder()
@@ -247,7 +246,7 @@ class UpdateBlockPolicyServiceImplTest {
         BlockPolicyRequest request =
                 new BlockPolicyRequest("이름", PolicyType.ONCE, null, "설명", true);
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.empty());
 
         assertThatThrownBy(() ->
@@ -267,7 +266,7 @@ class UpdateBlockPolicyServiceImplTest {
                 .familyId(200L)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         assertThatThrownBy(() ->
@@ -288,7 +287,7 @@ class UpdateBlockPolicyServiceImplTest {
                 .role(FamilyRole.PARENT)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         assertThatThrownBy(() ->

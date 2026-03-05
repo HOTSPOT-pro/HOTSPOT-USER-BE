@@ -3,7 +3,6 @@ package hotspot.user.policy.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -49,7 +48,7 @@ class FindSingleBlockPolicyServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.OWNER)
                 .build();
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy policy = BlockPolicy.builder()
@@ -77,7 +76,7 @@ class FindSingleBlockPolicyServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.OWNER)
                 .build();
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy policy = BlockPolicy.builder()
@@ -104,7 +103,7 @@ class FindSingleBlockPolicyServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.OWNER)
                 .build();
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy policy = BlockPolicy.builder()
