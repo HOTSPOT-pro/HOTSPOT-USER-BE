@@ -23,7 +23,7 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
                m, sa.email, s.phoneEnc, s.subId, fs.familyRole, fs.family.familyId
            )
            FROM MemberEntity m
-           LEFT JOIN SocialAccountEntity sa ON sa.member = m AND sa.email = :email
+           JOIN SocialAccountEntity sa ON sa.member = m AND sa.email = :email
            LEFT JOIN SubscriptionEntity s ON s.member = m
            LEFT JOIN FamilySubscriptionEntity fs ON fs.subscription = s
            WHERE m.id = :memberId
