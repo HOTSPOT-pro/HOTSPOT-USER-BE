@@ -29,7 +29,7 @@ public interface BlockedServiceSubJpaRepository extends JpaRepository<BlockedSer
     @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE BlockedServiceSubEntity b
-            SET b.isActive = false
+            SET b.isActive = false, b.modifiedTime = CURRENT_TIMESTAMP
             WHERE b.blockedServiceSubId IN :ids
             """)
     void bulkDeactive(@Param("ids") List<Long> ids);
@@ -38,7 +38,7 @@ public interface BlockedServiceSubJpaRepository extends JpaRepository<BlockedSer
     @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE BlockedServiceSubEntity b
-            SET b.isActive = true
+            SET b.isActive = true, b.modifiedTime = CURRENT_TIMESTAMP
             WHERE b.blockedServiceSubId IN :ids
             """)
     void bulkActivate(@Param("ids") List<Long> ids);

@@ -67,6 +67,8 @@ public class PolicySubEntity extends BaseEntity {
                 .subId(this.subId)
                 .blockPolicyId(this.blockPolicyId)
                 .isActive(this.isActive)
+                .createdTime(this.getCreatedTime())
+                .modifiedTime(this.getModifiedTime())
                 .build();
     }
 

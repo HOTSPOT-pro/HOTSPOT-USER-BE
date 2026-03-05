@@ -20,6 +20,7 @@ import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.PolicyType;
 import hotspot.user.policy.domain.mapper.BlockPolicyMapper;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
+import hotspot.user.policy.service.util.PolicyChangedOutboxPublisher;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -33,6 +34,7 @@ public class UpdateBlockPolicyServiceImpl implements UpdateBlockPolicyService {
 
     private final BlockPolicyRepository blockPolicyRepository;
     private final MemberRepository memberRepository;
+    private final PolicyChangedOutboxPublisher policyChangedOutboxPublisher;
 
     @Override
     @Transactional
@@ -64,6 +66,8 @@ public class UpdateBlockPolicyServiceImpl implements UpdateBlockPolicyService {
         );
 
         BlockPolicy saved = blockPolicyRepository.save(updated);
+
+        policyChangedOutboxPublisher.publish(saved, familyId);
 
         return BlockPolicyMapper.toBlockPolicyResponse(saved);
     }
