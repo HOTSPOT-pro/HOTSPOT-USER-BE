@@ -3,7 +3,6 @@ package hotspot.user.policy.infrastructure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -16,12 +15,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.policy.infrastructure.entity.BlockPolicyEntity;
 import hotspot.user.policy.infrastructure.entity.PolicySubEntity;
 import hotspot.user.subscription.infrastructure.entity.SubscriptionEntity;
-import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * 정책-회선 매핑 Repository 구현체(PolicySubRepositoryImpl) 단위 테스트
@@ -121,7 +120,8 @@ class PolicySubRepositoryImplTest {
     /**
      * 테스트용 PolicySubEntity 생성 유틸리티
      */
-    private PolicySubEntity createEntity(Long id, Long subId, Long policyId, boolean isActive, LocalDateTime modifiedTime) {
+    private PolicySubEntity createEntity(Long id, Long subId, Long policyId,
+                                         boolean isActive, LocalDateTime modifiedTime) {
         SubscriptionEntity subEntity = SubscriptionEntity.builder().subId(subId).build();
         BlockPolicyEntity policyEntity = BlockPolicyEntity.builder().blockPolicyId(policyId).build();
 

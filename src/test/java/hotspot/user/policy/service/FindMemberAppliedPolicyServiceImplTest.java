@@ -80,7 +80,7 @@ class FindMemberAppliedPolicyServiceImplTest {
                 .isActive(true)
                 .modifiedTime(LocalDateTime.now())
                 .build();
-        
+
         // 정책 상세 정보
         BlockPolicy blockPolicy = BlockPolicy.builder()
                 .id(policyId)
@@ -133,14 +133,18 @@ class FindMemberAppliedPolicyServiceImplTest {
         // 1. 정상 활성 정책 (SCHEDULED)
         PolicySub activeSub = PolicySub.builder()
                 .id(10L).blockPolicyId(activePolicyId).isActive(true).modifiedTime(LocalDateTime.now()).build();
-        
+
         // 2. 만료된 일회성 정책 (ONCE, 30분 지속인데 40분 전 활성화됨)
         PolicySub expiredSub = PolicySub.builder()
-                .id(11L).blockPolicyId(expiredPolicyId).isActive(true).modifiedTime(LocalDateTime.now().minusMinutes(40)).build();
+                .id(11L)
+                .blockPolicyId(expiredPolicyId)
+                .isActive(true)
+                .modifiedTime(LocalDateTime.now().minusMinutes(40))
+                .build();
 
         BlockPolicy activePolicy = BlockPolicy.builder()
                 .id(activePolicyId).name("상시 정책").policyType(PolicyType.SCHEDULED).build();
-        
+
         BlockPolicy expiredPolicy = BlockPolicy.builder()
                 .id(expiredPolicyId)
                 .name("일회성 정책")
