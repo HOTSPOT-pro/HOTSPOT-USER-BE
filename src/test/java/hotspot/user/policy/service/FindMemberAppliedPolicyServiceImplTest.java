@@ -14,6 +14,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -161,13 +162,18 @@ class FindMemberAppliedPolicyServiceImplTest {
         AppliedPolicyResponse response = findMemberAppliedPolicyService.findByMemberId(memberId);
 
         // then
-        // 응답에는 활성 정책 1개만 포함되어야 함
+        // 1. 응답에는 활성 정책 1개만 포함되어야 함
         assertThat(response.blockPolicyResponseList()).hasSize(1);
         assertThat(response.blockPolicyResponseList().get(0).id()).isEqualTo(activePolicyId);
 
-        // 만료된 정책에 대해 비활성화 저장 로직이 호출되었는지 검증
-        verify(policySubRepository, times(1)).saveAll(anyList());
-        assertThat(expiredSub.isActive()).isFalse();
+        // 2. 만료된 정책에 대해 비활성화 저장 로직이 호출되었는지 검증
+        ArgumentCaptor<List<PolicySub>> captor = ArgumentCaptor.forClass(List.class);
+        verify(policySubRepository, times(1)).saveAll(captor.capture());
+
+        List<PolicySub> savedPolicies = captor.getValue();
+        assertThat(savedPolicies).hasSize(1);
+        assertThat(savedPolicies.get(0).getId()).isEqualTo(11L);
+        assertThat(savedPolicies.get(0).isActive()).isFalse();
     }
 
     @Test

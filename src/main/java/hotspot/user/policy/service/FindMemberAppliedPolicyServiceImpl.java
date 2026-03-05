@@ -1,5 +1,6 @@
 package hotspot.user.policy.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,17 +51,20 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
         Map<Long, BlockPolicy> policyMap = blockPolicyRepository.findAllById(policyIds).stream()
                 .collect(Collectors.toMap(BlockPolicy::getId, p -> p));
 
-        // 3. 일회성(ONCE) 정책 만료 체크
-        List<PolicySub> expiredPolicySubs = policySubs.stream()
-                .filter(sub -> sub.deactivateIfExpired(policyMap.get(sub.getBlockPolicyId())))
-                .toList();
+        // 3. 일회성(ONCE) 정책 만료 체크 (Lazy Deactivation - 도메인 위임)
+        List<PolicySub> expiredPolicySubs = new ArrayList<>();
+        for (PolicySub sub : policySubs) {
+            if (sub.deactivateIfExpired(policyMap.get(sub.getBlockPolicyId()))) {
+                expiredPolicySubs.add(sub);
+            }
+        }
 
         // 4. 만료되어 상태가 변경된 정책이 있다면 DB 반영
         if (!expiredPolicySubs.isEmpty()) {
             policySubRepository.saveAll(expiredPolicySubs);
         }
 
-        // 5. 활성화된 정책 리스트 필터링 (최종 응답용)
+        // 5. 활성화된 정책 리스트 필터링 (최종 응답용 - 순수 함수형 스트림)
         List<PolicySub> activePolicySubs = policySubs.stream()
                 .filter(PolicySub::isActive)
                 .toList();
