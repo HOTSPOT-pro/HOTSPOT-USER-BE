@@ -8,9 +8,13 @@ public record FamilyPolicyDeletedEvent(
         String eventId,
         Long familyId,
         String type,
-        List<Long> subIds,
-        Long policyId
+        List<PolicyTarget> policies
 ) implements DomainEvent {
+
+    public record PolicyTarget(
+            Long policyId,
+            List<Long> subIds
+    ) {}
 
     @Override
     public String type() {

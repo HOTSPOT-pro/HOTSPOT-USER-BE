@@ -41,9 +41,7 @@ public class DeleteFamilyBlockPolicyServiceImpl implements DeleteFamilyBlockPoli
         validatePolicyOwnership(policyIdList, targetPolicies, familyId);
 
         // Outbox publish
-        for (Long policyId : policyIdList) {
-            policyDeletedOutboxPublisher.publish(policyId, familyId);
-        }
+        policyDeletedOutboxPublisher.publishAll(policyIdList, familyId);
 
         // 3. 연관 데이터(policy_sub) 처리: 정책이 삭제되므로 적용 중인 회선에서도 비활성화
         policySubRepository.bulkDeActiveByBlockPolicyIds(policyIdList);
