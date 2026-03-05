@@ -24,6 +24,7 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
            )
            FROM MemberEntity m
            LEFT JOIN SubscriptionEntity s ON s.member = m
+                AND s.subId = (SELECT MAX(s2.subId) FROM SubscriptionEntity s2 WHERE s2.member = m)
            LEFT JOIN FamilySubscriptionEntity fs ON fs.subscription = s
            WHERE m.id = :memberId
              AND EXISTS (
