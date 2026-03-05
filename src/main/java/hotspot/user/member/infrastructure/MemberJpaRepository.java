@@ -26,6 +26,10 @@ public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
            LEFT JOIN SubscriptionEntity s ON s.member = m
            LEFT JOIN FamilySubscriptionEntity fs ON fs.subscription = s
            WHERE m.id = :memberId
+             AND EXISTS (
+                 SELECT 1 FROM SocialAccountEntity sa
+                 WHERE sa.member = m AND sa.email = :email
+             )
            """)
     Optional<MemberDetailInfoDto> findDetailQueryResult(@Param("memberId") Long memberId, @Param("email") String email);
 }
