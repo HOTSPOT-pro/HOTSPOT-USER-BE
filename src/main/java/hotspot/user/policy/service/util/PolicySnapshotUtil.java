@@ -1,9 +1,10 @@
 package hotspot.user.policy.service.util;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,26 +70,28 @@ public class PolicySnapshotUtil {
      */
     private static long calculateExpireEpoch(PolicySnapshot snapshot) {
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
 
         if (snapshot.getDurationMinutes() != null) {
 
-            return now.plusMinutes(snapshot.getDurationMinutes())
-                    .toEpochSecond(ZoneOffset.UTC);
+            return now.plus(Duration.ofMinutes(snapshot.getDurationMinutes()))
+                    .getEpochSecond();
         }
 
         if (snapshot.getEndLocalTime() != null) {
 
-            LocalDate today = LocalDate.now();
+            ZonedDateTime nowUtc = ZonedDateTime.now(ZoneOffset.UTC);
 
-            LocalDateTime endDateTime =
-                    LocalDateTime.of(today, snapshot.getEndLocalTime());
+            ZonedDateTime endDateTime =
+                    snapshot.getEndLocalTime()
+                            .atDate(nowUtc.toLocalDate())
+                            .atZone(ZoneOffset.UTC);
 
-            if (endDateTime.isBefore(now)) {
+            if (endDateTime.isBefore(nowUtc)) {
                 endDateTime = endDateTime.plusDays(1);
             }
 
-            return endDateTime.toEpochSecond(ZoneOffset.UTC);
+            return endDateTime.toEpochSecond();
         }
 
         throw new IllegalArgumentException("Invalid ONCE policy snapshot");

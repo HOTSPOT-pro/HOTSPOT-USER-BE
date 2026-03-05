@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -50,9 +49,9 @@ class PolicySnapshotUtilTest {
                         .build();
 
         long before =
-                LocalDateTime.now()
-                        .plusMinutes(59)
-                        .toEpochSecond(ZoneOffset.UTC);
+                Instant.now()
+                        .plusSeconds(59 * 60)
+                        .getEpochSecond();
 
         PolicyPayload payload =
                 PolicySnapshotUtil.map(
@@ -62,9 +61,9 @@ class PolicySnapshotUtilTest {
                 );
 
         long after =
-                LocalDateTime.now()
-                        .plusMinutes(61)
-                        .toEpochSecond(ZoneOffset.UTC);
+                Instant.now()
+                        .plusSeconds(61 * 60)
+                        .getEpochSecond();
 
         assertThat(payload.policyId()).isEqualTo(2L);
         assertThat(payload.encoded()).isNull();
