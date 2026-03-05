@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,33 +32,43 @@ class PolicyDeletedOutboxPublisherTest {
     private PolicyDeletedOutboxPublisher policyDeletedOutboxPublisher;
 
     private static final Long FAMILY_ID = 100L;
-    private static final Long POLICY_ID = 1L;
 
     @Test
-    @DisplayName("성공: subIds가 존재하면 POLICY_DELETED 이벤트를 발행한다")
-    void publishSuccess() {
+    @DisplayName("성공: policy-sub 매핑이 존재하면 POLICY_DELETED 이벤트를 발행한다")
+    void publishAllSuccess() {
 
-        List<Long> subIds = List.of(10L, 11L);
+        List<Long> policyIds = List.of(1L, 2L);
 
-        given(policySubRepository.findActiveSubIdsByBlockPolicyId(POLICY_ID))
-                .willReturn(subIds);
+        Map<Long, List<Long>> policySubMap = Map.of(
+                1L, List.of(10L, 11L),
+                2L, List.of(12L)
+        );
 
-        policyDeletedOutboxPublisher.publish(POLICY_ID, FAMILY_ID);
+        given(policySubRepository.findActiveSubIdsByBlockPolicyIds(policyIds))
+                .willReturn(policySubMap);
 
-        verify(policySubRepository).findActiveSubIdsByBlockPolicyId(POLICY_ID);
+        // when
+        policyDeletedOutboxPublisher.publishAll(policyIds, FAMILY_ID);
+
+        // then
+        verify(policySubRepository).findActiveSubIdsByBlockPolicyIds(policyIds);
         verify(publisher).publishEvent(any(FamilyPolicyDeletedEvent.class));
     }
 
     @Test
-    @DisplayName("성공: subIds가 없으면 이벤트를 발행하지 않는다")
-    void publishNoSubIds() {
+    @DisplayName("성공: 매핑된 subIds가 없으면 이벤트를 발행하지 않는다")
+    void publishAllNoSubIds() {
 
-        given(policySubRepository.findActiveSubIdsByBlockPolicyId(POLICY_ID))
-                .willReturn(List.of());
+        List<Long> policyIds = List.of(1L, 2L);
 
-        policyDeletedOutboxPublisher.publish(POLICY_ID, FAMILY_ID);
+        given(policySubRepository.findActiveSubIdsByBlockPolicyIds(policyIds))
+                .willReturn(Map.of());
 
-        verify(policySubRepository).findActiveSubIdsByBlockPolicyId(POLICY_ID);
+        // when
+        policyDeletedOutboxPublisher.publishAll(policyIds, FAMILY_ID);
+
+        // then
+        verify(policySubRepository).findActiveSubIdsByBlockPolicyIds(policyIds);
         verify(publisher, never()).publishEvent(any());
     }
 }

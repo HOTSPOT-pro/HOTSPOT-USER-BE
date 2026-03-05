@@ -81,8 +81,7 @@ class DeleteFamilyBlockPolicyServiceImplTest {
         deleteFamilyBlockPolicyService.delete(policyIds, MEMBER_ID, FAMILY_ID);
 
         // then
-        verify(policyDeletedOutboxPublisher).publish(10L, FAMILY_ID);
-        verify(policyDeletedOutboxPublisher).publish(20L, FAMILY_ID);
+        verify(policyDeletedOutboxPublisher).publishAll(policyIds, FAMILY_ID);
 
         verify(policySubRepository).bulkDeActiveByBlockPolicyIds(policyIds);
         verify(blockPolicyRepository).bulkDelete(policyIds);
