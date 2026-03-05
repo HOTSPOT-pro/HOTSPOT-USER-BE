@@ -62,7 +62,7 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.OWNER)
                 .build();
-        given(memberRepository.findDetailByIdAndEmail(MEMBER_ID, null)).willReturn(Optional.of(memberDetail));
+        given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
         // 3. 기존 가족 정책 Mock (1: 이미 활성, 2: 비활성, 3: 활성)
         BlockPolicy p1 = BlockPolicy.builder().id(1L).isActive(true).build();
@@ -96,7 +96,7 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.PARENT) // PARENT는 권한 없음
                 .build();
-        given(memberRepository.findDetailByIdAndEmail(MEMBER_ID, null)).willReturn(Optional.of(memberDetail));
+        given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
         // when & then
         assertThatThrownBy(() -> service.updateFamilyBlockPolicyStatus(request, MEMBER_ID, FAMILY_ID))
@@ -114,7 +114,7 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .familyId(200L) // 다른 가족
                 .role(FamilyRole.OWNER)
                 .build();
-        given(memberRepository.findDetailByIdAndEmail(MEMBER_ID, null)).willReturn(Optional.of(memberDetail));
+        given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
         // when & then
         assertThatThrownBy(() -> service.updateFamilyBlockPolicyStatus(request, MEMBER_ID, FAMILY_ID))
@@ -135,7 +135,7 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.OWNER)
                 .build();
-        given(memberRepository.findDetailByIdAndEmail(MEMBER_ID, null)).willReturn(Optional.of(memberDetail));
+        given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
         // 우리 가족 정책은 1, 2번뿐
         BlockPolicy p1 = BlockPolicy.builder().id(1L).isActive(true).build();
@@ -160,7 +160,7 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.OWNER)
                 .build();
-        given(memberRepository.findDetailByIdAndEmail(MEMBER_ID, null)).willReturn(Optional.of(memberDetail));
+        given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
         // 이미 1번은 켜져있고, 2번은 꺼져있음 -> 요청(1번만 켜기)과 동일함
         BlockPolicy p1 = BlockPolicy.builder().id(1L).isActive(true).build();

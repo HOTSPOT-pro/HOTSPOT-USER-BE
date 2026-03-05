@@ -82,7 +82,7 @@ class MemberRepositoryImplTest {
                 .familyId(100L)
                 .build();
 
-        given(memberJpaRepository.findDetailQueryResult(memberId, email)).willReturn(Optional.of(dto));
+        given(memberJpaRepository.findDetailByIdAndEmail(memberId, email)).willReturn(Optional.of(dto));
 
         // when
         Optional<MemberDetailInfo> result = memberRepository.findDetailByIdAndEmail(memberId, email);
@@ -104,7 +104,7 @@ class MemberRepositoryImplTest {
         // given
         Long memberId = 999L;
         String email = "notfound@email.com";
-        given(memberJpaRepository.findDetailQueryResult(memberId, email)).willReturn(Optional.empty());
+        given(memberJpaRepository.findDetailByIdAndEmail(memberId, email)).willReturn(Optional.empty());
 
         // when
         Optional<MemberDetailInfo> result = memberRepository.findDetailByIdAndEmail(memberId, email);
