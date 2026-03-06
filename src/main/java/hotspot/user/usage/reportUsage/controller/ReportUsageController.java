@@ -3,7 +3,6 @@ package hotspot.user.usage.reportUsage.controller;
 import java.time.YearMonth;
 import java.util.List;
 
-import hotspot.user.usage.reportUsage.controller.swagger.ReportUsageApi;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +22,7 @@ import hotspot.user.usage.reportUsage.controller.response.ReportFamilyResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageAppResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageDayResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageMonthResponse;
+import hotspot.user.usage.reportUsage.controller.swagger.ReportUsageApi;
 import lombok.RequiredArgsConstructor;
 
 @RestController
