@@ -2,6 +2,8 @@ package hotspot.user.policy.infrastructure;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -27,6 +29,22 @@ public class PolicySubRepositoryImpl implements PolicySubRepository {
         return policySubJpaRepository.findBySubscriptionSubIdAndIsActiveTrue(subId).stream()
                 .map(PolicySubEntity::entityToDomain)
                 .toList();
+    }
+
+    @Override
+    public Map<Long, List<Long>> findActiveSubIdsByBlockPolicyIds(List<Long> blockPolicyIds) {
+
+        List<Object[]> rows =
+                policySubJpaRepository.findActiveSubIdsByBlockPolicyIds(blockPolicyIds);
+
+        return rows.stream()
+                .collect(Collectors.groupingBy(
+                        r -> (Long) r[0],
+                        Collectors.mapping(
+                                r -> (Long) r[1],
+                                Collectors.toList()
+                        )
+                ));
     }
 
 
