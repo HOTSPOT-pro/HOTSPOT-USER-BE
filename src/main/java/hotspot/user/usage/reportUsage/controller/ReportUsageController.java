@@ -3,6 +3,7 @@ package hotspot.user.usage.reportUsage.controller;
 import java.time.YearMonth;
 import java.util.List;
 
+import hotspot.user.usage.reportUsage.controller.swagger.ReportUsageApi;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reportUsage")
-public class ReportUsageController {
+public class ReportUsageController implements ReportUsageApi {
 
     private final FindReportUsageAppMonthService findReportUsageAppMonthService;
     private final FindReportUsageAppDayService findReportUsageAppDayService;
@@ -67,7 +68,7 @@ public class ReportUsageController {
 
     @GetMapping("/day")
     public ResponseEntity<ApiResponse<ReportUsageDayResponse>> findReportUsageDay(
-            @RequestParam Long familyId,
+            @AuthenticationPrincipal PrincipalDetails details,
             @RequestParam(required = false) Long targetSubId,
             @RequestParam
             @DateTimeFormat(pattern = "yyyy-MM")
@@ -76,7 +77,7 @@ public class ReportUsageController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         findReportUsageDayService.findReportUsageDay(
-                                familyId,
+                                details.getFamilyId(),
                                 targetSubId,
                                 month
                         )
