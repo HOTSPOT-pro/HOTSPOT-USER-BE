@@ -1,7 +1,9 @@
 package hotspot.user.usage.reportUsage.controller;
 
+import java.time.YearMonth;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,13 +22,12 @@ import hotspot.user.usage.reportUsage.controller.response.ReportFamilyResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageAppResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageDayResponse;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageMonthResponse;
-import hotspot.user.usage.reportUsage.controller.swagger.ReportUsageApi;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reportUsage")
-public class ReportUsageController implements ReportUsageApi {
+public class ReportUsageController {
 
     private final FindReportUsageAppMonthService findReportUsageAppMonthService;
     private final FindReportUsageAppDayService findReportUsageAppDayService;
@@ -66,14 +67,18 @@ public class ReportUsageController implements ReportUsageApi {
 
     @GetMapping("/day")
     public ResponseEntity<ApiResponse<ReportUsageDayResponse>> findReportUsageDay(
-            @AuthenticationPrincipal PrincipalDetails details,
-            @RequestParam(required = false) Long targetSubId
+            @RequestParam Long familyId,
+            @RequestParam(required = false) Long targetSubId,
+            @RequestParam
+            @DateTimeFormat(pattern = "yyyy-MM")
+            YearMonth month
     ) {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         findReportUsageDayService.findReportUsageDay(
-                                details.getFamilyId(),
-                                targetSubId
+                                familyId,
+                                targetSubId,
+                                month
                         )
                 )
         );
