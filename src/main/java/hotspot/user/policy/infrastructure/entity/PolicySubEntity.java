@@ -64,8 +64,8 @@ public class PolicySubEntity extends BaseEntity {
     public PolicySub entityToDomain() {
         return PolicySub.builder()
                 .id(this.policySubId)
-                .subId(this.subId)
-                .blockPolicyId(this.blockPolicyId)
+                .subId(this.subscription.getSubId())
+                .blockPolicyId(this.blockPolicy.getBlockPolicyId())
                 .isActive(this.isActive)
                 .createdTime(this.getCreatedTime())
                 .modifiedTime(this.getModifiedTime())
