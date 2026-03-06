@@ -107,10 +107,13 @@ public class AuthController implements AuthApi {
 
         TokenRequest request = new TokenRequest(refreshToken);
         logoutService.logout(principal.getId(), request); //  memberId 전달
-        ResponseCookie cookie = CookieUtil.deleteCookie("refreshToken");
+
+        ResponseCookie accessCookie = CookieUtil.deleteCookie("accessToken");
+        ResponseCookie refreshCookie = CookieUtil.deleteCookie("refreshToken");
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body(ApiResponse.success());
     }
 
@@ -126,10 +129,13 @@ public class AuthController implements AuthApi {
 
         TokenRequest request = new TokenRequest(refreshToken);
         withdrawService.withdraw(principal.getId(), request); //  memberId 전달
-        ResponseCookie cookie = CookieUtil.deleteCookie("refreshToken");
+
+        ResponseCookie accessCookie = CookieUtil.deleteCookie("accessToken");
+        ResponseCookie refreshCookie = CookieUtil.deleteCookie("refreshToken");
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body(ApiResponse.success());
     }
 

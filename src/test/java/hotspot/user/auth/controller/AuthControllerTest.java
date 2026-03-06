@@ -9,7 +9,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -17,7 +16,6 @@ import java.util.List;
 
 import jakarta.servlet.http.Cookie;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -178,16 +176,20 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("로그아웃(logout) 성공 시 RefreshToken 쿠키를 삭제해야 한다")
+    @DisplayName("로그아웃(logout) 성공 시 AccessToken과 RefreshToken 쿠키를 모두 삭제해야 한다")
     void logoutSuccess() throws Exception {
         Cookie requestCookie = new Cookie("refreshToken", REFRESH_TOKEN);
         doNothing().when(logoutService).logout(anyLong(), any(TokenRequest.class));
 
-        mockMvc.perform(post("/api/v1/auth/logout")
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/logout")
                         .cookie(requestCookie))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.SET_COOKIE, Matchers.containsString("Max-Age=0")));
+                .andReturn();
+
+        List<String> cookies = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
+        assertThat(cookies).anyMatch(c -> c.contains("accessToken=") && c.contains("Max-Age=0"));
+        assertThat(cookies).anyMatch(c -> c.contains("refreshToken=") && c.contains("Max-Age=0"));
     }
 
     @Test
@@ -196,6 +198,23 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/v1/auth/logout"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("회원탈퇴(withdraw) 성공 시 AccessToken과 RefreshToken 쿠키를 모두 삭제해야 한다")
+    void withdrawSuccess() throws Exception {
+        Cookie requestCookie = new Cookie("refreshToken", REFRESH_TOKEN);
+        doNothing().when(withdrawService).withdraw(anyLong(), any(TokenRequest.class));
+
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/withdraw")
+                        .cookie(requestCookie))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<String> cookies = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
+        assertThat(cookies).anyMatch(c -> c.contains("accessToken=") && c.contains("Max-Age=0"));
+        assertThat(cookies).anyMatch(c -> c.contains("refreshToken=") && c.contains("Max-Age=0"));
     }
 
     @Test
