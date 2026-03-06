@@ -18,6 +18,7 @@ import hotspot.user.policy.controller.port.DeleteFamilyBlockPolicyService;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
+import hotspot.user.policy.service.util.PolicyDeletedOutboxPublisher;
 import lombok.RequiredArgsConstructor;
 
 
@@ -28,6 +29,7 @@ public class DeleteFamilyBlockPolicyServiceImpl implements DeleteFamilyBlockPoli
     private final MemberRepository memberRepository;
     private final BlockPolicyRepository blockPolicyRepository;
     private final PolicySubRepository policySubRepository;
+    private final PolicyDeletedOutboxPublisher policyDeletedOutboxPublisher;
 
     @Override
     public void delete(List<Long> policyIdList, Long memberId, Long familyId) {
@@ -37,6 +39,9 @@ public class DeleteFamilyBlockPolicyServiceImpl implements DeleteFamilyBlockPoli
         // 2. 삭제 대상 정책들이 실제로 해당 가족의 소유인지 검증
         List<BlockPolicy> targetPolicies = blockPolicyRepository.findAllById(policyIdList);
         validatePolicyOwnership(policyIdList, targetPolicies, familyId);
+
+        // Outbox publish
+        policyDeletedOutboxPublisher.publishAll(policyIdList, familyId);
 
         // 3. 연관 데이터(policy_sub) 처리: 정책이 삭제되므로 적용 중인 회선에서도 비활성화
         policySubRepository.bulkDeActiveByBlockPolicyIds(policyIdList);

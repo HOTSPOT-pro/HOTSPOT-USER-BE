@@ -48,4 +48,12 @@ public interface PolicySubJpaRepository extends JpaRepository<PolicySubEntity, L
             IN :blockPolicyIds
             """)
     void bulkDeActiveByBlockPolicyIds(@Param("blockPolicyIds") List<Long> blockPolicyIds);
+
+    @Query("""
+        SELECT ps.blockPolicyId, ps.subId
+        FROM PolicySubEntity ps
+        WHERE ps.blockPolicyId IN :policyIds
+        AND ps.isActive = true
+        """)
+    List<Object[]> findActiveSubIdsByBlockPolicyIds(List<Long> policyIds);
 }
