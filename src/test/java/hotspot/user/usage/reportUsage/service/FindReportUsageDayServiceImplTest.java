@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +69,11 @@ class FindReportUsageDayServiceImplTest {
                 .thenReturn(Map.of());
 
         ReportUsageDayResponse response =
-                service.findReportUsageDay(familyId, sub2);
+                service.findReportUsageDay(
+                        familyId,
+                        sub2,
+                        YearMonth.of(2026, 2)
+                );
 
         assertThat(response.subUsages()).hasSize(2);
     }
@@ -80,7 +85,11 @@ class FindReportUsageDayServiceImplTest {
                 .thenReturn(List.of(mockFamily(sub1, "본인")));
 
         assertThatThrownBy(() ->
-                service.findReportUsageDay(familyId, sub2)
+                service.findReportUsageDay(
+                        familyId,
+                        sub2,
+                        YearMonth.of(2026, 2)
+                )
         ).isInstanceOf(ApplicationException.class);
     }
 

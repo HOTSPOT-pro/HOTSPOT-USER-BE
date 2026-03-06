@@ -78,10 +78,11 @@ class ReportUsageControllerTest {
                 );
 
         when(findReportUsageDayService
-                .findReportUsageDay(1L, null))
+                .findReportUsageDay(1L, null, YearMonth.of(2026, 2)))
                 .thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/reportUsage/day"))
+        mockMvc.perform(get("/api/v1/reportUsage/day")
+                        .param("month", "2026-02"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.subUsages[0].subName")
                         .value("가족 전체"));
