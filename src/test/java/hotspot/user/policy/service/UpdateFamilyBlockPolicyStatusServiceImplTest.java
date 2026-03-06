@@ -66,9 +66,7 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.OWNER)
                 .build();
-
-        given(memberRepository.findDetailByIdAndEmail(MEMBER_ID, null))
-                .willReturn(Optional.of(memberDetail));
+        given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
         BlockPolicy p1 = BlockPolicy.builder().id(1L).isActive(true).build();
         BlockPolicy p2 = BlockPolicy.builder().id(2L).isActive(false).build();
@@ -103,13 +101,10 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.PARENT)
                 .build();
+        given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
-        given(memberRepository.findDetailByIdAndEmail(MEMBER_ID, null))
-                .willReturn(Optional.of(memberDetail));
-
-        assertThatThrownBy(() ->
-                service.updateFamilyBlockPolicyStatus(request, MEMBER_ID, FAMILY_ID)
-        )
+        // when & then
+        assertThatThrownBy(() -> service.updateFamilyBlockPolicyStatus(request, MEMBER_ID, FAMILY_ID))
                 .isInstanceOf(ApplicationException.class)
                 .hasFieldOrPropertyWithValue("code", AuthErrorCode.ACCESS_DENIED);
     }
@@ -125,13 +120,10 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .familyId(200L)
                 .role(FamilyRole.OWNER)
                 .build();
+        given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
-        given(memberRepository.findDetailByIdAndEmail(MEMBER_ID, null))
-                .willReturn(Optional.of(memberDetail));
-
-        assertThatThrownBy(() ->
-                service.updateFamilyBlockPolicyStatus(request, MEMBER_ID, FAMILY_ID)
-        )
+        // when & then
+        assertThatThrownBy(() -> service.updateFamilyBlockPolicyStatus(request, MEMBER_ID, FAMILY_ID))
                 .isInstanceOf(ApplicationException.class)
                 .hasFieldOrPropertyWithValue("code", FamilyErrorCode.NOT_FAMILY_MEMBER);
     }
@@ -149,10 +141,9 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.OWNER)
                 .build();
+        given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
-        given(memberRepository.findDetailByIdAndEmail(MEMBER_ID, null))
-                .willReturn(Optional.of(memberDetail));
-
+        // 우리 가족 정책은 1, 2번뿐
         BlockPolicy p1 = BlockPolicy.builder().id(1L).isActive(true).build();
         BlockPolicy p2 = BlockPolicy.builder().id(2L).isActive(false).build();
 
@@ -179,10 +170,9 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .familyId(FAMILY_ID)
                 .role(FamilyRole.OWNER)
                 .build();
+        given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
-        given(memberRepository.findDetailByIdAndEmail(MEMBER_ID, null))
-                .willReturn(Optional.of(memberDetail));
-
+        // 이미 1번은 켜져있고, 2번은 꺼져있음 -> 요청(1번만 켜기)과 동일함
         BlockPolicy p1 = BlockPolicy.builder().id(1L).isActive(true).build();
         BlockPolicy p2 = BlockPolicy.builder().id(2L).isActive(false).build();
 

@@ -99,7 +99,7 @@ public class UpdateFamilyBlockPolicyStatusServiceImpl implements UpdateFamilyBlo
 
     private void validateOwnerAuthority(Long memberId, Long requesterFamilyId) {
         // MemberDetailInfo를 통해 역할(Role)과 소속 가족(FamilyId)을 한 번에 확인
-        MemberDetailInfo memberDetail = memberRepository.findDetailByIdAndEmail(memberId, null)
+        MemberDetailInfo memberDetail = memberRepository.findDetailById(memberId)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (!Objects.equals(memberDetail.getFamilyId(), requesterFamilyId)) {

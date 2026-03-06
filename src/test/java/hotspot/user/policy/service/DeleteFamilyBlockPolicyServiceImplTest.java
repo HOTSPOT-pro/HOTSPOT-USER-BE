@@ -2,7 +2,6 @@ package hotspot.user.policy.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -61,7 +60,7 @@ class DeleteFamilyBlockPolicyServiceImplTest {
                 .role(FamilyRole.OWNER)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy policy1 = BlockPolicy.builder()
@@ -98,7 +97,7 @@ class DeleteFamilyBlockPolicyServiceImplTest {
                 .role(FamilyRole.PARENT)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         assertThatThrownBy(() ->
@@ -119,7 +118,7 @@ class DeleteFamilyBlockPolicyServiceImplTest {
                 .role(FamilyRole.OWNER)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy policy1 = BlockPolicy.builder()
@@ -148,7 +147,7 @@ class DeleteFamilyBlockPolicyServiceImplTest {
                 .role(FamilyRole.OWNER)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         BlockPolicy policy1 = BlockPolicy.builder()
@@ -174,8 +173,8 @@ class DeleteFamilyBlockPolicyServiceImplTest {
     @Test
     @DisplayName("실패: 회원을 찾을 수 없으면 예외가 발생한다")
     void deleteFailMemberNotFound() {
-
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        // given
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.empty());
 
         assertThatThrownBy(() ->
@@ -194,7 +193,7 @@ class DeleteFamilyBlockPolicyServiceImplTest {
                 .role(FamilyRole.OWNER)
                 .build();
 
-        given(memberRepository.findDetailByIdAndEmail(anyLong(), isNull()))
+        given(memberRepository.findDetailById(anyLong()))
                 .willReturn(Optional.of(memberDetail));
 
         assertThatThrownBy(() ->
