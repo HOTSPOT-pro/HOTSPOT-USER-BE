@@ -107,7 +107,7 @@ public class AuthController implements AuthApi {
 
         TokenRequest request = new TokenRequest(refreshToken);
         logoutService.logout(principal.getId(), request); //  memberId 전달
-        
+
         ResponseCookie accessCookie = CookieUtil.deleteCookie("accessToken");
         ResponseCookie refreshCookie = CookieUtil.deleteCookie("refreshToken");
 
@@ -129,7 +129,7 @@ public class AuthController implements AuthApi {
 
         TokenRequest request = new TokenRequest(refreshToken);
         withdrawService.withdraw(principal.getId(), request); //  memberId 전달
-        
+
         ResponseCookie accessCookie = CookieUtil.deleteCookie("accessToken");
         ResponseCookie refreshCookie = CookieUtil.deleteCookie("refreshToken");
 
