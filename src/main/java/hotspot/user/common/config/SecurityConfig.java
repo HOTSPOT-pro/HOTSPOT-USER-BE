@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -14,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import hotspot.user.common.security.jwt.JwtAccessDeniedHandler;
 import hotspot.user.common.security.jwt.JwtAuthenticationEntryPoint;
 import hotspot.user.common.security.jwt.JwtFilter;
+import hotspot.user.common.security.oauth.CustomOAuth2AuthorizationRequestResolver;
 import hotspot.user.common.security.oauth.CustomOidcUserService;
 import hotspot.user.common.security.oauth.OAuth2FailureHandler;
 import hotspot.user.common.security.oauth.OAuth2SuccessHandler;
@@ -40,6 +42,7 @@ public class SecurityConfig {
     private final CorsConfig corsConfig;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
 
     @Bean
@@ -62,7 +65,13 @@ public class SecurityConfig {
         // UsernamePasswordAuthenticationFilter : 이 클래스에서 폼 로그인 인증을 처리
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
+        // OAuth2 로그인 설정
         http.oauth2Login(oauth -> oauth
+                // 인증 요청 시 커스텀 파라미터(prompt=login 등)를 추가하기 위한 리졸버 등록
+                .authorizationEndpoint(authorization -> authorization
+                        .authorizationRequestResolver(new CustomOAuth2AuthorizationRequestResolver(
+                                clientRegistrationRepository)))
+                // 사용자 정보 조회 시 OIDC 서비스 사용
                 .userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOidcUserService))
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler(oAuth2FailureHandler));
