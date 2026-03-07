@@ -46,6 +46,11 @@ public class SecurityConfig {
 
 
     @Bean
+    public CustomOAuth2AuthorizationRequestResolver customOAuth2AuthorizationRequestResolver() {
+        return new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository);
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
@@ -69,8 +74,7 @@ public class SecurityConfig {
         http.oauth2Login(oauth -> oauth
                 // 인증 요청 시 커스텀 파라미터(prompt=login 등)를 추가하기 위한 리졸버 등록
                 .authorizationEndpoint(authorization -> authorization
-                        .authorizationRequestResolver(new CustomOAuth2AuthorizationRequestResolver(
-                                clientRegistrationRepository)))
+                        .authorizationRequestResolver(customOAuth2AuthorizationRequestResolver()))
                 // 사용자 정보 조회 시 OIDC 서비스 사용
                 .userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOidcUserService))
                 .successHandler(oAuth2SuccessHandler)

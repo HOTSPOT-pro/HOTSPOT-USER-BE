@@ -20,6 +20,13 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
  */
 public class CustomOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
+    private static final String REGISTRATION_ID_GOOGLE = "google";
+    private static final String REGISTRATION_ID_KAKAO = "kakao";
+    private static final String PARAM_PROMPT = "prompt";
+    private static final String PROMPT_SELECT_ACCOUNT = "select_account";
+    private static final String PROMPT_LOGIN = "login";
+    private static final String REGISTRATION_ID_ATTR = "registration_id";
+
     private final OAuth2AuthorizationRequestResolver defaultResolver;
 
     public CustomOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
@@ -52,13 +59,15 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         Map<String, Object> additionalParameters = new LinkedHashMap<>(authorizationRequest.getAdditionalParameters());
 
         // 현재 요청 중인 소셜 서비스 식별 (google, kakao 등)
-        String registrationId = (String) authorizationRequest.getAttribute("registration_id");
+        String registrationId = (String) authorizationRequest.getAttribute(REGISTRATION_ID_ATTR);
 
         // 서비스별 prompt 파라미터 추가
-        if ("google".equals(registrationId)) {
-            additionalParameters.put("prompt", "select_account");
-        } else if ("kakao".equals(registrationId)) {
-            additionalParameters.put("prompt", "select_account");
+        switch (registrationId) {
+            case REGISTRATION_ID_GOOGLE -> additionalParameters.put(PARAM_PROMPT, PROMPT_SELECT_ACCOUNT);
+            case REGISTRATION_ID_KAKAO -> additionalParameters.put(PARAM_PROMPT, PROMPT_LOGIN);
+            default -> {
+                // 지원하지 않는 registrationId는 파라미터를 추가하지 않음
+            }
         }
 
         // 변경된 파라미터를 포함하여 새로운 인증 요청 객체 빌드
