@@ -81,7 +81,8 @@ class OnboardingServiceImplTest {
         given(phoneHashIndexer.toHash(phoneNumber)).willReturn(phoneHash);
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.of(subscription));
         given(memberRepository.findById(memberId)).willReturn(Optional.of(pendingMember));
-        given(socialAccountRepository.findByMemberId(memberId)).willReturn(Optional.of(socialAccount));
+        given(socialAccountRepository.findByMemberIdAndEmail(memberId, email))
+                .willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySubscription));
         given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
 
@@ -127,7 +128,8 @@ class OnboardingServiceImplTest {
         given(phoneHashIndexer.toHash(phoneNumber)).willReturn(phoneHash);
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.of(subscription));
         given(memberRepository.findById(pendingMemberId)).willReturn(Optional.of(pendingMember));
-        given(socialAccountRepository.findByMemberId(pendingMemberId)).willReturn(Optional.of(socialAccount));
+        given(socialAccountRepository.findByMemberIdAndEmail(pendingMemberId, email))
+                .willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySubscription));
         given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
 
@@ -181,7 +183,8 @@ class OnboardingServiceImplTest {
         given(phoneHashIndexer.toHash(phoneNumber)).willReturn(phoneHash);
         given(subscriptionRepository.findByPhoneHash(phoneHash)).willReturn(Optional.of(subscription));
         given(memberRepository.findById(memberId)).willReturn(Optional.of(pendingMember));
-        given(socialAccountRepository.findByMemberId(memberId)).willReturn(Optional.of(socialAccount));
+        given(socialAccountRepository.findByMemberIdAndEmail(memberId, email))
+                .willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.empty());
         given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
 
