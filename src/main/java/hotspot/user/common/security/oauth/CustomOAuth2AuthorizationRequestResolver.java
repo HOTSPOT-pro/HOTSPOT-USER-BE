@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 /**
  * OAuth2 로그인 시 소셜 서비스의 세션을 무시하고 로그인 창을 강제하기 위한 리졸버
  * 로그아웃
- * 
+ *
  * [파라미터 설정]
  * - 구글: prompt=select_account (항상 계정 선택창 노출)
  * - 카카오: prompt=login (기존 세션이 있어도 다시 로그인 창 노출)
@@ -50,7 +50,7 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 
         // 기존 파라미터를 복사하여 새로운 맵 생성
         Map<String, Object> additionalParameters = new LinkedHashMap<>(authorizationRequest.getAdditionalParameters());
-        
+
         // 현재 요청 중인 소셜 서비스 식별 (google, kakao 등)
         String registrationId = (String) authorizationRequest.getAttribute("registration_id");
 
