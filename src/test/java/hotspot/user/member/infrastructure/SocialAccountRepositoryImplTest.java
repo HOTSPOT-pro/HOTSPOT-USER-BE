@@ -81,6 +81,32 @@ class SocialAccountRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("memberId와 이메일로 소셜 계정 조회 성공")
+    void findByMemberIdAndEmailSuccess() {
+        // given
+        Long memberId = 1L;
+        String email = "test@test.com";
+        MemberEntity memberEntity = MemberEntity.builder().id(memberId).build();
+        SocialAccountEntity entity = SocialAccountEntity.builder()
+                .id(10L)
+                .member(memberEntity)
+                .email(email)
+                .socialId("social123")
+                .provider(Provider.GOOGLE)
+                .build();
+
+        given(socialAccountJpaRepository.findFirstByMemberIdAndEmailAndIsDeletedFalseOrderByIdDesc(memberId, email))
+                .willReturn(Optional.of(entity));
+
+        // when
+        Optional<SocialAccount> result = socialAccountRepository.findByMemberIdAndEmail(memberId, email);
+
+        // then
+        assertThat(result).isPresent();
+        assertThat(result.get().getEmail()).isEqualTo(email);
+    }
+
+    @Test
     @DisplayName("이메일로 소셜 계정 조회 성공")
     void findByEmailSuccess() {
         // given
