@@ -19,7 +19,10 @@ public interface SocialAccountJpaRepository extends JpaRepository<SocialAccountE
 
     Optional<SocialAccountEntity> findByMemberId(Long memberId);
 
-    Optional<SocialAccountEntity> findByMemberIdAndEmail(Long memberId, String email);
+    Optional<SocialAccountEntity> findFirstByMemberIdAndEmailAndIsDeletedFalseOrderByIdDesc(
+            @Param("memberId") Long memberId,
+            @Param("email") String email
+    );
 
     // Soft Delete
     @Modifying

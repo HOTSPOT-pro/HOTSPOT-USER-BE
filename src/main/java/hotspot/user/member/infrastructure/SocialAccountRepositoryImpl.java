@@ -36,7 +36,7 @@ public class SocialAccountRepositoryImpl implements SocialAccountRepository {
 
     @Override
     public Optional<SocialAccount> findByMemberIdAndEmail(Long memberId, String email) {
-        return socialAccountJpaRepository.findByMemberIdAndEmail(memberId, email)
+        return socialAccountJpaRepository.findFirstByMemberIdAndEmailAndIsDeletedFalseOrderByIdDesc(memberId, email)
                 .map(SocialAccountEntity::entityToDomain);
     }
 

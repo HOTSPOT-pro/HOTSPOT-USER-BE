@@ -16,13 +16,12 @@ public interface FamilyJpaRepository extends JpaRepository<FamilyEntity, Long> {
 
     @Query("""
            SELECT DISTINCT new hotspot.user.family.infrastructure.entity.FamilyDetailInfoDto(
-               f, m, sa.email, s.phoneEnc, s.subId, fs.familyRole
+               f, m, (SELECT MAX(sa.email) FROM SocialAccountEntity sa WHERE sa.member = m AND sa.isDeleted = false), s.phoneEnc, s.subId, fs.familyRole
            )
-           FROM FamilyEntity f
-           LEFT JOIN FamilySubscriptionEntity fs ON fs.family = f
-           LEFT JOIN SubscriptionEntity s ON fs.subscription = s
-           LEFT JOIN MemberEntity m ON s.member = m
-           LEFT JOIN SocialAccountEntity sa ON sa.member = m
+           FROM FamilySubscriptionEntity fs
+           JOIN fs.family f
+           JOIN fs.subscription s
+           JOIN s.member m
            WHERE f.familyId = :familyId
            """)
     List<FamilyDetailInfoDto> findFamilyDetailQueryResult(
