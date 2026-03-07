@@ -17,7 +17,7 @@ public interface FamilyJpaRepository extends JpaRepository<FamilyEntity, Long> {
     @Query("""
            SELECT DISTINCT new hotspot.user.family.infrastructure.entity.FamilyDetailInfoDto(
                f, m, (
-                   SELECT MAX(sa.email) FROM SocialAccountEntity sa 
+                   SELECT MAX(sa.email) FROM SocialAccountEntity sa
                    WHERE sa.member = m AND sa.isDeleted = false
                ), s.phoneEnc, s.subId, fs.familyRole
            )
