@@ -64,7 +64,7 @@ class GetMemberInfoServiceImplTest {
                 .build();
 
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-        given(socialAccountRepository.findByMemberId(memberId)).willReturn(Optional.of(socialAccount));
+        given(socialAccountRepository.findByMemberIdAndEmail(memberId, email)).willReturn(Optional.of(socialAccount));
         given(subscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(subscription));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySub));
         given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
@@ -93,7 +93,7 @@ class GetMemberInfoServiceImplTest {
         Subscription subscription = Subscription.builder().id(100L).phoneEnc("enc-phone").build();
 
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-        given(socialAccountRepository.findByMemberId(memberId)).willReturn(Optional.of(socialAccount));
+        given(socialAccountRepository.findByMemberIdAndEmail(memberId, email)).willReturn(Optional.of(socialAccount));
         given(subscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(subscription));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.empty());
         given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
@@ -128,7 +128,8 @@ class GetMemberInfoServiceImplTest {
         SocialAccount socialAccount = SocialAccount.builder().memberId(memberId).build();
 
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-        given(socialAccountRepository.findByMemberId(memberId)).willReturn(Optional.of(socialAccount));
+        given(socialAccountRepository.findByMemberIdAndEmail(memberId, "test@email.com"))
+                .willReturn(Optional.of(socialAccount));
         given(subscriptionRepository.findByMemberId(memberId)).willReturn(Optional.empty());
 
         // when & then

@@ -47,7 +47,7 @@ public class OnboardingServiceImpl implements OnboardingService {
         // 1. 데이터 조회 및 회선 검증
         Subscription subscription = validateAndGetSubscription(request.phoneNumber());
         Member pendingMember = findPendingMember(memberId);
-        SocialAccount socialAccount = findSocialAccount(pendingMember.getId());
+        SocialAccount socialAccount = findSocialAccount(pendingMember.getId(), email);
 
         // 2. 신규 승인 또는 기존 회원 통합 처리
         Member finalMember = handleMemberIntegration(subscription, pendingMember, socialAccount, request.birthDate());
@@ -87,8 +87,8 @@ public class OnboardingServiceImpl implements OnboardingService {
     }
 
     // 멤버와 연결된 소셜 계정 정보를 조회
-    private SocialAccount findSocialAccount(Long memberId) {
-        return socialAccountRepository.findByMemberId(memberId)
+    private SocialAccount findSocialAccount(Long memberId, String email) {
+        return socialAccountRepository.findByMemberIdAndEmail(memberId, email)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 

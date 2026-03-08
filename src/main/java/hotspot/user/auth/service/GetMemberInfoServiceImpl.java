@@ -42,7 +42,7 @@ public class GetMemberInfoServiceImpl implements GetMemberInfoService {
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // 2. 소셜 계정 정보 조회 (이메일 확인용)
-        SocialAccount socialAccount = socialAccountRepository.findByMemberId(memberId)
+        SocialAccount socialAccount = socialAccountRepository.findByMemberIdAndEmail(memberId, email)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // 3. 회선 정보 조회
