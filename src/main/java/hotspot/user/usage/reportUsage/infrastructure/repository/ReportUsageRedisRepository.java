@@ -32,6 +32,7 @@ public class ReportUsageRedisRepository {
 
         for (Long subId : subIds) {
             for (LocalDate date : dates) {
+
                 keys.add(
                         ReportUsageRedisKeyBuilder
                                 .dailyAppUsage(subId, date)

@@ -3,6 +3,7 @@ package hotspot.user.usage.reportUsage.service;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 
@@ -26,14 +27,14 @@ public class FindReportUsageDayServiceImpl implements FindReportUsageDayService 
 
     private final ReportUsageRepository reportUsageRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
-
     private final Clock clock;
 
     @Transactional(readOnly = true)
     @Override
     public ReportUsageDayResponse findReportUsageDay(
             Long familyId,
-            Long targetSubId
+            Long targetSubId,
+            YearMonth month
     ) {
 
         List<FamilySubList> familySubList;
@@ -41,7 +42,7 @@ public class FindReportUsageDayServiceImpl implements FindReportUsageDayService 
         if (familyId == null) {
 
             familySubList = List.of(
-                    new FamilySubList(targetSubId, null) // 이름은 mapper에서 처리하거나 null 허용
+                    new FamilySubList(targetSubId, null)
             );
 
         } else {
@@ -55,11 +56,12 @@ public class FindReportUsageDayServiceImpl implements FindReportUsageDayService 
             validateTargetInFamily(familySubList, targetSubId);
         }
 
-        List<Long> subIds = familySubList.stream()
-                .map(FamilySubList::subId)
-                .toList();
+        List<Long> subIds =
+                familySubList.stream()
+                        .map(FamilySubList::subId)
+                        .toList();
 
-        List<LocalDate> dates = generateMonthDates();
+        List<LocalDate> dates = generateMonthDates(month);
 
         Map<Long, Map<LocalDate, Double>> subDailyMap =
                 reportUsageRepository
@@ -78,6 +80,7 @@ public class FindReportUsageDayServiceImpl implements FindReportUsageDayService 
             List<FamilySubList> familySubList,
             Long targetSubId
     ) {
+
         if (targetSubId == null) {
             return;
         }
@@ -93,11 +96,11 @@ public class FindReportUsageDayServiceImpl implements FindReportUsageDayService 
         }
     }
 
-    private List<LocalDate> generateMonthDates() {
+    private List<LocalDate> generateMonthDates(YearMonth month) {
 
-        LocalDate today = LocalDate.now(clock);
-        LocalDate start = today.withDayOfMonth(1);
+        LocalDate start = month.atDay(1);
+        LocalDate end = month.atEndOfMonth();
 
-        return start.datesUntil(today.plusDays(1)).toList();
+        return start.datesUntil(end.plusDays(1)).toList();
     }
 }

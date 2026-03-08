@@ -85,7 +85,7 @@ public interface ReportUsageApi {
 
     @Operation(
             summary = "가족 일별 사용량 리포트 조회",
-            description = "본인 및 가족 구성원의 일별 데이터 사용량을 조회합니다."
+            description = "특정 월의 1일부터 말일까지 본인 및 가족 구성원의 일별 데이터 사용량을 조회합니다."
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -101,7 +101,12 @@ public interface ReportUsageApi {
             @AuthenticationPrincipal PrincipalDetails details,
 
             @Parameter(description = "조회 대상 회선 ID (전체 선택 시 NULL)", example = "10")
-            @RequestParam(required = false) Long targetSubId
+            @RequestParam(required = false) Long targetSubId,
+
+            @Parameter(description = "조회할 월 (yyyy-MM)", example = "2026-01")
+            @RequestParam
+            @org.springframework.format.annotation.DateTimeFormat(pattern = "yyyy-MM")
+            java.time.YearMonth month
     );
 
 
