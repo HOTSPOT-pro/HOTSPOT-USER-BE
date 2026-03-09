@@ -1,6 +1,5 @@
 package hotspot.user.policy.controller;
 
-import hotspot.user.policy.controller.response.BlockedStatusResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;

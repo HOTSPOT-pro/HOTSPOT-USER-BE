@@ -65,7 +65,10 @@ public interface AppliedPolicyApi {
 
     @Operation(summary = "나의 데이터 사용 차단 여부 조회", description = "현재 나의 실시간 데이터 차단 여부와 사유(정책)를 조회합니다.")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "찾을 수 없음\n"
+                                         + "- MEMBER_001: 회원 정보를 찾을 수 없습니다.",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<ApiResponse<BlockedStatusResponse>> getBlockedStatus(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principalDetails
