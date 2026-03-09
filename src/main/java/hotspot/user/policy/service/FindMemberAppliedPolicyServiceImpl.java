@@ -41,53 +41,64 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
 
     @Override
     public AppliedPolicyResponse findByMemberId(Long memberId) {
+
         FamilySubscription familySub = familySubscriptionRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         Long subId = familySub.getSubscription().getId();
 
-        // 1. DB에서 활성 정책 매핑만 조회
+        // 1. 활성 정책 매핑 조회
         List<PolicySub> policySubs = policySubRepository.findActiveBySubId(subId);
 
-        // 2. 정책 상세 정보 조회 (N+1 방지)
-        List<Long> policyIds = policySubs.stream().map(PolicySub::getBlockPolicyId).toList();
-        Map<Long, BlockPolicy> policyMap = blockPolicyRepository.findAllById(policyIds).stream()
-                .collect(Collectors.toMap(BlockPolicy::getId, p -> p));
+        // 2. 정책 상세 조회
+        List<Long> policyIds = policySubs.stream()
+                .map(PolicySub::getBlockPolicyId)
+                .toList();
 
-        // 3. 일회성(ONCE) 정책 만료 체크 (Lazy Deactivation - 도메인 위임)
+        Map<Long, BlockPolicy> policyMap =
+                blockPolicyRepository.findAllById(policyIds).stream()
+                        .collect(Collectors.toMap(BlockPolicy::getId, p -> p));
+
+        // 3. ONCE 정책 만료 체크 + 비활성화 대상 수집
         List<PolicySub> expiredPolicySubs = new ArrayList<>();
+
         for (PolicySub sub : policySubs) {
-            if (sub.deactivateIfExpired(policyMap.get(sub.getBlockPolicyId()))) {
+            BlockPolicy blockPolicy = policyMap.get(sub.getBlockPolicyId());
+
+            if (blockPolicy != null && sub.deactivateIfExpired(blockPolicy)) {
                 expiredPolicySubs.add(sub);
             }
         }
 
-        // 4. 만료되어 상태가 변경된 정책이 있다면 DB 반영
+        // 4. 만료된 정책 저장
         if (!expiredPolicySubs.isEmpty()) {
             policySubRepository.saveAll(expiredPolicySubs);
         }
 
-        // 5. 활성화된 정책 리스트 필터링 (최종 응답용 - 순수 함수형 스트림)
+        // 5. 최종 활성 정책만 응답에 포함
         List<PolicySub> activePolicySubs = policySubs.stream()
                 .filter(PolicySub::isActive)
                 .toList();
 
         // 6. 활성 앱 차단 서비스 조회
-        List<BlockedServiceSub> blockedServiceSubs = blockedServiceSubRepository.findActiveBySubId(subId);
-        List<Long> appBlockedServiceIds = blockedServiceSubs.stream()
+        List<BlockedServiceSub> blockedServiceSubs =
+                blockedServiceSubRepository.findActiveBySubId(subId);
+
+        List<Long> appIds = blockedServiceSubs.stream()
                 .map(BlockedServiceSub::getAppBlockedServiceId)
                 .toList();
-        Map<Long, AppBlockedService> appBlockedServiceMap = appBlockedServiceRepository
-                .findAllByAppBlockedServiceIds(appBlockedServiceIds).stream()
-                .collect(Collectors.toMap(AppBlockedService::getId, s -> s));
 
-        // 7. 실시간 차단 여부 조회
-        BlockedStatusResponse blockStatus = findBlockStatusService.findMyBlockStatus(memberId);
+        Map<Long, AppBlockedService> appBlockedServiceMap =
+                appBlockedServiceRepository
+                        .findAllByAppBlockedServiceIds(appIds).stream()
+                        .collect(Collectors.toMap(AppBlockedService::getId, s -> s));
 
-        // 실시간 차단 여부 (즉시 차단 또는 정책에 의한 차단 포함)
+        // 7. 실시간 차단 여부
+        BlockedStatusResponse blockStatus =
+                findBlockStatusService.findMyBlockStatus(memberId);
+
         boolean isBlocked = blockStatus.isCurrentlyBlocked();
 
-        // 매퍼의 통합 조립 메서드 호출 (만료된 정책 제외하고 전달)
         return AppliedPolicyMapper.toAppliedPolicyResponse(
                 familySub,
                 activePolicySubs,

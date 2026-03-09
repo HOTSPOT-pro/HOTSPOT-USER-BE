@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import hotspot.user.common.util.redis.RedisUsageCalculator;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
@@ -17,9 +16,9 @@ import hotspot.user.policy.domain.PolicySub;
 /**
  * 구성원별 적용된 정책 <-> Dto 변환하는 매퍼 클래스
  */
+
 public class AppliedPolicyMapper {
 
-    // 개인별 정책 정보를 조립하여 AppliedPolicyResponse DTO를 생성
     public static AppliedPolicyResponse toAppliedPolicyResponse(
             FamilySubscription familySub,
             List<PolicySub> policySubs,
@@ -28,16 +27,20 @@ public class AppliedPolicyMapper {
             Map<Long, AppBlockedService> appBlockedServiceMap,
             boolean isBlocked
     ) {
+
         return AppliedPolicyResponse.builder()
                 .memberId(familySub.getSubscription().getMember().getId())
                 .memberName(familySub.getSubscription().getMember().getName())
                 .subId(familySub.getSubscription().getId())
                 .role(familySub.getFamilyRole())
-                .dataLimit(RedisUsageCalculator.kbToGb(familySub.getDataLimit()))
                 .priority(familySub.getPriority())
+                .familyDataSubLimit(0)
+                .familyDataUsage(0)
                 .isBlocked(isBlocked)
                 .blockPolicyResponseList(policySubs.stream()
-                        .map(sub -> PolicySubMapper.toBlockPolicyResponse(sub, policyMap.get(sub.getBlockPolicyId())))
+                        .map(sub -> PolicySubMapper.toBlockPolicyResponse(
+                                sub,
+                                policyMap.get(sub.getBlockPolicyId())))
                         .filter(Objects::nonNull)
                         .toList())
                 .appBlockedServiceResponseList(blockedServiceSubs.stream()
@@ -48,17 +51,37 @@ public class AppliedPolicyMapper {
                 .build();
     }
 
-    // 가족 정보와 조립된 멤버별 정책 리스트를 사용하여 FamilyAppliedPolicyResponse DTO를 생성
     public static FamilyAppliedPolicyResponse toFamilyAppliedPolicyResponse(
             Family family,
-            List<AppliedPolicyResponse> memberPolicies
+            List<AppliedPolicyResponse> memberPolicies,
+            double familyDataAmount
     ) {
         return FamilyAppliedPolicyResponse.builder()
                 .familyId(family.getId())
                 .familyNum(family.getFamilyNum())
-                .familyDataAmount(RedisUsageCalculator.kbToGb(family.getFamilyDataAmount()))
+                .familyDataAmount(familyDataAmount)
                 .priorityType(family.getPriorityType())
                 .memberPolicies(memberPolicies)
+                .build();
+    }
+
+    public static AppliedPolicyResponse mergeRedisUsage(
+            AppliedPolicyResponse base,
+            double familyLimit,
+            double familyUsage
+    ) {
+
+        return AppliedPolicyResponse.builder()
+                .memberId(base.memberId())
+                .memberName(base.memberName())
+                .subId(base.subId())
+                .role(base.role())
+                .priority(base.priority())
+                .isBlocked(base.isBlocked())
+                .familyDataSubLimit(familyLimit)
+                .familyDataUsage(familyUsage)
+                .blockPolicyResponseList(base.blockPolicyResponseList())
+                .appBlockedServiceResponseList(base.appBlockedServiceResponseList())
                 .build();
     }
 }
