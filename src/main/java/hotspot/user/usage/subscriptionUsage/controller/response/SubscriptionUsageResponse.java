@@ -10,11 +10,11 @@ public record SubscriptionUsageResponse(
         Double subDataAmount,
         Double subDataUsageAmount,
         Double subDataRemainAmount,
-        Integer dataUsagePercent,
+        Integer dataRemainPercent,
         Double giftDataAmount,
         Double giftDataUsageAmount,
         Double giftDataRemainAmount,
-        Integer giftUsagePercent,
+        Integer giftRemainPercent,
         List<GiftUsageResponse> giftUsages
 ) {
 
@@ -24,7 +24,7 @@ public record SubscriptionUsageResponse(
             Double giftDataLimit,
             Double giftDataUsageAmount,
             Double giftDataUsageRemainAmount,
-            Integer dataUsagePercent
+            Integer dataRemainPercent
     ) {
     }
 }

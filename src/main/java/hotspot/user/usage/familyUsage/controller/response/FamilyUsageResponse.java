@@ -8,7 +8,7 @@ public record FamilyUsageResponse(
         Double familyDataAmount,
         Double familyDataUsageAmount,
         Double familyDataRemainAmount,
-        Integer dataUsagePercent,
+        Integer remainDataPercent,
         List<FamilySubUsageResponse> subUsages
 ) {
 
@@ -17,8 +17,8 @@ public record FamilyUsageResponse(
             String subName,
             Double dataLimit,
             Double dataUsageAmount,
-            Double dataUsageRemainAmount,
-            Integer dataUsagePercent
+            Double dataRemainAmount,
+            Integer remainDataPercent
     ) {
     }
 }

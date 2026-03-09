@@ -33,7 +33,7 @@ public class SubscriptionUsageMapper {
                                     gift.limitGb(),
                                     gift.usedGb(),
                                     gift.remainGb(),
-                                    gift.usagePercent()
+                                    gift.remainPercent()
                             );
                         })
                         .toList();
@@ -46,13 +46,13 @@ public class SubscriptionUsageMapper {
                 usage.limitGb(),
                 usage.usedGb(),
                 usage.remainGb(),
-                usage.usagePercent(),
+                usage.remainPercent(),
 
                 // gift 총합
                 usage.giftTotalLimitGb(),
                 usage.giftTotalUsedGb(),
                 usage.giftTotalRemainGb(),
-                usage.giftUsagePercent(),
+                usage.giftRemainPercent(),
 
                 giftResponses
         );

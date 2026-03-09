@@ -34,7 +34,7 @@ public class FamilyUsageMapper {
                 usage.familyLimitGb(),
                 usage.familyUsedGb(),
                 usage.familyRemainGb(),
-                usage.familyUsagePercent(),
+                usage.familyRemainPercent(),
                 subResponses
         );
     }
@@ -52,7 +52,7 @@ public class FamilyUsageMapper {
                 familySubUsage.limitGb(),
                 familySubUsage.familyUsedGb(),
                 familySubUsage.remainGb(),
-                familySubUsage.usagePercent()
+                familySubUsage.remainPercent()
         );
     }
 }

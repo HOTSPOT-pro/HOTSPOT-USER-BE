@@ -35,12 +35,12 @@ public final class RedisUsageCalculator {
         return Math.max(limitKb - usedKb, 0);
     }
 
-    public static int calculatePercent(double usedKb, double limitKb) {
+    public static int calculatePercent(double remainKb, double limitKb) {
         if (limitKb <= 0) {
             return 0;
         }
 
-        double safeUsed = Math.max(usedKb, 0);
+        double safeUsed = Math.max(remainKb, 0);
         double percent = (safeUsed / limitKb) * 100;
 
         int rounded = BigDecimal.valueOf(percent)

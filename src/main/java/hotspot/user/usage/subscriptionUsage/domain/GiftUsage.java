@@ -26,8 +26,8 @@ public class GiftUsage {
         return RedisUsageCalculator.calculateRemain(limitKb, usedKb);
     }
 
-    public int usagePercent() {
-        return RedisUsageCalculator.calculatePercent(usedKb, limitKb);
+    public int remainPercent() {
+        return RedisUsageCalculator.calculatePercent(remainKb(), limitKb);
     }
 
     public double limitGb() {
