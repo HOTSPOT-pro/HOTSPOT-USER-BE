@@ -20,7 +20,7 @@ class FamilySubUsageTest {
         assertEquals(6.0, usage.remainGb());
         assertEquals(10.0, usage.limitGb());
         assertEquals(4.0, usage.familyUsedGb());
-        assertEquals(40, usage.usagePercent());
+        assertEquals(60, usage.remainPercent());
     }
 
     @Test
@@ -32,6 +32,6 @@ class FamilySubUsageTest {
         assertEquals(0.0, zero.limitGb());
         assertEquals(0.0, zero.familyUsedGb());
         assertEquals(0.0, zero.remainGb());
-        assertEquals(0, zero.usagePercent());
+        assertEquals(0, zero.remainPercent());
     }
 }

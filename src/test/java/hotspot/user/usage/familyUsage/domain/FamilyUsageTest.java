@@ -25,7 +25,7 @@ class FamilyUsageTest {
         assertEquals(20.0, usage.familyLimitGb());
         assertEquals(5.0, usage.familyUsedGb());
         assertEquals(15.0, usage.familyRemainGb());
-        assertEquals(25, usage.familyUsagePercent());
+        assertEquals(75, usage.familyRemainPercent());
     }
 
     @Test

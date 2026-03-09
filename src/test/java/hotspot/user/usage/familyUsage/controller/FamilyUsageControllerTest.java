@@ -66,7 +66,7 @@ class FamilyUsageControllerTest {
                 .andExpect(jsonPath("$.data.familyDataAmount").value(20.0))
                 .andExpect(jsonPath("$.data.familyDataUsageAmount").value(5.0))
                 .andExpect(jsonPath("$.data.familyDataRemainAmount").value(15.0))
-                .andExpect(jsonPath("$.data.dataUsagePercent").value(25))
+                .andExpect(jsonPath("$.data.remainDataPercent").value(25))
                 .andExpect(jsonPath("$.data.currentTime").exists());
     }
 }

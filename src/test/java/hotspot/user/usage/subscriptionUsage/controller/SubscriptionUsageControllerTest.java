@@ -63,7 +63,7 @@ class SubscriptionUsageControllerTest {
                         4.0,
                         0.5,
                         3.5,
-                        13,
+                        87,
                         List.of(
                                 new SubscriptionUsageResponse.GiftUsageResponse(
                                         69395L,
