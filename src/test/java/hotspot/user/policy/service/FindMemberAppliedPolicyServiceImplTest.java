@@ -24,7 +24,9 @@ import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.Member;
+import hotspot.user.policy.controller.port.FindBlockStatusService;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
+import hotspot.user.policy.controller.response.BlockedStatusResponse;
 import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.BlockedServiceSub;
@@ -53,6 +55,8 @@ class FindMemberAppliedPolicyServiceImplTest {
     private BlockPolicyRepository blockPolicyRepository;
     @Mock
     private AppBlockedServiceRepository appBlockedServiceRepository;
+    @Mock
+    private FindBlockStatusService findBlockStatusService;
 
     @InjectMocks
     private FindMemberAppliedPolicyServiceImpl findMemberAppliedPolicyService;
@@ -104,6 +108,7 @@ class FindMemberAppliedPolicyServiceImplTest {
         given(blockedServiceSubRepository.findActiveBySubId(subId)).willReturn(List.of(blockedSub));
         given(blockPolicyRepository.findAllById(List.of(policyId))).willReturn(List.of(blockPolicy));
         given(appBlockedServiceRepository.findAllByAppBlockedServiceIds(anyList())).willReturn(List.of(app));
+        given(findBlockStatusService.findMyBlockStatus(memberId)).willReturn(BlockedStatusResponse.builder().isCurrentlyBlocked(true).build());
 
         // when
         AppliedPolicyResponse response = findMemberAppliedPolicyService.findByMemberId(memberId);
@@ -111,6 +116,7 @@ class FindMemberAppliedPolicyServiceImplTest {
         // then
         assertThat(response.memberId()).isEqualTo(memberId);
         assertThat(response.memberName()).isEqualTo("홍길동");
+        assertThat(response.isBlocked()).isTrue();
         assertThat(response.blockPolicyResponseList()).hasSize(1);
         assertThat(response.appBlockedServiceResponseList()).hasSize(1);
         assertThat(response.blockPolicyResponseList().get(0).name()).isEqualTo("수면 모드");
@@ -157,6 +163,7 @@ class FindMemberAppliedPolicyServiceImplTest {
         given(policySubRepository.findActiveBySubId(subId)).willReturn(List.of(activeSub, expiredSub));
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(activePolicy, expiredPolicy));
         given(blockedServiceSubRepository.findActiveBySubId(subId)).willReturn(List.of());
+        given(findBlockStatusService.findMyBlockStatus(memberId)).willReturn(BlockedStatusResponse.builder().isCurrentlyBlocked(false).build());
 
         // when
         AppliedPolicyResponse response = findMemberAppliedPolicyService.findByMemberId(memberId);

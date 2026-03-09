@@ -52,13 +52,15 @@ class AppliedPolicyMapperTest {
                 List.of(policySub),
                 List.of(blockedSub),
                 policyMap,
-                appMap
+                appMap,
+                true // isBlocked 추가
         );
 
         // then
         assertThat(response.memberId()).isEqualTo(memberId);
         assertThat(response.memberName()).isEqualTo("홍길동");
         assertThat(response.subId()).isEqualTo(subId);
+        assertThat(response.isBlocked()).isTrue(); // 검증 추가
         assertThat(response.blockPolicyResponseList()).hasSize(1);
         assertThat(response.blockPolicyResponseList().get(0).name()).isEqualTo("밤 10시 차단");
         assertThat(response.appBlockedServiceResponseList()).hasSize(1);
@@ -86,10 +88,12 @@ class AppliedPolicyMapperTest {
                 List.of(policySub),
                 List.of(blockedSub),
                 emptyPolicyMap,
-                emptyAppMap
+                emptyAppMap,
+                false
         );
 
         // then: 정보가 없는 항목은 필터링되어 리스트가 비어있어야 함
+        assertThat(response.isBlocked()).isFalse();
         assertThat(response.blockPolicyResponseList()).isEmpty();
         assertThat(response.appBlockedServiceResponseList()).isEmpty();
     }
