@@ -33,11 +33,13 @@ import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
+import hotspot.user.policy.controller.port.FindBlockStatusService;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
 import hotspot.user.policy.controller.port.UpdatePolicySubService;
 import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
+import hotspot.user.policy.controller.response.BlockedStatusResponse;
 import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
 import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 
@@ -56,6 +58,9 @@ class AppliedPolicyControllerTest {
 
     @MockBean
     private FindFamilyAppliedPolicyService findFamilyAppliedPolicyService;
+
+    @MockBean
+    private FindBlockStatusService findBlockStatusService;
 
     @MockBean
     private UpdatePolicySubService updatePolicySubService;
@@ -91,6 +96,7 @@ class AppliedPolicyControllerTest {
         AppliedPolicyResponse response = AppliedPolicyResponse.builder()
                 .memberId(1L)
                 .memberName("자녀")
+                .role(FamilyRole.CHILD)
                 .build();
 
         given(findMemberAppliedPolicyService.findByMemberId(1L)).willReturn(response);
@@ -100,7 +106,8 @@ class AppliedPolicyControllerTest {
                         .param("isFamily", "false")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.memberName").value("자녀"));
+                .andExpect(jsonPath("$.data.memberName").value("자녀"))
+                .andExpect(jsonPath("$.data.role").value("CHILD"));
     }
 
     @Test
@@ -210,5 +217,25 @@ class AppliedPolicyControllerTest {
                             .isInstanceOf(ApplicationException.class)
                             .hasMessage(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY.getMessage());
                 });
+    }
+
+    @Test
+    @DisplayName("나의 데이터 사용 차단 여부 조회 성공")
+    void getBlockedStatusSuccess() throws Exception {
+        // given
+        setAuthentication(FamilyRole.CHILD);
+        BlockedStatusResponse response = BlockedStatusResponse.builder()
+                .isImmediateBlocked(false)
+                .isCurrentlyBlocked(true)
+                .blockedPolicies(List.of())
+                .build();
+
+        given(findBlockStatusService.findMyBlockStatus(1L)).willReturn(response);
+
+        // when & then
+        mockMvc.perform(get("/api/v1/policies/blocked")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.isCurrentlyBlocked").value(true));
     }
 }

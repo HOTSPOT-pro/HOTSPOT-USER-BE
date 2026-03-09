@@ -25,14 +25,17 @@ public class AppliedPolicyMapper {
             List<PolicySub> policySubs,
             List<BlockedServiceSub> blockedServiceSubs,
             Map<Long, BlockPolicy> policyMap,
-            Map<Long, AppBlockedService> appBlockedServiceMap
+            Map<Long, AppBlockedService> appBlockedServiceMap,
+            boolean isBlocked
     ) {
         return AppliedPolicyResponse.builder()
                 .memberId(familySub.getSubscription().getMember().getId())
                 .memberName(familySub.getSubscription().getMember().getName())
                 .subId(familySub.getSubscription().getId())
+                .role(familySub.getFamilyRole())
                 .dataLimit(RedisUsageCalculator.kbToGb(familySub.getDataLimit()))
                 .priority(familySub.getPriority())
+                .isBlocked(isBlocked)
                 .blockPolicyResponseList(policySubs.stream()
                         .map(sub -> PolicySubMapper.toBlockPolicyResponse(sub, policyMap.get(sub.getBlockPolicyId())))
                         .filter(Objects::nonNull)
