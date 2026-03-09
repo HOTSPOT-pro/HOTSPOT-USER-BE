@@ -4,7 +4,6 @@ import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -59,15 +58,13 @@ public class FindBlockStatusServiceImpl implements FindBlockStatusService {
         List<BlockPolicy> activePolicies = getActivePolicies(subId);
         LocalDateTime now = LocalDateTime.now(clock);
 
-        List<BlockedReasonResponse> blockingReasons = new ArrayList<>();
-        for (BlockPolicy policy : activePolicies) {
-            if (isTimePolicyBlockingNow(policy, now)) {
-                blockingReasons.add(BlockedReasonResponse.builder()
+        List<BlockedReasonResponse> blockingReasons = activePolicies.stream()
+                .filter(policy -> isTimePolicyBlockingNow(policy, now))
+                .map(policy -> BlockedReasonResponse.builder()
                         .id(policy.getId())
                         .name(policy.getName())
-                        .build());
-            }
-        }
+                        .build())
+                .toList();
 
         return BlockedStatusResponse.builder()
                 .isImmediateBlocked(isImmediateBlocked)
