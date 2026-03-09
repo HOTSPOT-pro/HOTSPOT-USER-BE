@@ -84,8 +84,8 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
         // 7. 실시간 차단 여부 조회
         BlockedStatusResponse blockStatus = findBlockStatusService.findMyBlockStatus(memberId);
 
-        // 즉시 차단 / 정책에 의한 차단 둘 중 하나만 해당되도 차단되었다고 표시
-        boolean isBlocked = blockStatus.isCurrentlyBlocked() || blockStatus.isImmediateBlocked();
+        // 실시간 차단 여부 (즉시 차단 또는 정책에 의한 차단 포함)
+        boolean isBlocked = blockStatus.isCurrentlyBlocked();
 
         // 매퍼의 통합 조립 메서드 호출 (만료된 정책 제외하고 전달)
         return AppliedPolicyMapper.toAppliedPolicyResponse(
