@@ -1,5 +1,6 @@
 package hotspot.user.usage.reportUsage.controller;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -56,12 +57,18 @@ public class ReportUsageController implements ReportUsageApi {
     @GetMapping("/app/day")
     public ResponseEntity<ApiResponse<ReportUsageAppResponse>> findReportUsageAppDay(
             @AuthenticationPrincipal PrincipalDetails details,
-            @RequestParam Long targetSubId) {
+            @RequestParam Long targetSubId,
+            @DateTimeFormat(pattern = "yyyy-MM-dd")
+            LocalDate date)
+    {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
                         findReportUsageAppDayService
-                                .findReportUsageAppDay(details.getId(), targetSubId)
+                                .findReportUsageAppDay(
+                                        details.getId(),
+                                        targetSubId,
+                                        date)
                 )
         );
     }

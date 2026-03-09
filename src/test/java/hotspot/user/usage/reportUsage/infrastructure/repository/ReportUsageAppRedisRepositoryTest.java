@@ -118,7 +118,7 @@ class ReportUsageAppRedisRepositoryTest {
     void shouldReturnEmptyListWhenNoData() {
 
         List<AppUsage> result =
-                repository.findDailyAppUsage(1L);
+                repository.findDailyAppUsage(1L, LocalDate.now());
 
         assertTrue(result.isEmpty());
     }

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -55,15 +56,15 @@ class ReportUsageAppRepositoryImplTest {
         List<AppUsage> expected =
                 List.of(new AppUsage(200L, 1.2));
 
-        when(redisRepository.findDailyAppUsage(subId))
+        when(redisRepository.findDailyAppUsage(subId, LocalDate.now()))
                 .thenReturn(expected);
 
         List<AppUsage> result =
-                repository.findDailyAppUsage(subId);
+                repository.findDailyAppUsage(subId, LocalDate.now());
 
         assertEquals(expected, result);
 
         verify(redisRepository, times(1))
-                .findDailyAppUsage(subId);
+                .findDailyAppUsage(subId, LocalDate.now());
     }
 }

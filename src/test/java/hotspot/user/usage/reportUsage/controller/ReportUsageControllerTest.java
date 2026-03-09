@@ -209,11 +209,12 @@ class ReportUsageControllerTest {
                 );
 
         when(findReportUsageAppDayService
-                .findReportUsageAppDay(1L, 10L))
+                .findReportUsageAppDay(1L, 10L, LocalDate.now()))
                 .thenReturn(response);
 
         mockMvc.perform(get("/api/v1/reportUsage/app/day")
-                        .param("targetSubId", "10"))
+                        .param("targetSubId", "10")
+                        .param("date", LocalDate.now().toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.appUsages[0].appName")
                         .value("Instagram"))

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -101,7 +102,7 @@ class FindReportUsageAppServiceImplTest {
                 new AppUsage(3L, 2.0)
         );
 
-        when(reportUsageAppRepository.findDailyAppUsage(subId))
+        when(reportUsageAppRepository.findDailyAppUsage(subId, LocalDate.now()))
                 .thenReturn(usages);
 
         List<AppBlockedService> services = List.of(
@@ -117,7 +118,7 @@ class FindReportUsageAppServiceImplTest {
                 .thenReturn(services);
 
         ReportUsageAppResponse response =
-                service.findReportUsageAppDay(memberId, subId);
+                service.findReportUsageAppDay(memberId, subId, LocalDate.now());
 
         assertThat(response.appUsages()).hasSize(1);
         assertThat(response.appUsages().get(0).appName())

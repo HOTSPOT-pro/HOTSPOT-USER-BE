@@ -1,5 +1,6 @@
 package hotspot.user.usage.reportUsage.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -61,14 +62,14 @@ public class FindReportUsageAppServiceImpl
 
     @Transactional(readOnly = true)
     @Override
-    public ReportUsageAppResponse findReportUsageAppDay(Long memberId, Long targetSubId) {
+    public ReportUsageAppResponse findReportUsageAppDay(Long memberId, Long targetSubId, LocalDate date) {
 
         Subscription subscription =
                 subscriptionService.findByMemberId(memberId);
 
         List<AppUsage> appUsages =
                 reportUsageAppRepository
-                        .findDailyAppUsage(targetSubId);
+                        .findDailyAppUsage(targetSubId, date);
 
         List<Long> appIds =
                 appUsages.stream()

@@ -39,8 +39,8 @@ public class SubscriptionUsage {
         return RedisUsageCalculator.calculateRemain(planLimitKb, planUsedKb);
     }
 
-    public int usagePercent() {
-        return RedisUsageCalculator.calculatePercent(planUsedKb, planLimitKb);
+    public int remainPercent() {
+        return RedisUsageCalculator.calculatePercent(remainKb(), planLimitKb);
     }
 
     public double limitGb() {
@@ -70,7 +70,7 @@ public class SubscriptionUsage {
         );
     }
 
-    public int giftUsagePercent() {
+    public int giftRemainPercent() {
         return RedisUsageCalculator.calculatePercent(
                 giftTotalUsedKb(),
                 giftTotalLimitKb()

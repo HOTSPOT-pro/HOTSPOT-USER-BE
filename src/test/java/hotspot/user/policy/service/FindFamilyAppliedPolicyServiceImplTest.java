@@ -22,21 +22,24 @@ import hotspot.user.member.domain.Member;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
+import hotspot.user.policy.infrastructure.schema.FamilyDataControl;
+import hotspot.user.policy.service.port.FamilyDataLimitRepository;
 import hotspot.user.subscription.domain.Subscription;
-
-/**
- * 한 가족 구성원 전체 적용 정책 조회 Service 단위 테스트
- */
 
 @ExtendWith(MockitoExtension.class)
 class FindFamilyAppliedPolicyServiceImplTest {
 
     @Mock
     private FamilyRepository familyRepository;
+
     @Mock
     private FamilySubscriptionRepository familySubscriptionRepository;
+
     @Mock
     private FindMemberAppliedPolicyService findMemberAppliedPolicyService;
+
+    @Mock
+    private FamilyDataLimitRepository familyDataLimitRepository;
 
     @InjectMocks
     private FindFamilyAppliedPolicyServiceImpl findFamilyAppliedPolicyService;
@@ -44,9 +47,11 @@ class FindFamilyAppliedPolicyServiceImplTest {
     @Test
     @DisplayName("가족 ID로 전체 구성원의 통합 정책을 조회한다")
     void findFamilyAppliedPoliciesSuccess() {
+
         // given
         Long familyId = 1L;
         Long memberId = 10L;
+        Long subId = 100L;
 
         Family family = Family.builder()
                 .id(familyId)
@@ -55,21 +60,54 @@ class FindFamilyAppliedPolicyServiceImplTest {
                 .priorityType(PriorityType.FIFO)
                 .build();
 
-        Member member = Member.builder().id(memberId).name("홍길동").build();
-        Subscription sub = Subscription.builder().id(100L).member(member).build();
-        FamilySubscription mapping = FamilySubscription.builder().subscription(sub).build();
-
-        AppliedPolicyResponse memberResponse = AppliedPolicyResponse.builder()
-                .memberId(memberId)
-                .memberName("홍길동")
+        Member member = Member.builder()
+                .id(memberId)
+                .name("홍길동")
                 .build();
 
-        given(familyRepository.findById(familyId)).willReturn(Optional.of(family));
-        given(familySubscriptionRepository.findByFamilyId(familyId)).willReturn(List.of(mapping));
-        given(findMemberAppliedPolicyService.findByMemberId(memberId)).willReturn(memberResponse);
+        Subscription sub = Subscription.builder()
+                .id(subId)
+                .member(member)
+                .build();
+
+        FamilySubscription mapping = FamilySubscription.builder()
+                .subscription(sub)
+                .build();
+
+        AppliedPolicyResponse memberResponse =
+                AppliedPolicyResponse.builder()
+                        .memberId(memberId)
+                        .memberName("홍길동")
+                        .subId(subId)
+                        .build();
+
+        FamilyDataControl redisData =
+                new FamilyDataControl(
+                        1024L * 1024L, // familyDataLimit
+                        List.of(
+                                new FamilyDataControl.SubFamilyDataControl(
+                                        subId,
+                                        1024L * 100,   // familyDataUsage
+                                        1024L * 512    // familyDataSubLimit
+                                )
+                        )
+                );
+
+        given(familyRepository.findById(familyId))
+                .willReturn(Optional.of(family));
+
+        given(familySubscriptionRepository.findByFamilyId(familyId))
+                .willReturn(List.of(mapping));
+
+        given(findMemberAppliedPolicyService.findByMemberId(memberId))
+                .willReturn(memberResponse);
+
+        given(familyDataLimitRepository.findFamilyDataLimit(familyId))
+                .willReturn(redisData);
 
         // when
-        FamilyAppliedPolicyResponse response = findFamilyAppliedPolicyService.findByFamilyId(familyId);
+        FamilyAppliedPolicyResponse response =
+                findFamilyAppliedPolicyService.findByFamilyId(familyId);
 
         // then
         assertThat(response.familyId()).isEqualTo(familyId);

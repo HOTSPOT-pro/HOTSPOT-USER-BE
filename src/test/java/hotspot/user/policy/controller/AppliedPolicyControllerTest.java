@@ -91,17 +91,25 @@ class AppliedPolicyControllerTest {
     @Test
     @DisplayName("본인 적용 정책 조회 성공: 역할에 상관없이 조회 가능하다")
     void getAppliedPoliciesIndividualSuccess() throws Exception {
-        // given
+
         setAuthentication(FamilyRole.CHILD);
+
         AppliedPolicyResponse response = AppliedPolicyResponse.builder()
                 .memberId(1L)
                 .memberName("자녀")
+                .subId(10L)
                 .role(FamilyRole.CHILD)
+                .familyDataSubLimit(10)
+                .familyDataUsage(2)
+                .priority(-1)
+                .isBlocked(false)
+                .blockPolicyResponseList(List.of())
+                .appBlockedServiceResponseList(List.of())
                 .build();
 
-        given(findMemberAppliedPolicyService.findByMemberId(1L)).willReturn(response);
+        given(findMemberAppliedPolicyService.findByMemberId(1L))
+                .willReturn(response);
 
-        // when & then
         mockMvc.perform(get("/api/v1/policies/applied")
                         .param("isFamily", "false")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -113,16 +121,20 @@ class AppliedPolicyControllerTest {
     @Test
     @DisplayName("가족 전체 정책 조회 성공: PARENT 권한일 때")
     void getAppliedPoliciesFamilySuccessByParent() throws Exception {
-        // given
+
         setAuthentication(FamilyRole.PARENT);
+
         FamilyAppliedPolicyResponse response = FamilyAppliedPolicyResponse.builder()
                 .familyId(100L)
+                .familyNum(1)
+                .familyDataAmount(40)
+                .priorityType(hotspot.user.family.domain.PriorityType.FIFO)
                 .memberPolicies(List.of())
                 .build();
 
-        given(findFamilyAppliedPolicyService.findByFamilyId(100L)).willReturn(response);
+        given(findFamilyAppliedPolicyService.findByFamilyId(100L))
+                .willReturn(response);
 
-        // when & then
         mockMvc.perform(get("/api/v1/policies/applied")
                         .param("isFamily", "true")
                         .contentType(MediaType.APPLICATION_JSON))

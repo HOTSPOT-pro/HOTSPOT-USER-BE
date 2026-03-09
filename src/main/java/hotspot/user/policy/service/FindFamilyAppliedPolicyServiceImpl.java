@@ -1,6 +1,8 @@
 package hotspot.user.policy.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,8 @@ import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
 import hotspot.user.policy.domain.mapper.AppliedPolicyMapper;
+import hotspot.user.policy.infrastructure.schema.FamilyDataControl;
+import hotspot.user.policy.service.port.FamilyDataLimitRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -26,20 +30,63 @@ public class FindFamilyAppliedPolicyServiceImpl implements FindFamilyAppliedPoli
     private final FamilyRepository familyRepository;
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final FindMemberAppliedPolicyService findMemberAppliedPolicyService;
+    private final FamilyDataLimitRepository familyDataLimitRepository;
 
     @Override
     public FamilyAppliedPolicyResponse findByFamilyId(Long familyId) {
+
         Family family = familyRepository.findById(familyId)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
 
-        List<FamilySubscription> memberMappings = familySubscriptionRepository.findByFamilyId(familyId);
+        List<FamilySubscription> memberMappings =
+                familySubscriptionRepository.findByFamilyId(familyId);
 
-        List<AppliedPolicyResponse> memberPolicies = memberMappings.stream()
-                .map(mapping -> findMemberAppliedPolicyService
-                        .findByMemberId(mapping.getSubscription().getMember().getId()))
-                .toList();
+        // Redis 조회
+        FamilyDataControl familyDataControl =
+                familyDataLimitRepository.findFamilyDataLimit(familyId);
 
-        // 매퍼의 통합 조립 메서드 호출
-        return AppliedPolicyMapper.toFamilyAppliedPolicyResponse(family, memberPolicies);
+        Map<Long, FamilyDataControl.SubFamilyDataControl> redisMap =
+                familyDataControl.subFamilies().stream()
+                        .collect(Collectors.toMap(
+                                FamilyDataControl.SubFamilyDataControl::subId,
+                                it -> it
+                        ));
+
+        List<AppliedPolicyResponse> memberPolicies =
+                memberMappings.stream()
+                        .map(mapping -> {
+
+                            Long memberId =
+                                    mapping.getSubscription().getMember().getId();
+
+                            AppliedPolicyResponse base =
+                                    findMemberAppliedPolicyService.findByMemberId(memberId);
+
+                            FamilyDataControl.SubFamilyDataControl redis =
+                                    redisMap.get(base.subId());
+
+                            double limit = 0;
+                            double usage = 0;
+
+                            if (redis != null) {
+                                limit = redis.familyDataSubLimit();
+                                usage = redis.familyDataUsage();
+                            }
+
+                            return AppliedPolicyMapper.mergeRedisUsage(
+                                    base,
+                                    limit,
+                                    usage
+                            );
+                        })
+                        .toList();
+
+        double familyLimitGb = familyDataControl.familyDataLimit();
+
+        return AppliedPolicyMapper.toFamilyAppliedPolicyResponse(
+                family,
+                memberPolicies,
+                familyLimitGb
+        );
     }
 }

@@ -35,18 +35,29 @@ public final class RedisUsageCalculator {
         return Math.max(limitKb - usedKb, 0);
     }
 
-    public static int calculatePercent(double usedKb, double limitKb) {
+    public static int calculatePercent(double remainKb, double limitKb) {
         if (limitKb <= 0) {
             return 0;
         }
 
-        double safeUsed = Math.max(usedKb, 0);
-        double percent = (safeUsed / limitKb) * 100;
+        double safeRemain = Math.max(remainKb, 0);
+        double percent = (safeRemain / limitKb) * 100;
 
         int rounded = BigDecimal.valueOf(percent)
                 .setScale(0, RoundingMode.HALF_UP)
                 .intValue();
 
         return Math.min(Math.max(rounded, 0), 100); // <- 초과표시 원하면 제거
+    }
+
+    public static Long kbToGbCeil(long kb) {
+
+        if (kb <= 0) {
+            return 0L;
+        }
+
+        double gb = kb / (1024.0 * 1024.0);
+
+        return (long) Math.ceil(gb);
     }
 }

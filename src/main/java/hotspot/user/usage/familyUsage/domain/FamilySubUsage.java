@@ -19,8 +19,8 @@ public class FamilySubUsage {
         return RedisUsageCalculator.calculateRemain(subLimitKb, memberFamilyUsedKb);
     }
 
-    public int usagePercent() {
-        return RedisUsageCalculator.calculatePercent(memberFamilyUsedKb, subLimitKb);
+    public int remainPercent() {
+        return RedisUsageCalculator.calculatePercent(remainKb(), subLimitKb);
     }
 
     public double limitGb() {
