@@ -1,8 +1,8 @@
 package hotspot.user.policy.controller.response;
 
-import lombok.Builder;
-
 import java.util.List;
+
+import lombok.Builder;
 
 /**
  * 회선별 차단 상태 정보 응답 dto

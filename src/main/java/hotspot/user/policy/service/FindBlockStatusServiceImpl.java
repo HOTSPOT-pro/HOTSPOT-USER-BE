@@ -1,5 +1,15 @@
 package hotspot.user.policy.service;
 
+import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
@@ -14,15 +24,6 @@ import hotspot.user.policy.domain.PolicyType;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Clock;
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 회선별 실시간 차단 여부 및 사유를 판단하는 서비스 구현체
@@ -117,16 +118,22 @@ public class FindBlockStatusServiceImpl implements FindBlockStatusService {
      */
     private boolean isTimePolicyBlockingNow(BlockPolicy policy, LocalDateTime now) {
         // 정책 자체가 비활성화 상태면 차단하지 않음
-        if (!policy.isActive()) return false;
+        if (!policy.isActive()) {
+            return false;
+        }
 
         // 일회성(ONCE) 정책은 활성화되어 있다는 것 자체가 현재 차단 중임을 의미함 (만료 시 비활성화되므로)
-        if (policy.getPolicyType() == PolicyType.ONCE) return true;
+        if (policy.getPolicyType() == PolicyType.ONCE) {
+            return true;
+        }
 
         // 반복(SCHEDULED) 정책 시간 및 요일 체크
         PolicySnapshot snapshot = policy.getPolicySnapshot();
         LocalTime start = snapshot.getStartLocalTime();
         LocalTime end = snapshot.getEndLocalTime();
-        if (start == null || end == null) return false;
+        if (start == null || end == null) {
+            return false;
+        }
 
         LocalTime currentTime = now.toLocalTime();
         DayOfWeek today = now.getDayOfWeek();

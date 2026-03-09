@@ -108,7 +108,8 @@ class FindMemberAppliedPolicyServiceImplTest {
         given(blockedServiceSubRepository.findActiveBySubId(subId)).willReturn(List.of(blockedSub));
         given(blockPolicyRepository.findAllById(List.of(policyId))).willReturn(List.of(blockPolicy));
         given(appBlockedServiceRepository.findAllByAppBlockedServiceIds(anyList())).willReturn(List.of(app));
-        given(findBlockStatusService.findMyBlockStatus(memberId)).willReturn(BlockedStatusResponse.builder().isCurrentlyBlocked(true).build());
+        given(findBlockStatusService.findMyBlockStatus(memberId))
+                .willReturn(BlockedStatusResponse.builder().isCurrentlyBlocked(true).build());
 
         // when
         AppliedPolicyResponse response = findMemberAppliedPolicyService.findByMemberId(memberId);
@@ -163,7 +164,8 @@ class FindMemberAppliedPolicyServiceImplTest {
         given(policySubRepository.findActiveBySubId(subId)).willReturn(List.of(activeSub, expiredSub));
         given(blockPolicyRepository.findAllById(anyList())).willReturn(List.of(activePolicy, expiredPolicy));
         given(blockedServiceSubRepository.findActiveBySubId(subId)).willReturn(List.of());
-        given(findBlockStatusService.findMyBlockStatus(memberId)).willReturn(BlockedStatusResponse.builder().isCurrentlyBlocked(false).build());
+        given(findBlockStatusService.findMyBlockStatus(memberId))
+                .willReturn(BlockedStatusResponse.builder().isCurrentlyBlocked(false).build());
 
         // when
         AppliedPolicyResponse response = findMemberAppliedPolicyService.findByMemberId(memberId);
