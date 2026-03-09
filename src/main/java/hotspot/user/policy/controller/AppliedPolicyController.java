@@ -16,10 +16,12 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.policy.controller.port.FindBlockStatusService;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
 import hotspot.user.policy.controller.port.UpdatePolicySubService;
 import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
+import hotspot.user.policy.controller.response.BlockedStatusResponse;
 import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 import hotspot.user.policy.controller.swagger.AppliedPolicyApi;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,7 @@ public class AppliedPolicyController implements AppliedPolicyApi {
     private final FindMemberAppliedPolicyService findMemberAppliedPolicyService; // 구성원별 적용 정책 조회
     private final FindFamilyAppliedPolicyService findFamilyAppliedPolicyService; // 가족 구성원 전체 적용 정책 조회
     private final UpdatePolicySubService updatePolicySubService; // 구성원 별 정책 업데이트 (적용)
+    private final FindBlockStatusService findBlockStatusService; // 차단 상태 조회 서비스
 
     /**
      * 적용된 정책 목록을 조회 API
@@ -78,6 +81,19 @@ public class AppliedPolicyController implements AppliedPolicyApi {
                 principalDetails.getFamilyId(),
                 principalDetails.getRole()
         );
+
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(response));
+    }
+
+    // 나의 데이터 사용 차단 여부 조회
+    // - 현재는 다른 구성원의 차단 여부는 전체 적용된 정책 시 필드에 포함할 거라서 내 차단 여부만 조회한다.
+    @Override
+    @GetMapping("/blocked")
+    public ResponseEntity<ApiResponse<BlockedStatusResponse>> getBlockedStatus(
+            @AuthenticationPrincipal PrincipalDetails principalDetails
+    ) {
+        BlockedStatusResponse response = findBlockStatusService.findMyBlockStatus(principalDetails.getId());
 
         return ResponseEntity.ok()
                 .body(ApiResponse.success(response));
