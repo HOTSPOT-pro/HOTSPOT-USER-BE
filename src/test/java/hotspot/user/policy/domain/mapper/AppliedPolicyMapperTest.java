@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Member;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.domain.AppBlockedService;
@@ -32,6 +33,7 @@ class AppliedPolicyMapperTest {
         Subscription sub = Subscription.builder().id(subId).member(member).build();
         FamilySubscription familySub = FamilySubscription.builder()
                 .subscription(sub)
+                .familyRole(FamilyRole.CHILD)
                 .dataLimit(1024 * 1024 * 2) // 2GB (KB 단위라고 가정 시 kbToGb 변환 결과 확인용)
                 .priority(1)
                 .build();
@@ -60,6 +62,7 @@ class AppliedPolicyMapperTest {
         assertThat(response.memberId()).isEqualTo(memberId);
         assertThat(response.memberName()).isEqualTo("홍길동");
         assertThat(response.subId()).isEqualTo(subId);
+        assertThat(response.role()).isEqualTo(FamilyRole.CHILD);
         assertThat(response.isBlocked()).isTrue(); // 검증 추가
         assertThat(response.blockPolicyResponseList()).hasSize(1);
         assertThat(response.blockPolicyResponseList().get(0).name()).isEqualTo("밤 10시 차단");

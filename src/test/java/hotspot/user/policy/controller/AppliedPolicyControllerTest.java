@@ -96,6 +96,7 @@ class AppliedPolicyControllerTest {
         AppliedPolicyResponse response = AppliedPolicyResponse.builder()
                 .memberId(1L)
                 .memberName("자녀")
+                .role(FamilyRole.CHILD)
                 .build();
 
         given(findMemberAppliedPolicyService.findByMemberId(1L)).willReturn(response);
@@ -105,7 +106,8 @@ class AppliedPolicyControllerTest {
                         .param("isFamily", "false")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.memberName").value("자녀"));
+                .andExpect(jsonPath("$.data.memberName").value("자녀"))
+                .andExpect(jsonPath("$.data.role").value("CHILD"));
     }
 
     @Test
