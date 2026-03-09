@@ -11,6 +11,7 @@ import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ErrorResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
+import hotspot.user.policy.controller.response.BlockedStatusResponse;
 import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -59,6 +60,14 @@ public interface AppliedPolicyApi {
     })
     ResponseEntity<ApiResponse<UpdatePolicySubResponse>> updatePolicySub(
             @Valid @RequestBody UpdatePolicySubRequest request,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principalDetails
+    );
+
+    @Operation(summary = "나의 데이터 사용 차단 여부 조회", description = "현재 나의 실시간 데이터 차단 여부와 사유(정책)를 조회합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
+    })
+    ResponseEntity<ApiResponse<BlockedStatusResponse>> getBlockedStatus(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principalDetails
     );
 }
