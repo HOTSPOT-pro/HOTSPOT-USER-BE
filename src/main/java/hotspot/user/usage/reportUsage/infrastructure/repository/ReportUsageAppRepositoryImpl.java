@@ -1,5 +1,6 @@
 package hotspot.user.usage.reportUsage.infrastructure.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
@@ -20,7 +21,7 @@ public class ReportUsageAppRepositoryImpl implements ReportUsageAppRepository {
     }
 
     @Override
-    public List<AppUsage> findDailyAppUsage(Long subId) {
-        return redisRepository.findDailyAppUsage(subId);
+    public List<AppUsage> findDailyAppUsage(Long subId, LocalDate date) {
+        return redisRepository.findDailyAppUsage(subId, date);
     }
 }

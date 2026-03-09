@@ -35,13 +35,11 @@ public class ReportUsageAppRedisRepository {
         return getAppUsageFromZSet(key);
     }
 
-    public List<AppUsage> findDailyAppUsage(Long subId) {
-
-        LocalDate now = LocalDate.now(clock);
+    public List<AppUsage> findDailyAppUsage(Long subId, LocalDate date) {
 
         String key =
                 ReportUsageRedisKeyBuilder
-                        .dailyAppUsage(subId, now);
+                        .dailyAppUsage(subId, date);
 
         return getAppUsageFromZSet(key);
     }

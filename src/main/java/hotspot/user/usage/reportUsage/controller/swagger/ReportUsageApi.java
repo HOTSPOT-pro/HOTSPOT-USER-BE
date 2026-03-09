@@ -79,7 +79,9 @@ public interface ReportUsageApi {
             @AuthenticationPrincipal PrincipalDetails details,
 
             @Parameter(description = "조회 대상 회선 ID", example = "10")
-            @RequestParam Long targetSubId
+            @RequestParam Long targetSubId,
+            @org.springframework.format.annotation.DateTimeFormat(pattern = "yyyy-MM-DD")
+            java.time.LocalDate date
     );
 
 
