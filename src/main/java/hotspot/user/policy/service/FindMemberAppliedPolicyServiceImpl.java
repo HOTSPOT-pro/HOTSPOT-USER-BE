@@ -12,8 +12,10 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.policy.controller.port.FindBlockStatusService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
+import hotspot.user.policy.controller.response.BlockedStatusResponse;
 import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.BlockedServiceSub;
@@ -35,6 +37,7 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
     private final BlockedServiceSubRepository blockedServiceSubRepository;
     private final BlockPolicyRepository blockPolicyRepository;
     private final AppBlockedServiceRepository appBlockedServiceRepository;
+    private final FindBlockStatusService findBlockStatusService;
 
     @Override
     public AppliedPolicyResponse findByMemberId(Long memberId) {
@@ -78,13 +81,20 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
                 .findAllByAppBlockedServiceIds(appBlockedServiceIds).stream()
                 .collect(Collectors.toMap(AppBlockedService::getId, s -> s));
 
+        // 7. 실시간 차단 여부 조회
+        BlockedStatusResponse blockStatus = findBlockStatusService.findMyBlockStatus(memberId);
+
+        // 실시간 차단 여부 (즉시 차단 또는 정책에 의한 차단 포함)
+        boolean isBlocked = blockStatus.isCurrentlyBlocked();
+
         // 매퍼의 통합 조립 메서드 호출 (만료된 정책 제외하고 전달)
         return AppliedPolicyMapper.toAppliedPolicyResponse(
                 familySub,
                 activePolicySubs,
                 blockedServiceSubs,
                 policyMap,
-                appBlockedServiceMap
+                appBlockedServiceMap,
+                isBlocked
         );
     }
 }
