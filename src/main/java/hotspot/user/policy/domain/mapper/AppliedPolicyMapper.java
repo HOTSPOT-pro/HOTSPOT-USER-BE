@@ -32,6 +32,7 @@ public class AppliedPolicyMapper {
                 .memberId(familySub.getSubscription().getMember().getId())
                 .memberName(familySub.getSubscription().getMember().getName())
                 .subId(familySub.getSubscription().getId())
+                .role(familySub.getFamilyRole())
                 .dataLimit(RedisUsageCalculator.kbToGb(familySub.getDataLimit()))
                 .priority(familySub.getPriority())
                 .isBlocked(isBlocked)
