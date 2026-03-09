@@ -1,5 +1,6 @@
 package hotspot.user.policy.controller;
 
+import hotspot.user.policy.controller.response.BlockedStatusResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -81,5 +82,15 @@ public class AppliedPolicyController implements AppliedPolicyApi {
 
         return ResponseEntity.ok()
                 .body(ApiResponse.success(response));
+    }
+
+    // 나의 데이터 사용 차단 여부 조회
+    // - 현재는 다른 구성원의 차단 여부는 전체 적용된 정책 시 필드에 포함할 거라서 내 차단 여부만 조회한다.
+    @GetMapping("/blocked")
+    public ResponseEntity<ApiResponse<BlockedStatusResponse>> getBlockedStatus(
+            @AuthenticationPrincipal PrincipalDetails principalDetails
+    ) {
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(null));
     }
 }
