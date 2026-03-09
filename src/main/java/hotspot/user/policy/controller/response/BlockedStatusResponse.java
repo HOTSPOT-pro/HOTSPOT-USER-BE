@@ -14,18 +14,7 @@ import java.util.List;
 public record BlockedStatusResponse(
         boolean isImmediateBlocked,
         boolean isCurrentlyBlocked,
-        List<BlockedPolicyInfo> blockedPolicies
+        List<BlockedReasonResponse> blockedPolicies
 ) {
-
-    /**
-     * 차단된 정책 정보 (id, 이름)
-     * @param id
-     * @param name
-     */
-    @Builder
-    public record BlockedPolicyInfo(
-            Long id,
-            String name
-    ) { }
 
 }
