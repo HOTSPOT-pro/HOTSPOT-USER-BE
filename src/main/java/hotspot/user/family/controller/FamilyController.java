@@ -28,7 +28,10 @@ public class FamilyController implements FamilyApi {
     public ResponseEntity<ApiResponse<FamilyInfoResponse>> getFamilyInfo(
             @AuthenticationPrincipal PrincipalDetails principal) {
 
-        FamilyInfoResponse response = findFamilyInfoService.findFamilyInfoById(principal.getFamilyId());
+        FamilyInfoResponse response = findFamilyInfoService.findFamilyInfoById(
+                principal.getId(),
+                principal.getFamilyId()
+        );
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
