@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.crpyto.PhoneHashIndexer;
+import hotspot.user.common.crpyto.SubscriptionKeyInfo;
+import hotspot.user.common.crpyto.SubscriptionKeyLookup;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
@@ -45,6 +47,7 @@ public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
     private final FamilyApplyRepository familyApplyRepository;
     private final FamilyApplyTargetRepository familyApplyTargetRepository;
     private final PhoneHashIndexer phoneHashIndexer;
+    private final SubscriptionKeyLookup subscriptionKeyLookup;
     private final PhoneDecryptor phoneDecryptor;
     private final S3Util s3Util;
 
@@ -140,10 +143,17 @@ public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
                         s -> s,
                         (existing, replacement) -> existing));
 
+        Map<Long, SubscriptionKeyInfo> keyInfoBySubId = subscriptionKeyLookup.findKeyInfosBySubIds(
+                allInvolvedSubs.stream()
+                        .map(Subscription::getId)
+                        .distinct()
+                        .toList()
+        );
+
         Map<Long, String> subIdToPhoneMap = allInvolvedSubs.stream()
                 .collect(Collectors.toMap(
                         Subscription::getId,
-                        s -> phoneDecryptor.decrypt(s.getPhoneEnc()),
+                        s -> decryptSubscriptionPhone(s, keyInfoBySubId),
                         (existing, replacement) -> existing));
 
         return FamilyApplyMapper.toCreateNewFamilyResponse(
@@ -152,6 +162,16 @@ public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
                 savedTargets,
                 subscriptionMap,
                 subIdToPhoneMap
+        );
+    }
+
+    private String decryptSubscriptionPhone(
+            Subscription subscription,
+            Map<Long, SubscriptionKeyInfo> keyInfoBySubId
+    ) {
+        return phoneDecryptor.decrypt(
+                subscription.getPhoneEnc(),
+                keyInfoBySubId.get(subscription.getId())
         );
     }
 

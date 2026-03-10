@@ -19,6 +19,8 @@ public class Subscription {
     private Member member;
     private String phoneEnc;
     private String phoneHash;
+    private Integer phoneKeyBucketId;
+    private Integer phoneKeyVersion;
     private Boolean isLocked;
 
     public Subscription updateMember(Member member) {
@@ -28,6 +30,8 @@ public class Subscription {
                 .member(member)
                 .phoneEnc(this.phoneEnc)
                 .phoneHash(this.phoneHash)
+                .phoneKeyBucketId(this.phoneKeyBucketId)
+                .phoneKeyVersion(this.phoneKeyVersion)
                 .isLocked(this.isLocked)
                 .build();
     }

@@ -54,7 +54,7 @@ class SmsRecipientResolverTest {
     void resolveDecryptFailed() {
         given(subscriptionRepository.findById(1L))
                 .willReturn(java.util.Optional.of(Subscription.builder().id(1L).phoneEnc("enc").build()));
-        given(phoneDecryptor.decrypt("enc")).willThrow(new IllegalStateException("decrypt fail"));
+        given(phoneDecryptor.decrypt("enc", 1L)).willThrow(new IllegalStateException("decrypt fail"));
 
         SmsRecipientResolution resolution = smsRecipientResolver.resolve(1L);
 
@@ -66,7 +66,7 @@ class SmsRecipientResolverTest {
     void resolveFound() {
         given(subscriptionRepository.findById(1L))
                 .willReturn(java.util.Optional.of(Subscription.builder().id(1L).phoneEnc("enc").build()));
-        given(phoneDecryptor.decrypt("enc")).willReturn("010-1234-5678");
+        given(phoneDecryptor.decrypt("enc", 1L)).willReturn("010-1234-5678");
 
         SmsRecipientResolution resolution = smsRecipientResolver.resolve(1L);
 

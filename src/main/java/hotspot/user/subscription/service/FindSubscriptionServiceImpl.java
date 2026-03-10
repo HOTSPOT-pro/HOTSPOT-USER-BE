@@ -29,7 +29,7 @@ public class FindSubscriptionServiceImpl implements FindSubscriptionService {
         Subscription subscription = subscriptionRepository.findById(id)
                 .orElseThrow(() -> new ApplicationException(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND));
 
-        String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc());
+        String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc(), subscription.getId());
         return SubscriptionMapper.toSubscriptionResponse(subscription, decryptedPhone);
     }
 
@@ -38,7 +38,7 @@ public class FindSubscriptionServiceImpl implements FindSubscriptionService {
         Subscription subscription = subscriptionRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new ApplicationException(SubscriptionErrorCode.SUBSCRIPTION_NOT_FOUND));
 
-        String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc());
+        String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc(), subscription.getId());
         return SubscriptionMapper.toSubscriptionResponse(subscription, decryptedPhone);
     }
 }

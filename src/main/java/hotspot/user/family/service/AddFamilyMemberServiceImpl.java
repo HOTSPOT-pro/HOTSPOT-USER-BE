@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.crpyto.PhoneHashIndexer;
+import hotspot.user.common.crpyto.SubscriptionKeyInfo;
+import hotspot.user.common.crpyto.SubscriptionKeyLookup;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
@@ -46,6 +48,7 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
     private final FamilyApplyRepository familyApplyRepository;
     private final FamilyApplyTargetRepository familyApplyTargetRepository;
     private final PhoneHashIndexer phoneHashIndexer;
+    private final SubscriptionKeyLookup subscriptionKeyLookup;
     private final PhoneDecryptor phoneDecryptor;
     private final S3Util s3Util;
 
@@ -138,10 +141,14 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
         Map<Long, Subscription> subscriptionMap = subscriptions.stream()
                 .collect(Collectors.toMap(Subscription::getId, s -> s));
 
+        Map<Long, SubscriptionKeyInfo> keyInfoBySubId = subscriptionKeyLookup.findKeyInfosBySubIds(
+                subscriptions.stream().map(Subscription::getId).toList()
+        );
+
         Map<Long, String> subIdToPhoneMap = subscriptions.stream()
                 .collect(Collectors.toMap(
                         Subscription::getId,
-                        s -> phoneDecryptor.decrypt(s.getPhoneEnc())
+                        s -> phoneDecryptor.decrypt(s.getPhoneEnc(), keyInfoBySubId.get(s.getId()))
                 ));
 
         return FamilyApplyMapper.toAddFamilyMemberResponse(

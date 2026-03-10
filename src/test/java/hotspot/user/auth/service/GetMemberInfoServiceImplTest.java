@@ -67,7 +67,7 @@ class GetMemberInfoServiceImplTest {
         given(socialAccountRepository.findByMemberIdAndEmail(memberId, email)).willReturn(Optional.of(socialAccount));
         given(subscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(subscription));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySub));
-        given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
+        given(phoneDecryptor.decrypt("enc-phone", 100L)).willReturn(phoneNumber);
 
         // when
         MemberInfoResponse response = getMemberInfoService.getMemberInfo(memberId, email);
@@ -96,7 +96,7 @@ class GetMemberInfoServiceImplTest {
         given(socialAccountRepository.findByMemberIdAndEmail(memberId, email)).willReturn(Optional.of(socialAccount));
         given(subscriptionRepository.findByMemberId(memberId)).willReturn(Optional.of(subscription));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.empty());
-        given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
+        given(phoneDecryptor.decrypt("enc-phone", 100L)).willReturn(phoneNumber);
 
         // when
         MemberInfoResponse response = getMemberInfoService.getMemberInfo(memberId, email);

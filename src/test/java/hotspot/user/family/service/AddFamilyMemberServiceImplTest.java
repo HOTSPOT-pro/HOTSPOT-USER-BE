@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.crpyto.PhoneHashIndexer;
+import hotspot.user.common.crpyto.SubscriptionKeyInfo;
+import hotspot.user.common.crpyto.SubscriptionKeyLookup;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
@@ -61,6 +64,9 @@ class AddFamilyMemberServiceImplTest {
     private PhoneHashIndexer phoneHashIndexer;
 
     @Mock
+    private SubscriptionKeyLookup subscriptionKeyLookup;
+
+    @Mock
     private PhoneDecryptor phoneDecryptor;
 
     @Mock
@@ -97,7 +103,9 @@ class AddFamilyMemberServiceImplTest {
         given(familyApplyTargetRepository.saveAll(anyList())).willReturn(List.of(
                 FamilyApplyTarget.builder().targetSubId(200L).targetFamilyRole(FamilyRole.CHILD).build()
         ));
-        given(phoneDecryptor.decrypt("ENC")).willReturn("010-1111-2222");
+        SubscriptionKeyInfo targetKeyInfo = new SubscriptionKeyInfo("encryptedDek-200", "kek-200");
+        given(subscriptionKeyLookup.findKeyInfosBySubIds(List.of(200L))).willReturn(Map.of(200L, targetKeyInfo));
+        given(phoneDecryptor.decrypt("ENC", targetKeyInfo)).willReturn("010-1111-2222");
 
         // when
         AddFamilyMemberResponse response = addFamilyMemberService.addFamilyMember(requesterMemberId, familyId, request);

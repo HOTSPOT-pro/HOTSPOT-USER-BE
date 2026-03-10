@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.common.crpyto.PhoneDecryptor;
 import hotspot.user.common.crpyto.PhoneHashIndexer;
+import hotspot.user.common.crpyto.SubscriptionKeyInfo;
+import hotspot.user.common.crpyto.SubscriptionKeyLookup;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
 import hotspot.user.common.exception.code.SubscriptionErrorCode;
@@ -57,6 +60,9 @@ class CreateNewFamilyServiceImplTest {
 
     @Mock
     private PhoneHashIndexer phoneHashIndexer;
+
+    @Mock
+    private SubscriptionKeyLookup subscriptionKeyLookup;
 
     @Mock
     private PhoneDecryptor phoneDecryptor;
@@ -102,8 +108,12 @@ class CreateNewFamilyServiceImplTest {
                 FamilyApplyTarget.builder().targetSubId(200L).targetFamilyRole(FamilyRole.CHILD).build()
         ));
 
-        given(phoneDecryptor.decrypt("ENC_SELF")).willReturn("010-0000-0000");
-        given(phoneDecryptor.decrypt("ENC_TARGET")).willReturn("010-1111-2222");
+        SubscriptionKeyInfo requesterKeyInfo = new SubscriptionKeyInfo("encryptedDek-100", "kek-100");
+        SubscriptionKeyInfo targetKeyInfo = new SubscriptionKeyInfo("encryptedDek-200", "kek-200");
+        given(subscriptionKeyLookup.findKeyInfosBySubIds(List.of(100L, 200L)))
+                .willReturn(Map.of(100L, requesterKeyInfo, 200L, targetKeyInfo));
+        given(phoneDecryptor.decrypt("ENC_SELF", requesterKeyInfo)).willReturn("010-0000-0000");
+        given(phoneDecryptor.decrypt("ENC_TARGET", targetKeyInfo)).willReturn("010-1111-2222");
 
         // when
         CreateNewFamilyResponse response = createNewFamilyService.createNewFamily(requesterMemberId, request);
@@ -148,7 +158,9 @@ class CreateNewFamilyServiceImplTest {
                 FamilyApplyTarget.builder().targetSubId(100L).targetFamilyRole(FamilyRole.OWNER).build()
         ));
 
-        given(phoneDecryptor.decrypt("ENC_SELF")).willReturn("010-0000-0000");
+        SubscriptionKeyInfo requesterKeyInfo = new SubscriptionKeyInfo("encryptedDek-100", "kek-100");
+        given(subscriptionKeyLookup.findKeyInfosBySubIds(List.of(100L))).willReturn(Map.of(100L, requesterKeyInfo));
+        given(phoneDecryptor.decrypt("ENC_SELF", requesterKeyInfo)).willReturn("010-0000-0000");
 
         // when
         CreateNewFamilyResponse response = createNewFamilyService.createNewFamily(requesterMemberId, request);
