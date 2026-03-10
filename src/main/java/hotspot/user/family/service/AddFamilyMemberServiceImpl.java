@@ -141,7 +141,7 @@ public class AddFamilyMemberServiceImpl implements AddFamilyMemberService {
         Map<Long, String> subIdToPhoneMap = subscriptions.stream()
                 .collect(Collectors.toMap(
                         Subscription::getId,
-                        s -> phoneDecryptor.decrypt(s.getPhoneEnc())
+                        s -> phoneDecryptor.decrypt(s.getPhoneEnc(), s.getId())
                 ));
 
         return FamilyApplyMapper.toAddFamilyMemberResponse(

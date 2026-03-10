@@ -38,7 +38,7 @@ public class FindFamilyInfoServiceImpl implements FindFamilyInfoService {
         // 서비스 계층에서 리스트 내 각 멤버의 정보를 복호화하여 매핑
         List<FamilyMemberInfoResponse> memberInfoList = detailInfo.getMemberDetailInfoList().stream()
                 .map(info -> {
-                    String decryptedPhone = phoneDecryptor.decrypt(info.getPhone());
+                    String decryptedPhone = phoneDecryptor.decrypt(info.getPhone(), info.getSubId());
                     return FamilyMemberInfoMapper.toFamilyMemberInfoResponse(info, decryptedPhone);
                 })
                 .toList();

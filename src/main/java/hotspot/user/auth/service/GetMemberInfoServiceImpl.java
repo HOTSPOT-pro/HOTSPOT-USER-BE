@@ -54,7 +54,7 @@ public class GetMemberInfoServiceImpl implements GetMemberInfoService {
                 .orElse(null);
 
         // 5. 전화번호 복호화
-        String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc());
+        String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc(), subscription.getId());
 
         // 6. 매퍼를 통해 응답 조립
         return MemberInfoMapper.toMemberInfoResponse(

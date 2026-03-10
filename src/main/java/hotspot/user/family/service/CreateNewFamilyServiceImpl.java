@@ -143,7 +143,7 @@ public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
         Map<Long, String> subIdToPhoneMap = allInvolvedSubs.stream()
                 .collect(Collectors.toMap(
                         Subscription::getId,
-                        s -> phoneDecryptor.decrypt(s.getPhoneEnc()),
+                        s -> phoneDecryptor.decrypt(s.getPhoneEnc(), s.getId()),
                         (existing, replacement) -> existing));
 
         return FamilyApplyMapper.toCreateNewFamilyResponse(
