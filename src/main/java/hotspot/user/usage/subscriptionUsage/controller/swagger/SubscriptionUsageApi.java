@@ -14,11 +14,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Subscription Usage", description = "회선 개인 데이터 및 선물 데이터 사용량 조회 API")
+@Tag(name = "Subscription Usage", description = "회선 개인 데이터 사용량 조회 API")
 public interface SubscriptionUsageApi {
 
-    @Operation(summary = "개인 데이터 및 선물 데이터조회",
-            description = "개인 데이터 사용량, 선물 데이터 사용량을 조회할 수 있습니다")
+    @Operation(summary = "개인 데이터 조회",
+            description = "개인 데이터 사용량을 조회할 수 있습니다")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "찾을 수 없음\n"

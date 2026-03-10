@@ -5,11 +5,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import hotspot.user.common.exception.ApplicationException;
@@ -18,7 +15,6 @@ import hotspot.user.common.util.redis.PipelineResultMapper;
 import hotspot.user.common.util.redis.RedisPipelineExecutor;
 import hotspot.user.common.util.redis.RedisValueParser;
 import hotspot.user.plan.domain.DataPeriod;
-import hotspot.user.usage.subscriptionUsage.domain.GiftUsage;
 import hotspot.user.usage.subscriptionUsage.domain.SubscriptionUsage;
 import hotspot.user.usage.subscriptionUsage.infrastructure.keybuilder.SubscriptionUsageRedisKeyBuilder;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +24,9 @@ import lombok.RequiredArgsConstructor;
 public class SubscriptionUsageRedisRepository {
 
     private static final String K_PLAN_LIMIT = "plan_limit";
-    private static final String K_PLAN_USED  = "plan_used";
-    private static final String K_GIFT_LIMIT_PREFIX = "gift_limit:";
-    private static final String K_GIFT_USED_PREFIX  = "gift_used:";
+    private static final String K_PLAN_USED = "plan_used";
 
     private final RedisPipelineExecutor pipelineExecutor;
-    private final StringRedisTemplate redisTemplate;
     private final Clock clock;
 
     public SubscriptionUsage findSubscriptionUsage(
@@ -43,17 +36,8 @@ public class SubscriptionUsageRedisRepository {
 
         LocalDate now = LocalDate.now(clock);
 
-        List<String> giftIds = new ArrayList<>(
-                Objects.requireNonNull(redisTemplate.opsForZSet()
-                        .range(
-                                SubscriptionUsageRedisKeyBuilder.giftIndex(subId, now),
-                                0,
-                                -1
-                        ))
-        );
-
         PipelineResult pipeline =
-                executePipeline(subId, giftIds, now, dataPeriod);
+                executePlanOnlyPipeline(subId, dataPeriod, now);
 
         Map<String, Object> resultMap =
                 PipelineResultMapper.toMap(
@@ -61,16 +45,13 @@ public class SubscriptionUsageRedisRepository {
                         pipeline.rawResults()
                 );
 
-        return buildDomain(subId, giftIds, resultMap);
+        return buildDomain(subId, resultMap);
     }
 
-
-
-    private PipelineResult executePipeline(
+    private PipelineResult executePlanOnlyPipeline(
             Long subId,
-            List<String> giftIds,
-            LocalDate now,
-            DataPeriod dataPeriod
+            DataPeriod dataPeriod,
+            LocalDate now
     ) {
 
         List<String> requestKeys = new ArrayList<>();
@@ -78,8 +59,26 @@ public class SubscriptionUsageRedisRepository {
         List<Object> rawResults =
                 pipelineExecutor.execute((RedisCallback<Object>) connection -> {
 
-                    addPlanRequests(connection, subId, dataPeriod, requestKeys, now);
-                    addGiftRequests(connection, subId, giftIds, requestKeys, now);
+                    requestKeys.add(K_PLAN_LIMIT);
+
+                    connection.hGet(
+                            pipelineExecutor.serialize(
+                                    SubscriptionUsageRedisKeyBuilder.planLimit(subId)
+                            ),
+                            pipelineExecutor.serialize(K_PLAN_LIMIT)
+                    );
+
+                    requestKeys.add(K_PLAN_USED);
+
+                    String usageKey =
+                            (dataPeriod == DataPeriod.MONTH)
+                                    ? SubscriptionUsageRedisKeyBuilder.planUsageMonth(subId, now)
+                                    : SubscriptionUsageRedisKeyBuilder.planUsageDay(subId, now);
+
+                    connection.hGet(
+                            pipelineExecutor.serialize(usageKey),
+                            pipelineExecutor.serialize(K_PLAN_USED)
+                    );
 
                     return null;
                 });
@@ -87,132 +86,24 @@ public class SubscriptionUsageRedisRepository {
         return new PipelineResult(requestKeys, rawResults);
     }
 
-    private void addPlanRequests(
-            RedisConnection connection,
-            Long subId,
-            DataPeriod dataPeriod,
-            List<String> requestKeys,
-            LocalDate now
-    ) {
-
-        requestKeys.add(K_PLAN_LIMIT);
-        connection.hGet(
-                pipelineExecutor.serialize(
-                        SubscriptionUsageRedisKeyBuilder.planLimit(subId)
-                ),
-                pipelineExecutor.serialize(K_PLAN_LIMIT)
-        );
-
-        requestKeys.add(K_PLAN_USED);
-
-        String usageKey =
-                (dataPeriod == DataPeriod.MONTH)
-                        ? SubscriptionUsageRedisKeyBuilder.planUsageMonth(subId, now)
-                        : SubscriptionUsageRedisKeyBuilder.planUsageDay(subId, now);
-
-        connection.hGet(
-                pipelineExecutor.serialize(usageKey),
-                pipelineExecutor.serialize(K_PLAN_USED)
-        );
-    }
-
-    private void addGiftRequests(
-            RedisConnection connection,
-            Long subId,
-            List<String> giftIds,
-            List<String> requestKeys,
-            LocalDate now
-    ) {
-
-        if (giftIds == null || giftIds.isEmpty()) {
-            return;
-        }
-
-        for (String giftIdStr : giftIds) {
-
-            Long giftId = Long.parseLong(giftIdStr);
-
-            requestKeys.add(K_GIFT_LIMIT_PREFIX + giftId);
-            connection.hGet(
-                    pipelineExecutor.serialize(
-                            SubscriptionUsageRedisKeyBuilder.giftLimit(subId, giftId, now)
-                    ),
-                    pipelineExecutor.serialize("gift_limit")
-            );
-
-            requestKeys.add(K_GIFT_USED_PREFIX + giftId);
-            connection.hGet(
-                    pipelineExecutor.serialize(
-                            SubscriptionUsageRedisKeyBuilder.giftUsage(subId, giftId, now)
-                    ),
-                    pipelineExecutor.serialize("gift_used")
-            );
-        }
-    }
-
     private SubscriptionUsage buildDomain(
             Long subId,
-            List<String> giftIds,
             Map<String, Object> resultMap
     ) {
 
-        Object planLimitValue = resultMap.get(K_PLAN_LIMIT);
-
-        if (planLimitValue == null) {
-            throw new ApplicationException(
-                    SubscriptionUsageErrorCode.SUBSCRIPTION_LIMIT_NOT_FOUND
-            );
-        }
-
         double planLimitKb =
-                RedisValueParser.toDouble(planLimitValue);
+                RedisValueParser.toDouble(resultMap.get(K_PLAN_LIMIT));
 
-        Object planUsedValue = resultMap.get(K_PLAN_USED);
-
-        double planUsedKb = planUsedValue == null
-                ? 0D
-                : RedisValueParser.toDouble(planUsedValue);
-
-        List<GiftUsage> gifts =
-                buildGiftUsageList(giftIds, resultMap);
+        double planUsedKb =
+                resultMap.get(K_PLAN_USED) == null
+                        ? 0D
+                        : RedisValueParser.toDouble(resultMap.get(K_PLAN_USED));
 
         return new SubscriptionUsage(
                 subId,
                 planLimitKb,
-                planUsedKb,
-                gifts
+                planUsedKb
         );
-    }
-
-    private List<GiftUsage> buildGiftUsageList(
-            List<String> giftIds,
-            Map<String, Object> resultMap
-    ) {
-
-        List<GiftUsage> gifts = new ArrayList<>();
-
-        for (String giftIdStr : giftIds) {
-
-            Long giftId = Long.parseLong(giftIdStr);
-
-            double limitKb =
-                    resultMap.get(K_GIFT_LIMIT_PREFIX + giftId) == null
-                            ? 0D
-                            : RedisValueParser.toDouble(
-                            resultMap.get(K_GIFT_LIMIT_PREFIX + giftId)
-                    );
-
-            double usedKb =
-                    resultMap.get(K_GIFT_USED_PREFIX + giftId) == null
-                            ? 0D
-                            : RedisValueParser.toDouble(
-                            resultMap.get(K_GIFT_USED_PREFIX + giftId)
-                    );
-
-            gifts.add(new GiftUsage(giftId, limitKb, usedKb));
-        }
-
-        return gifts;
     }
 
     private record PipelineResult(
@@ -220,10 +111,6 @@ public class SubscriptionUsageRedisRepository {
             List<Object> rawResults
     ) {}
 
-    /**
-     * 개인 데이터 한도와 개인 데이터 사용량을 Redis에서 조회
-     * 남은 잔여량을 계산 후 반환
-     */
     public long findRemainingPlanKb(
             Long subId,
             DataPeriod dataPeriod
@@ -241,24 +128,6 @@ public class SubscriptionUsageRedisRepository {
                 );
 
         return buildRemaining(resultMap);
-    }
-
-    private PipelineResult executePlanOnlyPipeline(
-            Long subId,
-            DataPeriod dataPeriod,
-            LocalDate now
-    ) {
-
-        List<String> requestKeys = new ArrayList<>();
-
-        List<Object> rawResults =
-                pipelineExecutor.execute((RedisCallback<Object>) connection -> {
-
-                    addPlanRequests(connection, subId, dataPeriod, requestKeys, now);
-                    return null;
-                });
-
-        return new PipelineResult(requestKeys, rawResults);
     }
 
     private long buildRemaining(Map<String, Object> resultMap) {
