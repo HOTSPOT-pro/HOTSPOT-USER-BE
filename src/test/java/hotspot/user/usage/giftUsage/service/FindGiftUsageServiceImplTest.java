@@ -3,6 +3,10 @@ package hotspot.user.usage.giftUsage.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +34,9 @@ class FindGiftUsageServiceImplTest {
     @Mock
     SubscriptionService subscriptionService;
 
+    @Mock
+    Clock clock;
+
     FindGiftUsageServiceImpl service;
 
     @BeforeEach
@@ -38,13 +45,19 @@ class FindGiftUsageServiceImplTest {
         service = new FindGiftUsageServiceImpl(
                 giftUsageRepository,
                 presentDataRepository,
-                subscriptionService
+                subscriptionService,
+                clock
         );
     }
 
     @Test
     @DisplayName("선물 데이터 조회 성공")
     void shouldReturnGiftUsageListSuccessfully() {
+
+        Instant fixedInstant = Instant.parse("2026-03-10T10:00:00Z");
+
+        when(clock.instant()).thenReturn(fixedInstant);
+        when(clock.getZone()).thenReturn(ZoneId.systemDefault());
 
         Subscription subscription =
                 Subscription.builder()
@@ -77,5 +90,7 @@ class FindGiftUsageServiceImplTest {
         assertEquals(2, result.giftUsages().size());
         assertEquals("김태연", result.giftUsages().get(0).giftUserName());
         assertEquals("아이유", result.giftUsages().get(1).giftUserName());
+
+        assertEquals(LocalDateTime.ofInstant(fixedInstant, ZoneId.systemDefault()), result.currentTime());
     }
 }
