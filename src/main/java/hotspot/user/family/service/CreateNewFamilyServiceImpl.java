@@ -144,7 +144,10 @@ public class CreateNewFamilyServiceImpl implements CreateNewFamilyService {
                         (existing, replacement) -> existing));
 
         Map<Long, SubscriptionKeyInfo> keyInfoBySubId = subscriptionKeyLookup.findKeyInfosBySubIds(
-                allInvolvedSubs.stream().map(Subscription::getId).toList()
+                allInvolvedSubs.stream()
+                        .map(Subscription::getId)
+                        .distinct()
+                        .toList()
         );
 
         Map<Long, String> subIdToPhoneMap = allInvolvedSubs.stream()
