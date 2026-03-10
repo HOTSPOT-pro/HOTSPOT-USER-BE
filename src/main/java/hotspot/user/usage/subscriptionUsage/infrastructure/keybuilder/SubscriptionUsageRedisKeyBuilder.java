@@ -32,16 +32,4 @@ public final class SubscriptionUsageRedisKeyBuilder {
     public static String planUsageDay(Long subId, LocalDate date) {
         return "usage:sub:" + subId + ":" + formatYYYYMMDD(date);
     }
-
-    public static String giftIndex(Long subId, LocalDate date) {
-        return "idx:gift:" + subId + ":" + formatYYYYMM(date);
-    }
-
-    public static String giftLimit(Long subId, Long giftId, LocalDate date) {
-        return "limit:gift:" + subId + ":" + giftId + ":" + formatYYYYMM(date);
-    }
-
-    public static String giftUsage(Long subId, Long giftId, LocalDate date) {
-        return "usage:gift:" + subId + ":" + giftId + ":" + formatYYYYMM(date);
-    }
 }
