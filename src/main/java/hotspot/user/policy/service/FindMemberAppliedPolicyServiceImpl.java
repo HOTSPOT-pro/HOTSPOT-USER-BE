@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPolicyService {
 
     private final FamilySubscriptionRepository familySubscriptionRepository;
@@ -40,6 +40,7 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
     private final FindBlockStatusService findBlockStatusService;
 
     @Override
+    @Transactional
     public AppliedPolicyResponse findByMemberId(Long memberId) {
 
         FamilySubscription familySub = familySubscriptionRepository.findByMemberId(memberId)
