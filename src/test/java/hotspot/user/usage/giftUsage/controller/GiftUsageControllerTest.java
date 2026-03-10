@@ -71,14 +71,13 @@ class GiftUsageControllerTest {
         when(findGiftUsageService.findGiftUsages(1L))
                 .thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/giftUsage/gifts")
-                        .param("memberId", "1"))
+        mockMvc.perform(get("/api/v1/giftUsage"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.giftDataAmount").value(10.0))
                 .andExpect(jsonPath("$.data.giftDataUsageAmount").value(3.0))
                 .andExpect(jsonPath("$.data.giftDataRemainAmount").value(7.0))
                 .andExpect(jsonPath("$.data.giftRemainPercent").value(70))
-                .andExpect(jsonPath("$.data.giftUsages[0].giftId").value(101L))
+                .andExpect(jsonPath("$.data.giftUsages[0].giftId").value(101))
                 .andExpect(jsonPath("$.data.giftUsages[0].giftUserName").value("김태연"));
     }
 }
