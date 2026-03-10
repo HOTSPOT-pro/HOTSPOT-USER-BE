@@ -102,8 +102,8 @@ class CreateNewFamilyServiceImplTest {
                 FamilyApplyTarget.builder().targetSubId(200L).targetFamilyRole(FamilyRole.CHILD).build()
         ));
 
-        given(phoneDecryptor.decrypt("ENC_SELF")).willReturn("010-0000-0000");
-        given(phoneDecryptor.decrypt("ENC_TARGET")).willReturn("010-1111-2222");
+        given(phoneDecryptor.decrypt("ENC_SELF", 100L)).willReturn("010-0000-0000");
+        given(phoneDecryptor.decrypt("ENC_TARGET", 200L)).willReturn("010-1111-2222");
 
         // when
         CreateNewFamilyResponse response = createNewFamilyService.createNewFamily(requesterMemberId, request);
@@ -148,7 +148,7 @@ class CreateNewFamilyServiceImplTest {
                 FamilyApplyTarget.builder().targetSubId(100L).targetFamilyRole(FamilyRole.OWNER).build()
         ));
 
-        given(phoneDecryptor.decrypt("ENC_SELF")).willReturn("010-0000-0000");
+        given(phoneDecryptor.decrypt("ENC_SELF", 100L)).willReturn("010-0000-0000");
 
         // when
         CreateNewFamilyResponse response = createNewFamilyService.createNewFamily(requesterMemberId, request);

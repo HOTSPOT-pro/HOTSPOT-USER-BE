@@ -97,7 +97,7 @@ class AddFamilyMemberServiceImplTest {
         given(familyApplyTargetRepository.saveAll(anyList())).willReturn(List.of(
                 FamilyApplyTarget.builder().targetSubId(200L).targetFamilyRole(FamilyRole.CHILD).build()
         ));
-        given(phoneDecryptor.decrypt("ENC")).willReturn("010-1111-2222");
+        given(phoneDecryptor.decrypt("ENC", 200L)).willReturn("010-1111-2222");
 
         // when
         AddFamilyMemberResponse response = addFamilyMemberService.addFamilyMember(requesterMemberId, familyId, request);

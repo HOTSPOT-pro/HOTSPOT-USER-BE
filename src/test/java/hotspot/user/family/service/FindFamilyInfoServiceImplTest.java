@@ -2,7 +2,7 @@ package hotspot.user.family.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
@@ -47,6 +47,7 @@ class FindFamilyInfoServiceImplTest {
                 .member(member)
                 .email("test@test.com")
                 .phone("enc_phone")
+                .subId(10L)
                 .build();
 
         FamilyDetailInfo detailInfo = FamilyDetailInfo.builder()
@@ -56,7 +57,7 @@ class FindFamilyInfoServiceImplTest {
                 .build();
 
         given(familyRepository.findInfoById(familyId)).willReturn(Optional.of(detailInfo));
-        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678");
+        given(phoneDecryptor.decrypt(eq("enc_phone"), eq(10L))).willReturn("010-1234-5678");
 
         // when
         FamilyInfoResponse response = findFamilyInfoService.findFamilyInfoById(familyId);

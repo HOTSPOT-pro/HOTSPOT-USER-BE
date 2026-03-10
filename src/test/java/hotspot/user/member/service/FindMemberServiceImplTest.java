@@ -3,6 +3,7 @@ package hotspot.user.member.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 import java.util.Optional;
@@ -63,7 +64,7 @@ class FindMemberServiceImplTest {
                 .build();
 
         given(memberRepository.findDetailByIdAndEmail(memberId, email)).willReturn(Optional.of(detailInfo));
-        given(phoneDecryptor.decrypt(anyString())).willReturn("010-1234-5678"); //  추가
+        given(phoneDecryptor.decrypt(anyString(), eq(subId))).willReturn("010-1234-5678");
 
         // when
         MemberResponse response = findMemberService.findByIdAndEmail(memberId, email);
