@@ -1,7 +1,5 @@
 package hotspot.user.common.crpyto;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,17 +61,11 @@ public class SubscriptionKeyLookup {
 
         return namedParameterJdbcTemplate.query(sql, params, rs -> {
             Map<Long, SubscriptionKeyInfo> keyInfoBySubId = new LinkedHashMap<>();
+            int rowNum = 0;
             while (rs.next()) {
-                keyInfoBySubId.put(rs.getLong("sub_id"), mapKeyInfo(rs));
+                keyInfoBySubId.put(rs.getLong("sub_id"), KEY_INFO_ROW_MAPPER.mapRow(rs, rowNum++));
             }
             return keyInfoBySubId;
         });
-    }
-
-    private SubscriptionKeyInfo mapKeyInfo(ResultSet rs) throws SQLException {
-        return new SubscriptionKeyInfo(
-                rs.getString("encrypted_dek"),
-                rs.getString("kek_key_id")
-        );
     }
 }
