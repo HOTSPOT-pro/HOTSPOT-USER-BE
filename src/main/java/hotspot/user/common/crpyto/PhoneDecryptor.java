@@ -14,8 +14,9 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.CryptoErrorCode;
 import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.kms.KmsClient;
 import software.amazon.awssdk.services.kms.model.DecryptRequest;
 
@@ -27,6 +28,8 @@ import software.amazon.awssdk.services.kms.model.DecryptRequest;
 public class PhoneDecryptor {
     private static final Pattern MOBILE_PATTERN = Pattern.compile("^01(?:0|1|[6-9])(?:\\d{3}|\\d{4})\\d{4}$");
     private static final String GCM_PREFIX = "gcm:";
+    private static final String PROVIDER_LOCAL = "local";
+    private static final String PROVIDER_KMS = "kms";
     private static final int GCM_NONCE_SIZE = 12;
     private static final int GCM_TAG_SIZE = 16;
     private static final int CBC_IV_SIZE = 16;
@@ -41,86 +44,74 @@ public class PhoneDecryptor {
             @Value("${app.crypto.encryption-provider:local}") String encryptionProvider,
             @Value("${app.crypto.kms-key-id:}") String defaultKmsKeyId,
             @Value("${app.crypto.secret-key:}") String secretKeyBase64,
-            @Value("${AWS_REGION:${aws.region:ap-northeast-2}}") String awsRegion,
+            KmsClient kmsClient,
             SubscriptionKeyLookup subscriptionKeyLookup
     ) {
-        this.encryptionProvider = Optional.ofNullable(encryptionProvider).orElse("local").toLowerCase();
+        this.encryptionProvider = Optional.ofNullable(encryptionProvider).orElse(PROVIDER_LOCAL).toLowerCase();
         this.defaultKmsKeyId = defaultKmsKeyId;
         this.subscriptionKeyLookup = subscriptionKeyLookup;
-        this.kmsClient = KmsClient.builder().region(Region.of(awsRegion)).build();
+        this.kmsClient = kmsClient;
 
         if (secretKeyBase64 == null || secretKeyBase64.isBlank()) {
             this.secretKey = null;
         } else {
-            this.secretKey = Base64.getDecoder().decode(secretKeyBase64);
-            if (this.secretKey.length != 32) {
-                throw new IllegalArgumentException("secret-key must be 32 bytes");
-            }
+            this.secretKey = decodeSecretKey(secretKeyBase64);
         }
     }
 
     public String decrypt(String phoneEnc, Long subId) {
-        try {
-            byte[] dek = resolveDek(subId);
-            String decrypted = new String(decryptPayload(phoneEnc, dek), StandardCharsets.UTF_8);
-            return normalizePhone(decrypted);
-        } catch (Exception e) {
-            throw new IllegalStateException("decrypt failed", e);
-        }
+        byte[] dek = resolveDek(subId);
+        return decryptPhoneNumber(phoneEnc, dek);
     }
 
     public String decrypt(String phoneEnc, SubscriptionKeyInfo keyInfo) {
-        try {
-            byte[] dek = resolveDek(keyInfo);
-            String decrypted = new String(decryptPayload(phoneEnc, dek), StandardCharsets.UTF_8);
-            return normalizePhone(decrypted);
-        } catch (Exception e) {
-            throw new IllegalStateException("decrypt failed", e);
-        }
+        byte[] dek = resolveDek(keyInfo);
+        return decryptPhoneNumber(phoneEnc, dek);
     }
 
     // Legacy fallback path for older call-sites.
     public String decrypt(String phoneEnc) {
         if (secretKey == null) {
-            throw new IllegalStateException("secret-key is required for legacy decrypt");
+            throw new ApplicationException(CryptoErrorCode.SECRET_KEY_REQUIRED);
         }
 
-        try {
-            String decrypted = new String(decryptPayload(phoneEnc, secretKey), StandardCharsets.UTF_8);
-            return normalizePhone(decrypted);
-        } catch (Exception e) {
-            throw new IllegalStateException("decrypt failed", e);
-        }
+        return decryptPhoneNumber(phoneEnc, secretKey);
     }
 
     private byte[] resolveDek(Long subId) {
         SubscriptionKeyInfo keyInfo = subscriptionKeyLookup.findKeyInfoBySubId(subId)
-                .orElseThrow(() -> new IllegalStateException("subscription key not found"));
+                .orElseThrow(() -> new ApplicationException(CryptoErrorCode.SUBSCRIPTION_KEY_NOT_FOUND));
 
         return resolveDek(keyInfo);
     }
 
     private byte[] resolveDek(SubscriptionKeyInfo keyInfo) {
         if (keyInfo == null) {
-            throw new IllegalStateException("subscription key not found");
+            throw new ApplicationException(CryptoErrorCode.SUBSCRIPTION_KEY_NOT_FOUND);
         }
 
-        if ("kms".equals(encryptionProvider)) {
+        if (PROVIDER_KMS.equals(encryptionProvider)) {
             String keyId = (keyInfo.kekKeyId() == null || keyInfo.kekKeyId().isBlank())
                     ? defaultKmsKeyId
                     : keyInfo.kekKeyId();
 
-            DecryptRequest.Builder requestBuilder = DecryptRequest.builder()
-                    .ciphertextBlob(SdkBytes.fromByteArray(Base64.getDecoder().decode(keyInfo.encryptedDek())));
-            if (keyId != null && !keyId.isBlank()) {
-                requestBuilder.keyId(keyId);
-            }
+            try {
+                DecryptRequest.Builder requestBuilder = DecryptRequest.builder()
+                        .ciphertextBlob(SdkBytes.fromByteArray(Base64.getDecoder().decode(keyInfo.encryptedDek())));
+                if (keyId != null && !keyId.isBlank()) {
+                    requestBuilder.keyId(keyId);
+                }
 
-            return kmsClient.decrypt(requestBuilder.build()).plaintext().asByteArray();
+                return kmsClient.decrypt(requestBuilder.build()).plaintext().asByteArray();
+            } catch (IllegalArgumentException e) {
+                throw new ApplicationException(CryptoErrorCode.INVALID_ENCRYPTED_PAYLOAD, e);
+            } catch (Exception e) {
+                throw new ApplicationException(CryptoErrorCode.DECRYPTION_FAILED, e);
+            }
         }
 
         if (secretKey == null) {
-            throw new IllegalStateException("secret-key is required for local decrypt");
+            throw new ApplicationException(CryptoErrorCode.SECRET_KEY_REQUIRED);
         }
 
         return decryptPayload(keyInfo.encryptedDek(), secretKey);
@@ -128,7 +119,7 @@ public class PhoneDecryptor {
 
     private byte[] decryptPayload(String payload, byte[] key) {
         if (payload == null || payload.isBlank()) {
-            throw new IllegalArgumentException("encrypted payload is blank");
+            throw new ApplicationException(CryptoErrorCode.INVALID_ENCRYPTED_PAYLOAD);
         }
 
         if (payload.startsWith(GCM_PREFIX)) {
@@ -148,8 +139,10 @@ public class PhoneDecryptor {
             GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_SIZE * 8, nonce);
             cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), spec);
             return cipher.doFinal(ciphertextAndTag);
+        } catch (IllegalArgumentException e) {
+            throw new ApplicationException(CryptoErrorCode.INVALID_ENCRYPTED_PAYLOAD, e);
         } catch (Exception e) {
-            throw new IllegalStateException("gcm decrypt failed", e);
+            throw new ApplicationException(CryptoErrorCode.DECRYPTION_FAILED, e);
         }
     }
 
@@ -162,8 +155,10 @@ public class PhoneDecryptor {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
             return cipher.doFinal(cipherText);
+        } catch (IllegalArgumentException e) {
+            throw new ApplicationException(CryptoErrorCode.INVALID_ENCRYPTED_PAYLOAD, e);
         } catch (Exception e) {
-            throw new IllegalStateException("cbc decrypt failed", e);
+            throw new ApplicationException(CryptoErrorCode.DECRYPTION_FAILED, e);
         }
     }
 
@@ -172,12 +167,12 @@ public class PhoneDecryptor {
      */
     public String normalizePhone(String rawPhoneNumber) {
         if (rawPhoneNumber == null || rawPhoneNumber.isBlank()) {
-            throw new IllegalArgumentException("Phone number is blank.");
+            throw new ApplicationException(CryptoErrorCode.DECRYPTION_FAILED);
         }
 
         String digits = rawPhoneNumber.replaceAll("\\D", "");
         if (!MOBILE_PATTERN.matcher(digits).matches()) {
-            throw new IllegalArgumentException("Phone number format is invalid.");
+            throw new ApplicationException(CryptoErrorCode.DECRYPTION_FAILED);
         }
 
         if (digits.length() == 11) {
@@ -185,5 +180,22 @@ public class PhoneDecryptor {
         }
 
         return digits.substring(0, 3) + "-" + digits.substring(3, 6) + "-" + digits.substring(6);
+    }
+
+    private byte[] decodeSecretKey(String secretKeyBase64) {
+        try {
+            byte[] decodedKey = Base64.getDecoder().decode(secretKeyBase64);
+            if (decodedKey.length != 32) {
+                throw new ApplicationException(CryptoErrorCode.INVALID_SECRET_KEY);
+            }
+            return decodedKey;
+        } catch (IllegalArgumentException e) {
+            throw new ApplicationException(CryptoErrorCode.INVALID_SECRET_KEY, e);
+        }
+    }
+
+    private String decryptPhoneNumber(String phoneEnc, byte[] dek) {
+        byte[] decrypted = decryptPayload(phoneEnc, dek);
+        return normalizePhone(new String(decrypted, StandardCharsets.UTF_8));
     }
 }
