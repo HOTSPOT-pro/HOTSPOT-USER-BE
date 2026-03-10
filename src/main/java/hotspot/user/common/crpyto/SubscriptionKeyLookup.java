@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -17,6 +18,11 @@ import lombok.RequiredArgsConstructor;
 @Repository
 @RequiredArgsConstructor
 public class SubscriptionKeyLookup {
+    private static final RowMapper<SubscriptionKeyInfo> KEY_INFO_ROW_MAPPER = (rs, rowNum) ->
+            new SubscriptionKeyInfo(
+                    rs.getString("encrypted_dek"),
+                    rs.getString("kek_key_id")
+            );
 
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -33,7 +39,7 @@ public class SubscriptionKeyLookup {
                 LIMIT 1
                 """;
 
-        return jdbcTemplate.query(sql, this::mapKeyInfo, subId)
+        return jdbcTemplate.query(sql, KEY_INFO_ROW_MAPPER, subId)
                 .stream()
                 .findFirst();
     }
@@ -62,10 +68,6 @@ public class SubscriptionKeyLookup {
             }
             return keyInfoBySubId;
         });
-    }
-
-    private SubscriptionKeyInfo mapKeyInfo(ResultSet rs, int rowNum) throws SQLException {
-        return mapKeyInfo(rs);
     }
 
     private SubscriptionKeyInfo mapKeyInfo(ResultSet rs) throws SQLException {
