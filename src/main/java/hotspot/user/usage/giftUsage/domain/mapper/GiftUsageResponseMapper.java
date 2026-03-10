@@ -1,5 +1,6 @@
 package hotspot.user.usage.giftUsage.domain.mapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ public final class GiftUsageResponseMapper {
     private GiftUsageResponseMapper() {}
 
     public static GiftUsageListResponse toGiftUsageListResponse(
+            LocalDateTime currentTime,
             List<GiftUsage> gifts,
             Map<Long, String> giftIdToUserName
     ) {
@@ -45,6 +47,7 @@ public final class GiftUsageResponseMapper {
                         .toList();
 
         return new GiftUsageListResponse(
+                currentTime,
                 totalLimit,
                 totalUsed,
                 totalRemain,

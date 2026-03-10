@@ -1,5 +1,7 @@
 package hotspot.user.usage.giftUsage.service;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +24,7 @@ public class FindGiftUsageServiceImpl implements FindGiftUsageService {
     private final GiftUsageRepository giftUsageRepository;
     private final PresentDataRepository presentDataRepository;
     private final SubscriptionService subscriptionService;
+    private final Clock clock;
 
     @Override
     public GiftUsageListResponse findGiftUsages(Long memberId) {
@@ -41,7 +44,9 @@ public class FindGiftUsageServiceImpl implements FindGiftUsageService {
         Map<Long, String> giftIdToUserName =
                 presentDataRepository.findGiftGiverNames(giftIds);
 
+        LocalDateTime now = LocalDateTime.now(clock);
+
         return GiftUsageResponseMapper
-                .toGiftUsageListResponse(usage, giftIdToUserName);
+                .toGiftUsageListResponse(now, usage, giftIdToUserName);
     }
 }

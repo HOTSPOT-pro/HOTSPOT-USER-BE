@@ -1,8 +1,10 @@
 package hotspot.user.usage.giftUsage.controller.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record GiftUsageListResponse(
+        LocalDateTime currentTime,
         Double giftDataAmount,
         Double giftDataUsageAmount,
         Double giftDataRemainAmount,
