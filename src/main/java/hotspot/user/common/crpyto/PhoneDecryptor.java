@@ -69,6 +69,16 @@ public class PhoneDecryptor {
         }
     }
 
+    public String decrypt(String phoneEnc, SubscriptionKeyInfo keyInfo) {
+        try {
+            byte[] dek = resolveDek(keyInfo);
+            String decrypted = new String(decryptPayload(phoneEnc, dek), StandardCharsets.UTF_8);
+            return normalizePhone(decrypted);
+        } catch (Exception e) {
+            throw new IllegalStateException("decrypt failed", e);
+        }
+    }
+
     // Legacy fallback path for older call-sites.
     public String decrypt(String phoneEnc) {
         if (secretKey == null) {
@@ -86,6 +96,14 @@ public class PhoneDecryptor {
     private byte[] resolveDek(Long subId) {
         SubscriptionKeyInfo keyInfo = subscriptionKeyLookup.findKeyInfoBySubId(subId)
                 .orElseThrow(() -> new IllegalStateException("subscription key not found"));
+
+        return resolveDek(keyInfo);
+    }
+
+    private byte[] resolveDek(SubscriptionKeyInfo keyInfo) {
+        if (keyInfo == null) {
+            throw new IllegalStateException("subscription key not found");
+        }
 
         if ("kms".equals(encryptionProvider)) {
             String keyId = (keyInfo.kekKeyId() == null || keyInfo.kekKeyId().isBlank())
