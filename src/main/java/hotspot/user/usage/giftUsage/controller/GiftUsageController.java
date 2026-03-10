@@ -1,17 +1,16 @@
 package hotspot.user.usage.giftUsage.controller;
 
-import hotspot.user.common.security.PrincipalDetails;
-import hotspot.user.usage.giftUsage.controller.swagger.GiftUsageApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
+import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.usage.giftUsage.controller.port.FindGiftUsageService;
 import hotspot.user.usage.giftUsage.controller.response.GiftUsageListResponse;
+import hotspot.user.usage.giftUsage.controller.swagger.GiftUsageApi;
 import lombok.RequiredArgsConstructor;
 
 @RestController
