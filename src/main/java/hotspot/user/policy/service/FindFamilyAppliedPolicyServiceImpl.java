@@ -33,6 +33,7 @@ public class FindFamilyAppliedPolicyServiceImpl implements FindFamilyAppliedPoli
     private final FamilyDataLimitRepository familyDataLimitRepository;
 
     @Override
+    @Transactional
     public FamilyAppliedPolicyResponse findByFamilyId(Long familyId) {
 
         Family family = familyRepository.findById(familyId)
