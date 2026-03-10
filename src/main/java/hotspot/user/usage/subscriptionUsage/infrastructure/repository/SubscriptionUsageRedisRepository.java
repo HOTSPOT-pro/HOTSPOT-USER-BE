@@ -99,9 +99,6 @@ public class SubscriptionUsageRedisRepository {
                         ? 0D
                         : RedisValueParser.toDouble(resultMap.get(K_PLAN_USED));
 
-        System.out.println("plan_limit raw = " + resultMap.get(K_PLAN_LIMIT));
-        System.out.println("plan_used raw = " + resultMap.get(K_PLAN_USED));
-
         return new SubscriptionUsage(
                 subId,
                 planLimitKb,
