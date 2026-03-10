@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,23 +56,9 @@ class SubscriptionUsageControllerTest {
                         now,
                         "요금제명",
                         24.0,
-                        0.0,
-                        24.0,
-                        0,
-                        4.0,
-                        0.5,
-                        3.5,
-                        87,
-                        List.of(
-                                new SubscriptionUsageResponse.GiftUsageResponse(
-                                        69395L,
-                                        "김태연",
-                                        1.0,
-                                        0.5,
-                                        0.5,
-                                        50
-                                )
-                        )
+                        3.0,
+                        21.0,
+                        88
                 );
 
         when(findSubscriptionUsageService.findSubscriptionUsage(1L))
@@ -82,9 +67,10 @@ class SubscriptionUsageControllerTest {
         mockMvc.perform(get("/api/v1/subscriptionUsage"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.subId").value(1L))
+                .andExpect(jsonPath("$.data.planName").value("요금제명"))
                 .andExpect(jsonPath("$.data.subDataAmount").value(24.0))
-                .andExpect(jsonPath("$.data.giftDataAmount").value(4.0))
-                .andExpect(jsonPath("$.data.giftUsages[0].giftId").value(69395L))
-                .andExpect(jsonPath("$.data.giftUsages[0].giftUserName").value("김태연"));
+                .andExpect(jsonPath("$.data.subDataUsageAmount").value(3.0))
+                .andExpect(jsonPath("$.data.subDataRemainAmount").value(21.0))
+                .andExpect(jsonPath("$.data.dataRemainPercent").value(88));
     }
 }

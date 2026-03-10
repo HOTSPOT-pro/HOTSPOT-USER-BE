@@ -90,52 +90,58 @@ class SubscriptionUsageRedisRepositoryTest {
     }
 
     @Test
-    @DisplayName("MONTH 요금제 개인 + 선물 사용량 정상 조회")
+    @DisplayName("findSubscriptionUsage(MONTH): 개인 데이터 조회")
     void shouldReturnSubscriptionUsageSuccessfully() {
 
         String yyyyMM = "202602";
 
-        // 개인 한도 24GB (KB)
+        // 개인 한도 24GB
         redisTemplate.opsForHash().put(
                 "limit:sub:1",
                 "plan_limit",
                 "25165824"
         );
 
-        // 개인 사용량 (⭐ plan_used)
+        // 개인 사용량 3GB
         redisTemplate.opsForHash().put(
                 "usage:sub:1:" + yyyyMM,
                 "plan_used",
-                "0"
-        );
-
-        // 선물 index
-        redisTemplate.opsForZSet().add(
-                "idx:gift:1:" + yyyyMM,
-                "69395",
-                1
-        );
-
-        // 선물 한도 1GB
-        redisTemplate.opsForHash().put(
-                "limit:gift:1:69395:" + yyyyMM,
-                "gift_limit",
-                "1048576"
-        );
-
-        // 선물 사용량 0.5GB
-        redisTemplate.opsForHash().put(
-                "usage:gift:1:69395:" + yyyyMM,
-                "gift_used",
-                "524288"
+                "3145728"
         );
 
         SubscriptionUsage usage =
                 repository.findSubscriptionUsage(1L, DataPeriod.MONTH);
 
         assertEquals(24.0, usage.limitGb());
-        assertEquals(1.0, usage.giftTotalLimitGb());
-        assertEquals(0.5, usage.giftTotalUsedGb());
+        assertEquals(3.0, usage.usedGb());
+        assertEquals(21.0, usage.remainGb());
+        assertEquals(88, usage.remainPercent());
+    }
+
+    @Test
+    @DisplayName("findSubscriptionUsage(DAY): 일 기준 사용량 조회")
+    void shouldReturnSubscriptionUsageForDay() {
+
+        String yyyyMMdd = "20260201";
+
+        redisTemplate.opsForHash().put(
+                "limit:sub:1",
+                "plan_limit",
+                "5242880"
+        );
+
+        redisTemplate.opsForHash().put(
+                "usage:sub:1:" + yyyyMMdd,
+                "plan_used",
+                "1048576"
+        );
+
+        SubscriptionUsage usage =
+                repository.findSubscriptionUsage(1L, DataPeriod.DAY);
+
+        assertEquals(5.0, usage.limitGb());
+        assertEquals(1.0, usage.usedGb());
+        assertEquals(4.0, usage.remainGb());
     }
 
     @Test
@@ -144,14 +150,12 @@ class SubscriptionUsageRedisRepositoryTest {
 
         String yyyyMM = "202602";
 
-        // plan_limit: 24GB (KB)
         redisTemplate.opsForHash().put(
                 "limit:sub:1",
                 "plan_limit",
                 "25165824"
         );
 
-        // plan_used: 3GB (KB)
         redisTemplate.opsForHash().put(
                 "usage:sub:1:" + yyyyMM,
                 "plan_used",
@@ -161,7 +165,6 @@ class SubscriptionUsageRedisRepositoryTest {
         long remainingKb =
                 repository.findRemainingPlanKb(1L, DataPeriod.MONTH);
 
-        // 24GB - 3GB = 21GB
         assertEquals(22020096L, remainingKb);
     }
 
@@ -171,14 +174,12 @@ class SubscriptionUsageRedisRepositoryTest {
 
         String yyyyMMdd = "20260201";
 
-        // plan_limit: 5GB (KB)
         redisTemplate.opsForHash().put(
                 "limit:sub:1",
                 "plan_limit",
                 "5242880"
         );
 
-        // plan_used: 1GB (KB)
         redisTemplate.opsForHash().put(
                 "usage:sub:1:" + yyyyMMdd,
                 "plan_used",
@@ -188,7 +189,6 @@ class SubscriptionUsageRedisRepositoryTest {
         long remainingKb =
                 repository.findRemainingPlanKb(1L, DataPeriod.DAY);
 
-        // 5GB - 1GB = 4GB
         assertEquals(4194304L, remainingKb);
     }
 
@@ -204,7 +204,7 @@ class SubscriptionUsageRedisRepositoryTest {
                 "1048576"
         );
 
-        // usage key는 있지만 plan_used 없음(또는 키 자체 없음) → 0 처리 기대
+        // usage는 있지만 plan_used 없음
         redisTemplate.opsForHash().put(
                 "usage:sub:1:" + yyyyMM,
                 "member_family_used",
