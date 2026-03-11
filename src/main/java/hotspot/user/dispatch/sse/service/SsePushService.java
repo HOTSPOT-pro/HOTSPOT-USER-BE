@@ -7,6 +7,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.dispatch.sse.domain.SsePayload;
 import hotspot.user.dispatch.sse.registry.SseEmitterRegistry;
 import hotspot.user.kafka.domain.NotificationType;
@@ -14,9 +15,11 @@ import hotspot.user.kafka.dto.UserAlertNotificationsPersistedEvent;
 import hotspot.user.notification.domain.Notification;
 import hotspot.user.notification.service.port.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class SsePushService {
 
     private final SseEmitterRegistry sseEmitterRegistry;
@@ -26,7 +29,21 @@ public class SsePushService {
     public void onNotificationsPersisted(UserAlertNotificationsPersistedEvent event) {
         Map<Long, Long> unreadCountsBySubId = new HashMap<>();
         for (Notification notification : event.persistedNotifications()) {
-            if (isFamilyCreateNotification(notification.getNotificationType())) {
+            String rawNotificationType = notification.getNotificationType();
+            NotificationType notificationType;
+            try {
+                notificationType = NotificationType.from(rawNotificationType);
+            } catch (ApplicationException ex) {
+                log.warn(
+                        "Skip SSE push due to unknown notification type. notificationId={}, type={}",
+                        notification.getId(),
+                        rawNotificationType
+                );
+                continue;
+            }
+
+            if (notificationType == NotificationType.FAMILY_CREATE_APPROVED
+                    || notificationType == NotificationType.FAMILY_CREATE_REJECTED) {
                 continue;
             }
 
@@ -37,8 +54,8 @@ public class SsePushService {
 
             SsePayload payload = SsePayload.builder()
                     .notificationId(notification.getId())
-                    .notificationType(notification.getNotificationType())
-                    .notificationCategory(NotificationType.from(notification.getNotificationType()).category())
+                    .notificationType(rawNotificationType)
+                    .notificationCategory(notificationType.category())
                     .title(notification.getTitle())
                     .content(notification.getContent())
                     .createdTime(notification.getCreatedTime())
@@ -56,8 +73,4 @@ public class SsePushService {
         }
     }
 
-    private boolean isFamilyCreateNotification(String notificationType) {
-        return "FAMILY_CREATE_APPROVED".equals(notificationType)
-                || "FAMILY_CREATE_REJECTED".equals(notificationType);
-    }
 }
