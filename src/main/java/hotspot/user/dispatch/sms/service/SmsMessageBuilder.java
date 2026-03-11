@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SmsErrorCode;
+import hotspot.user.common.util.redis.RedisUsageCalculator;
 import hotspot.user.dispatch.sms.config.SmsProperties;
 import hotspot.user.dispatch.sms.dto.SmsDispatchCommand;
 import hotspot.user.kafka.domain.NotificationType;
@@ -16,12 +17,13 @@ import lombok.RequiredArgsConstructor;
 public class SmsMessageBuilder {
 
     private static final String DEFAULT_LINK = "https://hotspot.pics";
+    private static final String BRAND_LABEL = "HOTSPOT";
 
     private final SmsProperties smsProperties;
 
     // 발신 헤더와 타입별 본문을 조합해 최종 SMS 문자열을 만든다.
     public String build(SmsDispatchCommand command, NotificationType notificationType) {
-        return "[" + smsProperties.getFrom() + "]\n" + resolveBody(command, notificationType);
+        return "[" + BRAND_LABEL + "]\n" + resolveBody(command, notificationType);
     }
 
     // 알림 타입에 따라 사용량 안내 또는 가족 생성 안내 본문으로 분기한다.
@@ -55,10 +57,21 @@ public class SmsMessageBuilder {
 
     // 사용량 안내 공통 포맷(제목/안내문/제공량/사용량/링크) 본문을 생성한다.
     private String buildUsageGuideBody(SmsDispatchCommand command, NotificationType notificationType) {
-        String title = defaultIfBlank(command.title(), "이번 달 데이터 사용량 안내");
-        String providedAmount = defaultIfBlank(command.providedAmount(), "-");
-        String usedPercent = defaultIfBlank(command.usedPercent(), "-");
-        String usedAmount = defaultIfBlank(command.usedAmount(), "-");
+        String title = defaultIfBlank(command.title(), "이번 달 데이터 사용 안내");
+
+        String providedAmountRaw = defaultIfBlank(command.providedAmount(), "0").trim().replace(",", "");
+        double providedGb = RedisUsageCalculator.kbToGb(Double.parseDouble(providedAmountRaw));
+        String providedAmount = (Math.floor(providedGb) == providedGb)
+                ? String.valueOf((long) providedGb)
+                : String.valueOf(providedGb);
+
+        String usedPercent = defaultIfBlank(command.usedPercent(), "0").trim().replace("%", "");
+
+        String usedAmountRaw = defaultIfBlank(command.usedAmount(), "0").trim().replace(",", "");
+        double usedGb = RedisUsageCalculator.kbToGb(Double.parseDouble(usedAmountRaw));
+        String usedAmount = (Math.floor(usedGb) == usedGb)
+                ? String.valueOf((long) usedGb)
+                : String.valueOf(usedGb);
         String intro = resolveUsageIntro(command, notificationType);
 
         return String.format(Locale.KOREA, """
@@ -68,8 +81,8 @@ public class SmsMessageBuilder {
 
 
                         ▶ 데이터 사용량 안내
-                         - 제공량: %s
-                         - 사용량: %s %s
+                         - 제공량: %sGB
+                         - 사용량: %s%% %sGB
 
 
                         ▶ 요금제 사용량 확인하기
