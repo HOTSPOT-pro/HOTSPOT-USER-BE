@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
 import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.FamilyErrorCode;
+import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.subscription.domain.Subscription;
@@ -33,7 +33,7 @@ public class FindTotalUsageServiceImpl implements FindTotalUsageService {
         Subscription subscription = subscriptionService.findByMemberId(memberId);
 
         Long familyId = familySubscriptionRepository.findFamilyIdByMemberId(memberId)
-                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException(MemberErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
 
         DataPeriod dataPeriod =
                 subscription.getPlan().getDataPeriod();
