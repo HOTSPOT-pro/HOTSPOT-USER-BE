@@ -38,8 +38,8 @@ class SsePushServiceTest {
     @Test
     @DisplayName("pushes persisted notifications to all emitters in subId and includes unread count lookup")
     void pushPersistedNotifications() {
-        Notification first = notification(101L, 1L, "TYPE_1");
-        Notification second = notification(102L, 1L, "TYPE_2");
+        Notification first = notification(101L, 1L, "SINGLE_USAGE_THRESHOLD_30");
+        Notification second = notification(102L, 1L, "IMMEDIATE_BLOCK_APPLIED");
         UserAlertNotificationsPersistedEvent event = new UserAlertNotificationsPersistedEvent(
                 sourceEvent(),
                 List.of(first, second)
