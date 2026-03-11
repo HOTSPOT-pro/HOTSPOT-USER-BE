@@ -46,6 +46,6 @@ class CreateS3PathServiceImplTest {
         // then
         assertNotNull(result);
         assertEquals("https://mock-url", result.uploadUrl());
-        assertTrue(result.tempKey().endsWith(".png"));
+        assertTrue(result.tempKey().endsWith(".webp"));
     }
 }
