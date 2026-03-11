@@ -21,7 +21,7 @@ public class CreateS3PathServiceImpl implements CreateS3PathService {
     @Value("${s3.bucket.temp}")
     private String tempBucket;
 
-    private static final String ALLOWED_TYPE = "image/png";
+    private static final String ALLOWED_TYPE = "image/webp";
 
     @Override
     public S3PathResponse createS3Path() {
@@ -46,6 +46,6 @@ public class CreateS3PathServiceImpl implements CreateS3PathService {
                 + LocalDate.now()
                 + "/"
                 + UUID.randomUUID()
-                + ".png";
+                + ".webp";
     }
 }
