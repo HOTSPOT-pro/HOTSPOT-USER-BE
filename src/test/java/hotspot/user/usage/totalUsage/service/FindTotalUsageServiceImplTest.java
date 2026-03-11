@@ -7,6 +7,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.plan.domain.Plan;
 import hotspot.user.subscription.domain.Subscription;
@@ -28,6 +30,9 @@ class FindTotalUsageServiceImplTest {
 
     @Mock
     private SubscriptionService subscriptionService;
+
+    @Mock
+    private FamilySubscriptionRepository familySubscriptionRepository;
 
     @Mock
     private TotalUsageRepository totalUsageRepository;
@@ -62,6 +67,9 @@ class FindTotalUsageServiceImplTest {
         when(subscriptionService.findByMemberId(1L))
                 .thenReturn(subscription);
 
+        when(familySubscriptionRepository.findFamilyIdByMemberId(1L))
+                .thenReturn(Optional.of(2L));
+
         TotalUsage usage =
                 new TotalUsage(
                         38.0,
@@ -76,7 +84,7 @@ class FindTotalUsageServiceImplTest {
                 .thenReturn(usage);
 
         TotalUsageResponse result =
-                service.findTotalUsage(1L, 2L);
+                service.findTotalUsage(1L);
 
         assertEquals(7L, result.subId());
         assertEquals("5G 프리미엄", result.planName());
