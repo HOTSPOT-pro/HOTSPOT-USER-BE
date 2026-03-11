@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.common.security.annotation.CurrentFamilyId;
 import hotspot.user.usage.totalUsage.controller.port.FindTotalUsageService;
 import hotspot.user.usage.totalUsage.controller.response.TotalUsageResponse;
 import hotspot.user.usage.totalUsage.controller.swagger.TotalUsageApi;
@@ -22,11 +23,12 @@ public class TotalUsageController implements TotalUsageApi {
 
     @GetMapping
     public ResponseEntity<ApiResponse<TotalUsageResponse>> findTotalUsage(
-            @AuthenticationPrincipal PrincipalDetails details
-            ) {
+            @AuthenticationPrincipal PrincipalDetails details,
+            @CurrentFamilyId Long familyId
+    ) {
         return ResponseEntity.ok(ApiResponse.success(
                 findTotalUsageService.findTotalUsage(
                         details.getId(),
-                        details.getFamilyId())));
+                        familyId)));
     }
 }

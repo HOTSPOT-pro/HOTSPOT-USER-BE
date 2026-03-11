@@ -5,6 +5,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.ErrorResponse;
 
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.common.security.annotation.CurrentFamilyId;
 import hotspot.user.usage.totalUsage.controller.response.TotalUsageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -47,6 +48,9 @@ public interface TotalUsageApi {
     })
     ResponseEntity<hotspot.user.common.ApiResponse<TotalUsageResponse>> findTotalUsage(
             @Parameter(hidden = true)
-            @AuthenticationPrincipal PrincipalDetails details
+            @AuthenticationPrincipal PrincipalDetails details,
+
+            @Parameter(hidden = true)
+            @CurrentFamilyId Long familyId
     );
 }
