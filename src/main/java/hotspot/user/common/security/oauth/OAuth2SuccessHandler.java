@@ -65,7 +65,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             ResponseCookie accessCookie = CookieUtil.createCookie("accessToken", accessToken, accessExpiration);
             response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 
-            targetUrl = determineOnboardingUrl(accessToken);
+            targetUrl = determineOnboardingUrl();
         }
 
         // 바로 로그인 (토큰 발급 O)
@@ -87,11 +87,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
             // 온보딩 마쳤지만 가족이 없는 경우 onboarding/family로 리다이렉트
             if (principal.getFamilyId() == null) {
-                targetUrl = determineOnboardingFamilyUrl(accessToken);
+                targetUrl = determineOnboardingFamilyUrl();
             }
 
             else {
-                targetUrl = determineMainUrl(accessToken);
+                targetUrl = determineMainUrl();
             }
 
         }
@@ -99,21 +99,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private String determineOnboardingUrl(String accessToken) {
+    private String determineOnboardingUrl() {
         String baseUri = redirectUri + "/" + onboardingRedirectUri;
         return UriComponentsBuilder.fromUriString(baseUri)
                 .build().toUriString();
     }
 
-    private String determineMainUrl(String accessToken) {
+    private String determineMainUrl() {
         return UriComponentsBuilder.fromUriString(redirectUri)
                 .build().toUriString();
     }
 
-    // 온보딩 마쳤지만 가족이 없는 경우 onbiarding/family로 리다이렉트한다.
-    private String determineOnboardingFamilyUrl(String accessToken) {
+    // 온보딩 마쳤지만 가족이 없는 경우 onboarding/family로 리다이렉트한다.
+    private String determineOnboardingFamilyUrl() {
         String baseUri = redirectUri + "/" + onboardingRedirectUri + "/family";
-        return UriComponentsBuilder.fromUriString(redirectUri)
+        return UriComponentsBuilder.fromUriString(baseUri)
                 .build().toUriString();
     }
 }
