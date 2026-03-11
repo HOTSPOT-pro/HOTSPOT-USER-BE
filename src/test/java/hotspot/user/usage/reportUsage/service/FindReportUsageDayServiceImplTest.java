@@ -93,6 +93,62 @@ class FindReportUsageDayServiceImplTest {
         ).isInstanceOf(ApplicationException.class);
     }
 
+    @Test
+    void shouldGenerateDatesUntilTodayWhenMonthIsCurrentMonth() {
+
+        when(familySubscriptionRepository.findByFamilyId(familyId))
+                .thenReturn(List.of(mockFamily(sub1, "본인")));
+
+        when(reportUsageRepository.findReportUsageDailyGb(anyList(), anyList()))
+                .thenReturn(Map.of());
+
+        ReportUsageDayResponse response =
+                service.findReportUsageDay(
+                        familyId,
+                        sub1,
+                        YearMonth.of(2026, 2)
+                );
+
+        List<ReportUsageDayResponse.SubUsageResponse.DataUsageDayResponse> days =
+                response.subUsages()
+                        .get(0)
+                        .dataUsageDays();
+
+        assertThat(days.get(0).usageDate())
+                .isEqualTo(LocalDate.of(2026, 2, 1));
+
+        assertThat(days.get(days.size() - 1).usageDate())
+                .isEqualTo(LocalDate.of(2026, 2, 23));
+    }
+
+    @Test
+    void shouldGenerateFullMonthWhenPastMonth() {
+
+        when(familySubscriptionRepository.findByFamilyId(familyId))
+                .thenReturn(List.of(mockFamily(sub1, "본인")));
+
+        when(reportUsageRepository.findReportUsageDailyGb(anyList(), anyList()))
+                .thenReturn(Map.of());
+
+        ReportUsageDayResponse response =
+                service.findReportUsageDay(
+                        familyId,
+                        sub1,
+                        YearMonth.of(2026, 1)
+                );
+
+        List<ReportUsageDayResponse.SubUsageResponse.DataUsageDayResponse> days =
+                response.subUsages()
+                        .get(0)
+                        .dataUsageDays();
+
+        assertThat(days.get(0).usageDate())
+                .isEqualTo(LocalDate.of(2026, 1, 1));
+
+        assertThat(days.get(days.size() - 1).usageDate())
+                .isEqualTo(LocalDate.of(2026, 1, 31));
+    }
+
     private FamilySubscription mockFamily(Long subId, String name) {
 
         Member member = Member.builder()

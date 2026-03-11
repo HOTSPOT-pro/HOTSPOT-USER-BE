@@ -98,8 +98,14 @@ public class FindReportUsageDayServiceImpl implements FindReportUsageDayService 
 
     private List<LocalDate> generateMonthDates(YearMonth month) {
 
+        LocalDate today = LocalDate.now(clock);
+
         LocalDate start = month.atDay(1);
-        LocalDate end = month.atEndOfMonth();
+
+        LocalDate end =
+                month.equals(YearMonth.from(today))
+                        ? today
+                        : month.atEndOfMonth();
 
         return start.datesUntil(end.plusDays(1)).toList();
     }

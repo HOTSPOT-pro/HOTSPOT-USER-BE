@@ -182,6 +182,10 @@ public class TotalUsageRedisRepository {
         double totalRemainKb =
                 planRemainKb + familyRemainKb + giftRemainKb;
 
+        if (planLimitKb == -1) {
+            return unlimitedResult(giftRemainKb, familyRemainKb);
+        }
+
         return new TotalUsage(
 
                 RedisUsageCalculator.kbToGb(totalLimitKb),
@@ -189,6 +193,18 @@ public class TotalUsageRedisRepository {
                 RedisUsageCalculator.calculatePercent(totalRemainKb, totalLimitKb),
 
                 RedisUsageCalculator.kbToGb(planRemainKb),
+                RedisUsageCalculator.kbToGb(giftRemainKb),
+                RedisUsageCalculator.kbToGb(familyRemainKb)
+        );
+    }
+
+    private TotalUsage unlimitedResult(double giftRemainKb, double familyRemainKb) {
+
+        return new TotalUsage(
+                -1, // total amount
+                -1, // remain
+                -1, // percent
+                -1,
                 RedisUsageCalculator.kbToGb(giftRemainKb),
                 RedisUsageCalculator.kbToGb(familyRemainKb)
         );
