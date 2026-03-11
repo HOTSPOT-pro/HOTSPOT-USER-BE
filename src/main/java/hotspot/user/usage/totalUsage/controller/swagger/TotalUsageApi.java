@@ -5,7 +5,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.ErrorResponse;
 
 import hotspot.user.common.security.PrincipalDetails;
-import hotspot.user.common.security.annotation.CurrentFamilyId;
 import hotspot.user.usage.totalUsage.controller.response.TotalUsageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +37,7 @@ public interface TotalUsageApi {
                             잘못된 요청
                             - TOTAL_USAGE_001: 개인 요금제 데이터 한도를 조회할 수 없습니다
                             - TOTAL_USAGE_002: 가족 요금제 데이터 한도를 조회할 수 없습니다
+                            - MEMBER_004: 회선의 가족 결합 정보를 찾을 수 없습니다
                             """,
                     content = @Content(
                             schema = @Schema(
@@ -48,9 +48,6 @@ public interface TotalUsageApi {
     })
     ResponseEntity<hotspot.user.common.ApiResponse<TotalUsageResponse>> findTotalUsage(
             @Parameter(hidden = true)
-            @AuthenticationPrincipal PrincipalDetails details,
-
-            @Parameter(hidden = true)
-            @CurrentFamilyId Long familyId
+            @AuthenticationPrincipal PrincipalDetails details
     );
 }
