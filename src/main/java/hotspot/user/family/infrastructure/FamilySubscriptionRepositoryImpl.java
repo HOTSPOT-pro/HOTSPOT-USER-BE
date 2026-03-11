@@ -47,6 +47,11 @@ public class FamilySubscriptionRepositoryImpl implements FamilySubscriptionRepos
     }
 
     @Override
+    public Optional<Long> findFamilyIdByMemberId(Long memberId) {
+        return jpaRepository.findFamilyIdByMemberId(memberId);
+    }
+
+    @Override
     public FamilySubscription save(FamilySubscription familySubscription) {
         FamilySubscriptionEntity entity = FamilySubscriptionEntity.domainToEntity(familySubscription);
         FamilySubscriptionEntity savedEntity = jpaRepository.save(entity);
