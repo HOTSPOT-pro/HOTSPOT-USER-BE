@@ -29,6 +29,9 @@ public interface FamilySubscriptionJpaRepository extends JpaRepository<FamilySub
     @EntityGraph(attributePaths = {"family", "subscription", "subscription.member"})
     Optional<FamilySubscriptionEntity> findBySubscriptionMemberId(Long memberId);
 
+    @Query("SELECT fs.family.familyId FROM FamilySubscriptionEntity fs WHERE fs.subscription.member.id = :memberId")
+    Optional<Long> findFamilyIdByMemberId(@Param("memberId") Long memberId);
+
     // Bulk Update 쿼리
     @Modifying(clearAutomatically = true)
     @Query("UPDATE FamilySubscriptionEntity fs SET fs.priority = :priority WHERE fs.subscription.subId = :subId")
