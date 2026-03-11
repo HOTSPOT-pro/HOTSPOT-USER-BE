@@ -58,8 +58,8 @@ class SolapiSmsSenderTest {
         given(requestFactory.buildSendUrl("https://api.solapi.com", "/messages/v4/send-many/detail"))
                 .willReturn("https://api.solapi.com/messages/v4/send-many/detail");
         given(requestFactory.buildPayload("01012345678", "010-1234-5678", "test-message"))
-                .willReturn(java.util.Map.of("message", java.util.Map.of()));
-        given(objectMapper.writeValueAsString(any())).willReturn("{\"message\":{}}");
+                .willReturn(java.util.Map.of("messages", java.util.List.of(java.util.Map.of())));
+        given(objectMapper.writeValueAsString(any())).willReturn("{\"messages\":[{}]}");
         given(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).willReturn(response);
         given(response.statusCode()).willReturn(200);
 
@@ -89,8 +89,8 @@ class SolapiSmsSenderTest {
         given(requestFactory.buildSendUrl("https://api.solapi.com", "/messages/v4/send-many/detail"))
                 .willReturn("https://api.solapi.com/messages/v4/send-many/detail");
         given(requestFactory.buildPayload("01012345678", "01012345678", "test-message"))
-                .willReturn(java.util.Map.of("message", java.util.Map.of()));
-        given(objectMapper.writeValueAsString(any())).willReturn("{\"message\":{}}");
+                .willReturn(java.util.Map.of("messages", java.util.List.of(java.util.Map.of())));
+        given(objectMapper.writeValueAsString(any())).willReturn("{\"messages\":[{}]}");
         given(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).willReturn(response);
         given(response.statusCode()).willReturn(400);
 

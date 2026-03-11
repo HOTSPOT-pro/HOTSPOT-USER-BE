@@ -2,6 +2,7 @@ package hotspot.user.dispatch.sms.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
@@ -29,9 +30,11 @@ class SolapiRequestFactoryTest {
     void buildPayload() {
         Map<String, Object> payload = factory.buildPayload("010-1111-2222", "010-3333-4444", "hello");
 
-        assertThat(payload).containsKey("message");
+        assertThat(payload).containsKey("messages");
         @SuppressWarnings("unchecked")
-        Map<String, String> message = (Map<String, String>) payload.get("message");
+        List<Map<String, String>> messages = (List<Map<String, String>>) payload.get("messages");
+        assertThat(messages).hasSize(1);
+        Map<String, String> message = messages.get(0);
         assertThat(message.get("from")).isEqualTo("01011112222");
         assertThat(message.get("to")).isEqualTo("01033334444");
         assertThat(message.get("text")).isEqualTo("hello");
