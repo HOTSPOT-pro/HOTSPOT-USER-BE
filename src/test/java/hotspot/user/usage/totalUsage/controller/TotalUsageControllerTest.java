@@ -1,24 +1,31 @@
 package hotspot.user.usage.totalUsage.controller;
 
 import static hotspot.user.util.TestSecurityUtil.setAuthentication;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import hotspot.user.common.security.annotation.CurrentFamilyId;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
+import hotspot.user.common.security.resolver.CurrentFamilyIdResolver;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.usage.totalUsage.controller.port.FindTotalUsageService;
 import hotspot.user.usage.totalUsage.controller.response.TotalUsageResponse;
@@ -27,11 +34,25 @@ import hotspot.user.usage.totalUsage.controller.response.TotalUsageResponse;
 @AutoConfigureMockMvc(addFilters = false)
 class TotalUsageControllerTest {
 
+    @TestConfiguration
+    static class TestConfig implements WebMvcConfigurer {
+        @Autowired
+        private CurrentFamilyIdResolver currentFamilyIdResolver;
+
+        @Override
+        public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+            resolvers.add(currentFamilyIdResolver);
+        }
+    }
+
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private FindTotalUsageService findTotalUsageService;
+
+    @MockBean
+    private CurrentFamilyIdResolver currentFamilyIdResolver;
 
     @MockBean
     private JwtFilter jwtFilter;
@@ -47,6 +68,14 @@ class TotalUsageControllerTest {
     void shouldReturnTotalUsageSuccessfully() throws Exception {
 
         setAuthentication(1L, 2L, FamilyRole.OWNER);
+
+        when(currentFamilyIdResolver.supportsParameter(any()))
+                .thenAnswer(invocation -> {
+                    org.springframework.core.MethodParameter parameter = invocation.getArgument(0);
+                    return parameter.hasParameterAnnotation(CurrentFamilyId.class);
+                });
+        when(currentFamilyIdResolver.resolveArgument(any(), any(), any(), any()))
+                .thenReturn(2L);
 
         TotalUsageResponse response =
                 new TotalUsageResponse(
