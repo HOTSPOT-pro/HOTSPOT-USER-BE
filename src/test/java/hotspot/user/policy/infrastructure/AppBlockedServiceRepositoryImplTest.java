@@ -44,7 +44,7 @@ class AppBlockedServiceRepositoryImplTest {
                 .blockedServiceCode("TIKTOK")
                 .build();
 
-        given(appBlockedServiceJpaRepository.findAll()).willReturn(List.of(entity1, entity2));
+        given(appBlockedServiceJpaRepository.findByIsActiveTrue()).willReturn(List.of(entity1, entity2));
 
         List<AppBlockedService> result = appBlockedServiceRepository.findAll();
 
