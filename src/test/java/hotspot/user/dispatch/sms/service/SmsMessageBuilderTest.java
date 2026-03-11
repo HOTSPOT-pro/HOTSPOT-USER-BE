@@ -30,7 +30,7 @@ class SmsMessageBuilderTest {
                 .contains("[HOTSPOT]\n이번 달 데이터 사용량 안내")
                 .contains("「유쓰 5G 데이터 플러스」")
                 .contains("- 제공량: 110GB")
-                .contains("- 사용량: 80% 88.02GB")
+                .contains("- 사용량: 80% 88GB")
                 .contains("▶ 요금제 사용량 확인하기\n☞ https://hotspot.pics")
                 .contains("https://hotspot.pics");
     }
@@ -71,9 +71,9 @@ class SmsMessageBuilderTest {
                 "content",
                 LocalDateTime.of(2026, 2, 23, 10, 15, 30),
                 null,
-                "10GB",
-                "90%",
-                "9.0GB",
+                "10485760",
+                "90",
+                "9437184",
                 "민수"
         );
 
@@ -113,9 +113,9 @@ class SmsMessageBuilderTest {
                 "content",
                 LocalDateTime.of(2026, 2, 23, 10, 15, 30),
                 "유쓰 5G 데이터 플러스",
-                "110GB",
-                "80%",
-                "88.02GB",
+                "115343360",
+                "80",
+                "92274688",
                 null
         );
     }
