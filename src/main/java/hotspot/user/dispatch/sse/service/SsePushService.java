@@ -55,7 +55,6 @@ public class SsePushService {
             SsePayload payload = SsePayload.builder()
                     .notificationId(notification.getId())
                     .notificationType(rawNotificationType)
-                    .notificationCategory(notificationType.category())
                     .title(notification.getTitle())
                     .content(notification.getContent())
                     .createdTime(notification.getCreatedTime())

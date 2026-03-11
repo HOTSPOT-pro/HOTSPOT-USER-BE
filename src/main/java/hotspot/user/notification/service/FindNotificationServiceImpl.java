@@ -51,6 +51,11 @@ public class FindNotificationServiceImpl implements FindNotificationService {
     private Pageable normalizePageable(Pageable pageable) {
         int page = pageable == null ? 0 : pageable.getPageNumber();
         int size = pageable == null ? DEFAULT_PAGE_SIZE : pageable.getPageSize();
-        return PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdTime"));
+        return PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "createdTime")
+                        .and(Sort.by(Sort.Direction.DESC, "notificationId"))
+        );
     }
 }
