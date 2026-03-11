@@ -20,6 +20,7 @@ public interface AppBlockedServiceJpaRepository extends JpaRepository<AppBlocked
         from AppBlockedServiceEntity a
         where a.appBlockedServiceId in :ids
           and a.isActive = true
+          and a.isDeleted = false
     """)
     List<AppBlockedServiceEntity> findByIdInAndIsActiveTrue(
             @Param("ids") List<Long> ids
