@@ -49,13 +49,13 @@ public class SolapiSmsSender implements SmsSenderPort {
     // Solapi API를 호출해 실제 SMS 발송을 수행한다.
     public void send(String to, String message) {
         validateCredentials();
+        String sendUrl = requestFactory.buildSendUrl(smsProperties.getApiBaseUrl(), smsProperties.getSendPath());
         try {
             String authorization = authHeaderFactory.create(smsProperties.getApiKey(), smsProperties.getApiSecret());
 
             String payload = objectMapper.writeValueAsString(
                     requestFactory.buildPayload(smsProperties.getFrom(), to, message)
             );
-            String sendUrl = requestFactory.buildSendUrl(smsProperties.getApiBaseUrl(), smsProperties.getSendPath());
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(sendUrl))
                     .timeout(REQUEST_TIMEOUT)
@@ -66,6 +66,12 @@ public class SolapiSmsSender implements SmsSenderPort {
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                log.warn(
+                        "Solapi request failed. statusCode={}, url={}, responseBody={}",
+                        response.statusCode(),
+                        sendUrl,
+                        truncate(response.body())
+                );
                 throw new ApplicationException(SmsErrorCode.SMS_PROVIDER_REQUEST_FAILED);
             }
 
@@ -73,6 +79,13 @@ public class SolapiSmsSender implements SmsSenderPort {
             if (ex instanceof ApplicationException) {
                 throw (ApplicationException) ex;
             }
+            log.error(
+                    "Solapi request exception. url={}, exceptionType={}, message={}",
+                    sendUrl,
+                    ex.getClass().getSimpleName(),
+                    ex.getMessage(),
+                    ex
+            );
             throw new ApplicationException(SmsErrorCode.SMS_PROVIDER_REQUEST_FAILED, ex);
         }
     }
@@ -93,5 +106,14 @@ public class SolapiSmsSender implements SmsSenderPort {
     // 문자열이 null 또는 공백인지 반환한다.
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    // 과도한 로그 적재를 막기 위해 응답 바디 길이를 제한한다.
+    private static String truncate(String value) {
+        if (value == null) {
+            return "";
+        }
+        int maxLength = 500;
+        return value.length() <= maxLength ? value : value.substring(0, maxLength) + "...";
     }
 }

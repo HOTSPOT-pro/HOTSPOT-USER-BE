@@ -2,7 +2,6 @@ package hotspot.user.usage.subscriptionUsage.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,8 +9,6 @@ import static org.mockito.Mockito.when;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,11 +20,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.plan.domain.Plan;
-import hotspot.user.presentData.service.port.PresentDataRepository;
 import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.SubscriptionService;
 import hotspot.user.usage.subscriptionUsage.controller.response.SubscriptionUsageResponse;
-import hotspot.user.usage.subscriptionUsage.domain.GiftUsage;
 import hotspot.user.usage.subscriptionUsage.domain.SubscriptionUsage;
 import hotspot.user.usage.subscriptionUsage.service.port.SubscriptionUsageRepository;
 
@@ -36,9 +31,6 @@ class FindSubscriptionUsageServiceImplTest {
 
     @Mock
     SubscriptionUsageRepository subscriptionUsageRepository;
-
-    @Mock
-    PresentDataRepository presentDataRepository;
 
     @Mock
     Clock clock;
@@ -81,14 +73,7 @@ class FindSubscriptionUsageServiceImplTest {
                 new SubscriptionUsage(
                         subscriptionId,
                         24 * 1024 * 1024, // 24GB KB 단위
-                        0,
-                        List.of(
-                                new GiftUsage(
-                                        69395L,
-                                        1 * 1024 * 1024,
-                                        512 * 1024 // 0.5GB
-                                )
-                        )
+                        0
                 );
 
         when(subscriptionService.findByMemberId(memberId))
@@ -99,9 +84,6 @@ class FindSubscriptionUsageServiceImplTest {
                 eq(DataPeriod.MONTH)
         )).thenReturn(mockUsage);
 
-        when(presentDataRepository.findGiftGiverNames(eq(List.of(69395L))))
-                .thenReturn(Map.of(69395L, "김태연"));
-
         // when
         SubscriptionUsageResponse response =
                 service.findSubscriptionUsage(memberId);
@@ -111,10 +93,6 @@ class FindSubscriptionUsageServiceImplTest {
         assertEquals(subscriptionId, response.subId());
         assertEquals("프리미엄 요금제", response.planName());
 
-        assertEquals(1, response.giftUsages().size());
-        assertEquals("김태연",
-                response.giftUsages().get(0).giftUserName());
-
         verify(subscriptionService)
                 .findByMemberId(memberId);
 
@@ -123,8 +101,5 @@ class FindSubscriptionUsageServiceImplTest {
                         subscriptionId,
                         DataPeriod.MONTH
                 );
-
-        verify(presentDataRepository)
-                .findGiftGiverNames(anyList());
     }
 }

@@ -30,7 +30,7 @@ public class SmsRecipientResolver {
         }
 
         try {
-            return SmsRecipientResolution.found(phoneDecryptor.decrypt(phoneEnc));
+            return SmsRecipientResolution.found(phoneDecryptor.decrypt(phoneEnc, subscription.getId()));
         } catch (RuntimeException ex) {
             return SmsRecipientResolution.decryptFailed();
         }

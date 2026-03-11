@@ -95,7 +95,7 @@ class FamilyControllerTest {
                 .memberInfoList(List.of(member1, member2))
                 .build();
 
-        given(findFamilyInfoService.findFamilyInfoById(familyId)).willReturn(response);
+        given(findFamilyInfoService.findFamilyInfoById(1L, familyId)).willReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/v1/families")

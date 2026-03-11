@@ -60,7 +60,7 @@ public class OnboardingServiceImpl implements OnboardingService {
                 Optional.ofNullable(familySub).map(FamilySubscription::getFamilyRole).orElse(FamilyRole.NONE),
                 Optional.ofNullable(familySub).map(fs -> fs.getFamily().getId()).orElse(null));
 
-        String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc());
+        String decryptedPhone = phoneDecryptor.decrypt(subscription.getPhoneEnc(), subscription.getId());
 
         return OnboardingMapper.toOnboardingResponse(
                 subscription.getId(),

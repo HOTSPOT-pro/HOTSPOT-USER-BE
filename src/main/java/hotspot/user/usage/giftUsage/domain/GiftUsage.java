@@ -1,4 +1,4 @@
-package hotspot.user.usage.subscriptionUsage.domain;
+package hotspot.user.usage.giftUsage.domain;
 
 import hotspot.user.common.util.redis.RedisUsageCalculator;
 

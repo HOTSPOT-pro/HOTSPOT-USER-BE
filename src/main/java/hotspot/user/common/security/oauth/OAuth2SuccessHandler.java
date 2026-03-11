@@ -85,7 +85,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-            targetUrl = determineMainUrl(accessToken);
+            // 온보딩 마쳤지만 가족이 없는 경우 onboarding/family로 리다이렉트
+            if (principal.getFamilyId() == null) {
+                targetUrl = determineOnboardingFamilyUrl(accessToken);
+            }
+
+            else {
+                targetUrl = determineMainUrl(accessToken);
+            }
+
         }
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
@@ -98,6 +106,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private String determineMainUrl(String accessToken) {
+        return UriComponentsBuilder.fromUriString(redirectUri)
+                .build().toUriString();
+    }
+
+    // 온보딩 마쳤지만 가족이 없는 경우 onbiarding/family로 리다이렉트한다.
+    private String determineOnboardingFamilyUrl(String accessToken) {
+        String baseUri = redirectUri + "/" + onboardingRedirectUri + "/family";
         return UriComponentsBuilder.fromUriString(redirectUri)
                 .build().toUriString();
     }

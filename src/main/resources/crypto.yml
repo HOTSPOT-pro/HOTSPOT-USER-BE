@@ -1,4 +1,6 @@
 app:
   crypto:
-    secret-key: ${SECRET_KEY}
+    encryption-provider: ${ENCRYPTION_PROVIDER:local}
+    kms-key-id: ${KEK_KEY_ID:}
+    secret-key: ${SECRET_KEY:}
     hash-key: ${HASH_KEY}

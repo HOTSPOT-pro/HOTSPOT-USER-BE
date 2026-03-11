@@ -32,7 +32,7 @@ public class FindMemberServiceImpl implements FindMemberService {
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // 2. 서비스 단에서 복호화 수행
-        String decryptedPhone = phoneDecryptor.decrypt(detailInfo.getPhone());
+        String decryptedPhone = phoneDecryptor.decrypt(detailInfo.getPhone(), detailInfo.getSubId());
 
         // 3. 매퍼를 통해 응답 DTO로 변환
         return MemberMapper.toMemberResponse(detailInfo, decryptedPhone);

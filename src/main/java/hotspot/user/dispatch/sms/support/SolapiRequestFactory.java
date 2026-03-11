@@ -1,6 +1,7 @@
 package hotspot.user.dispatch.sms.support;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ public class SolapiRequestFactory {
         msg.put("text", message);
 
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("message", msg);
+        payload.put("messages", List.of(msg));
         return payload;
     }
 

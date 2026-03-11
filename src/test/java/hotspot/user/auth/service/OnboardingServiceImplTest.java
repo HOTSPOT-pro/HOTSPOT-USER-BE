@@ -84,7 +84,7 @@ class OnboardingServiceImplTest {
         given(socialAccountRepository.findByMemberIdAndEmail(memberId, email))
                 .willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySubscription));
-        given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
+        given(phoneDecryptor.decrypt("enc-phone", 100L)).willReturn(phoneNumber);
 
         given(memberRepository.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
         given(subscriptionRepository.save(any(Subscription.class))).willAnswer(invocation -> invocation.getArgument(0));
@@ -131,7 +131,7 @@ class OnboardingServiceImplTest {
         given(socialAccountRepository.findByMemberIdAndEmail(pendingMemberId, email))
                 .willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.of(familySubscription));
-        given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
+        given(phoneDecryptor.decrypt("enc-phone", 100L)).willReturn(phoneNumber);
 
         given(socialAccountRepository.save(any(SocialAccount.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
@@ -186,7 +186,7 @@ class OnboardingServiceImplTest {
         given(socialAccountRepository.findByMemberIdAndEmail(memberId, email))
                 .willReturn(Optional.of(socialAccount));
         given(familySubscriptionRepository.findBySubId(100L)).willReturn(Optional.empty());
-        given(phoneDecryptor.decrypt("enc-phone")).willReturn(phoneNumber);
+        given(phoneDecryptor.decrypt("enc-phone", 100L)).willReturn(phoneNumber);
 
         given(memberRepository.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
         given(subscriptionRepository.save(any(Subscription.class))).willAnswer(invocation -> invocation.getArgument(0));

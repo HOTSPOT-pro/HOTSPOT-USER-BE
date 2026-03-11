@@ -56,6 +56,12 @@ public class SubscriptionEntity extends BaseEntity {
     @Column(length = 64, nullable = false)
     private String phoneHash; // 조회 해시
 
+    @Column(name = "phone_key_bucket_id", nullable = false)
+    private Integer phoneKeyBucketId;
+
+    @Column(name = "phone_key_version", nullable = false)
+    private Integer phoneKeyVersion;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean isLocked = false; // 차단 여부
@@ -71,6 +77,8 @@ public class SubscriptionEntity extends BaseEntity {
                 .plan(subscription.getPlan() != null ? PlanEntity.domainToEntity(subscription.getPlan()) : null)
                 .phoneEnc(subscription.getPhoneEnc())
                 .phoneHash(subscription.getPhoneHash())
+                .phoneKeyBucketId(subscription.getPhoneKeyBucketId())
+                .phoneKeyVersion(subscription.getPhoneKeyVersion())
                 .isLocked(subscription.getIsLocked())
                 .isDeleted(false)
                 .build();
@@ -83,6 +91,8 @@ public class SubscriptionEntity extends BaseEntity {
                 .plan(this.plan != null ? this.plan.entityToDomain() : null)
                 .phoneEnc(this.phoneEnc)
                 .phoneHash(this.phoneHash)
+                .phoneKeyBucketId(this.phoneKeyBucketId)
+                .phoneKeyVersion(this.phoneKeyVersion)
                 .isLocked(this.isLocked)
                 .build();
     }
