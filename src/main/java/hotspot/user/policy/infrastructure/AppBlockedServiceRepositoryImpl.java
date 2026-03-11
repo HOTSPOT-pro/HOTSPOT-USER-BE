@@ -17,7 +17,7 @@ public class AppBlockedServiceRepositoryImpl implements AppBlockedServiceReposit
 
     @Override
     public List<AppBlockedService> findAll() {
-        return appBlockedServiceJpaRepository.findAll().stream()
+        return appBlockedServiceJpaRepository.findByIsActiveTrue().stream()
                 .map(AppBlockedServiceEntity::entityToDomain)
                 .toList();
     }
