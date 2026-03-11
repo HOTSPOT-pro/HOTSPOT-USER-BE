@@ -59,19 +59,14 @@ public class SmsMessageBuilder {
     private String buildUsageGuideBody(SmsDispatchCommand command, NotificationType notificationType) {
         String title = defaultIfBlank(command.title(), "이번 달 데이터 사용 안내");
 
-        String providedAmountRaw = defaultIfBlank(command.providedAmount(), "0").trim().replace(",", "");
-        double providedGb = RedisUsageCalculator.kbToGb(Double.parseDouble(providedAmountRaw));
-        String providedAmount = (Math.floor(providedGb) == providedGb)
-                ? String.valueOf((long) providedGb)
-                : String.valueOf(providedGb);
+        String providedAmount = formatKbToGb(command.providedAmount());
 
         String usedPercent = defaultIfBlank(command.usedPercent(), "0").trim().replace("%", "");
+        if (!usedPercent.matches("\\d+(\\.\\d+)?")) {
+            usedPercent = "-";
+        }
 
-        String usedAmountRaw = defaultIfBlank(command.usedAmount(), "0").trim().replace(",", "");
-        double usedGb = RedisUsageCalculator.kbToGb(Double.parseDouble(usedAmountRaw));
-        String usedAmount = (Math.floor(usedGb) == usedGb)
-                ? String.valueOf((long) usedGb)
-                : String.valueOf(usedGb);
+        String usedAmount = formatKbToGb(command.usedAmount());
         String intro = resolveUsageIntro(command, notificationType);
 
         return String.format(Locale.KOREA, """
@@ -151,5 +146,20 @@ public class SmsMessageBuilder {
             return fallback;
         }
         return value;
+    }
+
+    private String formatKbToGb(String rawAmount) {
+        String amountRaw = defaultIfBlank(rawAmount, "0").trim().replace(",", "");
+        try {
+            double gb = RedisUsageCalculator.kbToGb(Double.parseDouble(amountRaw));
+            if (gb < 0) {
+                return "-";
+            }
+            return (Math.floor(gb) == gb)
+                    ? String.valueOf((long) gb)
+                    : String.valueOf(gb);
+        } catch (NumberFormatException ignored) {
+            return "-";
+        }
     }
 }
