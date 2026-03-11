@@ -107,7 +107,9 @@ public class SendPresentDataServiceImpl implements SendPresentDataService {
 
         Long dataAmount = giverSubscription.getPlan().getDataAmount();
         // 무제한 요금제일 경우에는 무조건 선물 가능하도록 예외 처리 로직 추가
-        if (dataAmount != null && dataAmount == -1L) return;
+        if (dataAmount != null && dataAmount == -1L) {
+            return;
+        }
 
         long remainingKb =
                 subscriptionUsageRepository.findRemainingPlanKb(giverSubscription.getId(), period);
