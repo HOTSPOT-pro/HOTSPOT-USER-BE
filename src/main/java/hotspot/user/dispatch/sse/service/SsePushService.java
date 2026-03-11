@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import hotspot.user.dispatch.sse.domain.SsePayload;
 import hotspot.user.dispatch.sse.registry.SseEmitterRegistry;
+import hotspot.user.kafka.domain.NotificationType;
 import hotspot.user.kafka.dto.UserAlertNotificationsPersistedEvent;
 import hotspot.user.notification.domain.Notification;
 import hotspot.user.notification.service.port.NotificationRepository;
@@ -37,6 +38,7 @@ public class SsePushService {
             SsePayload payload = SsePayload.builder()
                     .notificationId(notification.getId())
                     .notificationType(notification.getNotificationType())
+                    .notificationCategory(NotificationType.from(notification.getNotificationType()).category())
                     .title(notification.getTitle())
                     .content(notification.getContent())
                     .createdTime(notification.getCreatedTime())
