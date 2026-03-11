@@ -4,5 +4,5 @@ import hotspot.user.usage.totalUsage.controller.response.TotalUsageResponse;
 
 public interface FindTotalUsageService {
 
-    TotalUsageResponse findTotalUsage(Long memberId, Long familyId);
+    TotalUsageResponse findTotalUsage(Long memberId);
 }
