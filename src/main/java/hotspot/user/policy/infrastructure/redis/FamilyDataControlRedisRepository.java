@@ -11,8 +11,8 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
-import hotspot.user.common.util.redis.RedisPipelineExecutor;
 import hotspot.user.common.util.UsageCalculator;
+import hotspot.user.common.util.redis.RedisPipelineExecutor;
 import hotspot.user.common.util.redis.RedisValueParser;
 import hotspot.user.policy.infrastructure.schema.FamilyDataControl;
 import hotspot.user.policy.service.port.FamilyDataLimitRepository;
@@ -44,7 +44,7 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
         subIdList.sort(Comparator.comparingLong(Long::parseLong));
 
         List<Object> rawResults =
-                fetchSubUsageWithPipeline(familyId, subIdList, date);
+                fetchSubUsageWithPipeline(subIdList, date);
 
         if (rawResults == null) {
             return new FamilyDataControl(familyLimitGb, List.of());
@@ -87,7 +87,6 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
      * Redis pipeline 조회
      */
     private List<Object> fetchSubUsageWithPipeline(
-            Long familyId,
             List<String> subIds,
             LocalDate date
     ) {
@@ -98,18 +97,8 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
 
                 Long sub = Long.parseLong(subId);
 
-                String limitKey =
-                        FamilyUsageRedisKeyBuilder.familySubLimit(familyId, sub);
-
-                System.out.println("LIMIT KEY = " + limitKey);
-
                 String usageKey =
                         FamilyUsageRedisKeyBuilder.subUsage(sub, date);
-
-                conn.hashCommands().hGet(
-                        pipelineExecutor.serialize(limitKey),
-                        pipelineExecutor.serialize("family_limit")
-                );
 
                 conn.hashCommands().hGet(
                         pipelineExecutor.serialize(usageKey),
@@ -135,16 +124,8 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
 
         for (String subId : subIds) {
 
-            Long subLimitKb =
-                    RedisValueParser.toLong(rawResults.get(index++));
-
             Long subUsageKb =
                     RedisValueParser.toLong(rawResults.get(index++));
-
-            Long subLimitGb =
-                    UsageCalculator.kbToGbCeil(
-                            subLimitKb == null ? 0 : subLimitKb
-                    );
 
             Long subUsageGb =
                     UsageCalculator.kbToGbCeil(
@@ -154,8 +135,7 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
             result.add(
                     new FamilyDataControl.SubFamilyDataControl(
                             Long.parseLong(subId),
-                            subUsageGb,
-                            subLimitGb
+                            subUsageGb
                     )
             );
         }
