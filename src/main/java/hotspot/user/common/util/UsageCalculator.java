@@ -32,12 +32,17 @@ public final class UsageCalculator {
     }
 
     public static double calculateRemain(double limitKb, double usedKb) {
+
+        if (limitKb < 0) {
+            return -1;
+        }
+
         return Math.max(limitKb - usedKb, 0);
     }
 
     public static int calculatePercent(double remainKb, double limitKb) {
         if (limitKb <= 0) {
-            return 0;
+            return -1;
         }
 
         double safeRemain = Math.max(remainKb, 0);

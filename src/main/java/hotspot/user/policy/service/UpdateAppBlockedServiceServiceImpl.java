@@ -73,7 +73,9 @@ public class UpdateAppBlockedServiceServiceImpl implements UpdateAppBlockedServi
         Map<Long, AppBlockedService> blockedServiceMap = Map.of();
         if (!allRequiredBlockedServiceIds.isEmpty()) {
             blockedServiceMap = appBlockedServiceRepository
-                    .findAllByAppBlockedServiceIds(new ArrayList<>(allRequiredBlockedServiceIds)).stream()
+                    .findAllActiveAndInDeleteByAppBlockedServiceIds(
+                            new ArrayList<>(allRequiredBlockedServiceIds))
+                    .stream()
                     .collect(Collectors.toMap(AppBlockedService::getId, p -> p));
         }
 
