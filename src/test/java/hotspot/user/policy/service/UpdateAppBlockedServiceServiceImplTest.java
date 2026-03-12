@@ -80,7 +80,7 @@ class UpdateAppBlockedServiceServiceImplTest {
         given(blockedServiceSubRepository.findBySubId(subId)).willReturn(existingSubs);
 
         // 모든 필요한 앱 서비스 정보 조회 (1, 2, 3)
-        given(appBlockedServiceRepository.findAllByAppBlockedServiceIds(anyList()))
+        given(appBlockedServiceRepository.findAllActiveAndInDeleteByAppBlockedServiceIds(anyList()))
                 .willReturn(List.of(
                         AppBlockedService.builder().id(1L).name("YouTube").isActive(true).build(),
                         AppBlockedService.builder().id(2L).name("TikTok").isActive(true).build(),
@@ -119,7 +119,9 @@ class UpdateAppBlockedServiceServiceImplTest {
         given(blockedServiceSubRepository.findBySubId(subId)).willReturn(List.of());
 
         // 999L은 DB에 없음
-        given(appBlockedServiceRepository.findAllByAppBlockedServiceIds(anyList())).willReturn(List.of());
+        given(appBlockedServiceRepository
+                .findAllActiveAndInDeleteByAppBlockedServiceIds(anyList()))
+                .willReturn(List.of());
 
         // when & then
         assertThatThrownBy(() -> service.updateAppBlockedService(request, 1L, FamilyRole.OWNER))
