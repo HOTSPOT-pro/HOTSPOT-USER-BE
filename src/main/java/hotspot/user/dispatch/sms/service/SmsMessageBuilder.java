@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.SmsErrorCode;
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.dispatch.sms.config.SmsProperties;
 import hotspot.user.dispatch.sms.dto.SmsDispatchCommand;
 import hotspot.user.kafka.domain.NotificationType;
@@ -151,7 +151,7 @@ public class SmsMessageBuilder {
     private String formatKbToGb(String rawAmount) {
         String amountRaw = defaultIfBlank(rawAmount, "0").trim().replace(",", "");
         try {
-            double gb = RedisUsageCalculator.kbToGb(Double.parseDouble(amountRaw));
+            double gb = UsageCalculator.kbToGb(Double.parseDouble(amountRaw));
             if (gb < 0) {
                 return "-";
             }

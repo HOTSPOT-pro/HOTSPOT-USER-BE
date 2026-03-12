@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Repository;
 
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.usage.reportUsage.infrastructure.keybuilder.ReportUsageRedisKeyBuilder;
 import lombok.RequiredArgsConstructor;
 
@@ -60,7 +60,7 @@ public class ReportUsageRedisRepository {
                 index++;
 
                 double gb =
-                        RedisUsageCalculator.kbToGb(totalKb);
+                        UsageCalculator.kbToGb(totalKb);
 
                 result
                         .computeIfAbsent(subId, k -> new LinkedHashMap<>())
@@ -108,7 +108,7 @@ public class ReportUsageRedisRepository {
                 index++;
 
                 double gb =
-                        RedisUsageCalculator.kbToGb(totalKb);
+                        UsageCalculator.kbToGb(totalKb);
 
                 result
                         .computeIfAbsent(subId, k -> new LinkedHashMap<>())
