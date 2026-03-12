@@ -83,6 +83,7 @@ class FindNotificationServiceImplTest {
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         then(notificationRepository).should().findRecentBySubId(eq(mySubId), pageableCaptor.capture());
+        assertThat(pageableCaptor.getValue().getSort().toString()).contains("notificationId: DESC");
         assertThat(pageableCaptor.getValue().getSort().toString()).contains("createdTime: DESC");
     }
 
