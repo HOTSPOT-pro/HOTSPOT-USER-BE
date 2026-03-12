@@ -54,8 +54,8 @@ public class FindNotificationServiceImpl implements FindNotificationService {
         return PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.DESC, "createdTime")
-                        .and(Sort.by(Sort.Direction.DESC, "notificationId"))
+                Sort.by(Sort.Direction.DESC, "notificationId")
+                        .and(Sort.by(Sort.Direction.DESC, "createdTime"))
         );
     }
 }
