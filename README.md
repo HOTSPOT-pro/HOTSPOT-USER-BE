@@ -429,7 +429,6 @@ erDiagram
 
 <a id="architecture"></a>
 ## 🏛️ 아키텍처 및 디렉토리 구조 (Clean Architecture)
-본 프로젝트는 **헥사고날 아키텍처(Hexagonal Architecture)**를 채택하여 도메인 비즈니스 로직과 외부 기술(DB, 프레임워크, 외부 API)을 철저히 분리합니다.
 
 <a id="directory"></a>
 ### 📂 도메인별 표준 구조 (예시: {domain} 기반)
