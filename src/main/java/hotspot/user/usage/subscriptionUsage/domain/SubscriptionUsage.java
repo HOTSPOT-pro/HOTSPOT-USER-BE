@@ -1,6 +1,6 @@
 package hotspot.user.usage.subscriptionUsage.domain;
 
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 
 public class SubscriptionUsage {
 
@@ -23,22 +23,22 @@ public class SubscriptionUsage {
     }
 
     public double remainKb() {
-        return RedisUsageCalculator.calculateRemain(planLimitKb, planUsedKb);
+        return UsageCalculator.calculateRemain(planLimitKb, planUsedKb);
     }
 
     public int remainPercent() {
-        return RedisUsageCalculator.calculatePercent(remainKb(), planLimitKb);
+        return UsageCalculator.calculatePercent(remainKb(), planLimitKb);
     }
 
     public double limitGb() {
-        return RedisUsageCalculator.kbToGb(planLimitKb);
+        return UsageCalculator.kbToGb(planLimitKb);
     }
 
     public double usedGb() {
-        return RedisUsageCalculator.kbToGb(planUsedKb);
+        return UsageCalculator.kbToGb(planUsedKb);
     }
 
     public double remainGb() {
-        return RedisUsageCalculator.kbToGb(remainKb());
+        return UsageCalculator.kbToGb(remainKb());
     }
 }

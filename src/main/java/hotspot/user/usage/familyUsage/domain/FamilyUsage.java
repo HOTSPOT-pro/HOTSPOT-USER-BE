@@ -2,7 +2,7 @@ package hotspot.user.usage.familyUsage.domain;
 
 import java.util.Map;
 
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 
 public class FamilyUsage {
 
@@ -21,23 +21,23 @@ public class FamilyUsage {
     }
 
     public double familyRemainKb() {
-        return RedisUsageCalculator.calculateRemain(familyLimitKb, familyUsedKb);
+        return UsageCalculator.calculateRemain(familyLimitKb, familyUsedKb);
     }
 
     public int familyRemainPercent() {
-        return RedisUsageCalculator.calculatePercent(familyRemainKb(), familyLimitKb);
+        return UsageCalculator.calculatePercent(familyRemainKb(), familyLimitKb);
     }
 
     public double familyLimitGb() {
-        return RedisUsageCalculator.kbToGb(familyLimitKb);
+        return UsageCalculator.kbToGb(familyLimitKb);
     }
 
     public double familyUsedGb() {
-        return RedisUsageCalculator.kbToGb(familyUsedKb);
+        return UsageCalculator.kbToGb(familyUsedKb);
     }
 
     public double familyRemainGb() {
-        return RedisUsageCalculator.kbToGb(familyRemainKb());
+        return UsageCalculator.kbToGb(familyRemainKb());
     }
 
     public FamilySubUsage getSubOrZero(Long subId) {

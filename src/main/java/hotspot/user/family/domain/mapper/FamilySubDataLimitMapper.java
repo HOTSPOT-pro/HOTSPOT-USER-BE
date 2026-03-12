@@ -1,6 +1,6 @@
 package hotspot.user.family.domain.mapper;
 
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.family.controller.response.FindDataLimitResponse;
 import hotspot.user.family.domain.FamilySubDataLimit;
 
@@ -13,8 +13,8 @@ public class FamilySubDataLimitMapper {
         return FindDataLimitResponse.builder()
                 .name(familySubDataLimit.getName())
                 .isLocked(familySubDataLimit.getIsLocked())
-                .dataLimit(RedisUsageCalculator.kbToGb(familySubDataLimit.getDataLimit()))
-                .familyDataAmount(RedisUsageCalculator.kbToGb(familySubDataLimit.getFamilyDataAmount()))
+                .dataLimit(UsageCalculator.kbToGb(familySubDataLimit.getDataLimit()))
+                .familyDataAmount(UsageCalculator.kbToGb(familySubDataLimit.getFamilyDataAmount()))
                 .build();
 
     }

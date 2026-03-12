@@ -1,6 +1,6 @@
 package hotspot.user.usage.giftUsage.domain;
 
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 
 public class GiftUsage {
 
@@ -23,22 +23,22 @@ public class GiftUsage {
     public double usedKb() { return usedKb; }
 
     public double remainKb() {
-        return RedisUsageCalculator.calculateRemain(limitKb, usedKb);
+        return UsageCalculator.calculateRemain(limitKb, usedKb);
     }
 
     public int remainPercent() {
-        return RedisUsageCalculator.calculatePercent(remainKb(), limitKb);
+        return UsageCalculator.calculatePercent(remainKb(), limitKb);
     }
 
     public double limitGb() {
-        return RedisUsageCalculator.kbToGb(limitKb);
+        return UsageCalculator.kbToGb(limitKb);
     }
 
     public double usedGb() {
-        return RedisUsageCalculator.kbToGb(usedKb);
+        return UsageCalculator.kbToGb(usedKb);
     }
 
     public double remainGb() {
-        return RedisUsageCalculator.kbToGb(remainKb());
+        return UsageCalculator.kbToGb(remainKb());
     }
 }

@@ -1,6 +1,6 @@
 package hotspot.user.family.controller.response;
 
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.PriorityType;
 
@@ -17,7 +17,7 @@ public record FamilyResponse(
         return new FamilyResponse(
                 family.getId(),
                 family.getFamilyNum(),
-                RedisUsageCalculator.kbToGb(family.getFamilyDataAmount()),
+                UsageCalculator.kbToGb(family.getFamilyDataAmount()),
                 family.getPriorityType()
         );
     }

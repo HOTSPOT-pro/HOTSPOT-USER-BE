@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilyRepository;
@@ -66,11 +67,10 @@ public class FindFamilyAppliedPolicyServiceImpl implements FindFamilyAppliedPoli
                             FamilyDataControl.SubFamilyDataControl redis =
                                     redisMap.get(base.subId());
 
-                            double limit = 0;
+                            double limit = UsageCalculator.kbToGb(mapping.getDataLimit());
                             double usage = 0;
 
                             if (redis != null) {
-                                limit = redis.familyDataSubLimit();
                                 usage = redis.familyDataUsage();
                             }
 

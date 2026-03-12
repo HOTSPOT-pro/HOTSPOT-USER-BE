@@ -2,7 +2,7 @@ package hotspot.user.presentData.domain.mapper;
 
 import java.util.List;
 
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.presentData.controller.response.PresentDataResponse;
 import hotspot.user.presentData.domain.PresentData;
 
@@ -14,14 +14,14 @@ public class PresentDataMapper {
                 .mapToLong(PresentData::getDataAmount)
                 .sum();
 
-        double totalGb = RedisUsageCalculator.kbToGb(totalKb);
+        double totalGb = UsageCalculator.kbToGb(totalKb);
 
         List<PresentDataResponse.PresentItemResponse> items =
                 list.stream()
                         .map(p -> new PresentDataResponse.PresentItemResponse(
                                 p.getProvideSubscription().getId(),
                                 p.getProvideSubscription().getMember().getName(),
-                                RedisUsageCalculator.kbToGb(p.getDataAmount()),
+                                UsageCalculator.kbToGb(p.getDataAmount()),
                                 p.getCreatedTime()
                         ))
                         .toList();
@@ -34,14 +34,14 @@ public class PresentDataMapper {
                 .mapToLong(PresentData::getDataAmount)
                 .sum();
 
-        double totalGb = RedisUsageCalculator.kbToGb(totalKb);
+        double totalGb = UsageCalculator.kbToGb(totalKb);
 
         List<PresentDataResponse.PresentItemResponse> items =
                 list.stream()
                         .map(p -> new PresentDataResponse.PresentItemResponse(
                                 p.getTargetSubscription().getId(),
                                 p.getTargetSubscription().getMember().getName(),
-                                RedisUsageCalculator.kbToGb(p.getDataAmount()),
+                                UsageCalculator.kbToGb(p.getDataAmount()),
                                 p.getCreatedTime()
                         ))
                         .toList();

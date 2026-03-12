@@ -87,8 +87,7 @@ class FindFamilyAppliedPolicyServiceImplTest {
                         List.of(
                                 new FamilyDataControl.SubFamilyDataControl(
                                         subId,
-                                        1024L * 100,   // familyDataUsage
-                                        1024L * 512    // familyDataSubLimit
+                                        1024L * 100   // familyDataUsage
                                 )
                         )
                 );
