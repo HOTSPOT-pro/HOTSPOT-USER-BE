@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Repository;
 
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.common.util.redis.RedisValueParser;
 import hotspot.user.usage.reportUsage.domain.AppUsage;
 import hotspot.user.usage.reportUsage.infrastructure.keybuilder.ReportUsageRedisKeyBuilder;
@@ -67,7 +67,7 @@ public class ReportUsageAppRedisRepository {
                                     : tuple.getScore();
 
                     double usedGb =
-                            RedisUsageCalculator.kbToGb(usedKb);
+                            UsageCalculator.kbToGb(usedKb);
 
                     return new AppUsage(appId, usedGb);
                 })

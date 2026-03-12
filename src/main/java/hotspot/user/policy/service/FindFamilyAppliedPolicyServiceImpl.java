@@ -66,11 +66,10 @@ public class FindFamilyAppliedPolicyServiceImpl implements FindFamilyAppliedPoli
                             FamilyDataControl.SubFamilyDataControl redis =
                                     redisMap.get(base.subId());
 
-                            double limit = 0;
+                            double limit = mapping.getDataLimit();
                             double usage = 0;
 
                             if (redis != null) {
-                                limit = redis.familyDataSubLimit();
                                 usage = redis.familyDataUsage();
                             }
 

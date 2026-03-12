@@ -1,13 +1,13 @@
-package hotspot.user.common.util.redis;
+package hotspot.user.common.util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public final class RedisUsageCalculator {
+public final class UsageCalculator {
 
     private static final double KB_TO_GB = 1024.0 * 1024.0;
 
-    private RedisUsageCalculator() {}
+    private UsageCalculator() {}
 
     public static double kbToGb(double kb) {
 

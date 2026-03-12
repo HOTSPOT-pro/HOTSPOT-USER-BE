@@ -12,7 +12,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import hotspot.user.common.util.redis.RedisPipelineExecutor;
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.common.util.redis.RedisValueParser;
 import hotspot.user.policy.infrastructure.schema.FamilyDataControl;
 import hotspot.user.policy.service.port.FamilyDataLimitRepository;
@@ -68,7 +68,7 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
                 redisTemplate.opsForHash().get(key, "family_limit")
         );
 
-        return RedisUsageCalculator.kbToGbCeil(
+        return UsageCalculator.kbToGbCeil(
                 familyLimitKb == null ? 0 : familyLimitKb
         );
     }
@@ -142,12 +142,12 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
                     RedisValueParser.toLong(rawResults.get(index++));
 
             Long subLimitGb =
-                    RedisUsageCalculator.kbToGbCeil(
+                    UsageCalculator.kbToGbCeil(
                             subLimitKb == null ? 0 : subLimitKb
                     );
 
             Long subUsageGb =
-                    RedisUsageCalculator.kbToGbCeil(
+                    UsageCalculator.kbToGbCeil(
                             subUsageKb == null ? 0 : subUsageKb
                     );
 

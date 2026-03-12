@@ -16,7 +16,7 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.TotalUsageErrorCode;
 import hotspot.user.common.util.redis.PipelineResultMapper;
 import hotspot.user.common.util.redis.RedisPipelineExecutor;
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.common.util.redis.RedisValueParser;
 import hotspot.user.plan.domain.DataPeriod;
 import hotspot.user.usage.totalUsage.repository.keybuilder.TotalUsageRedisKeyBuilder;
@@ -168,13 +168,13 @@ public class TotalUsageRedisRepository {
         }
 
         double planRemainKb =
-                RedisUsageCalculator.calculateRemain(planLimitKb, planUsedKb);
+                UsageCalculator.calculateRemain(planLimitKb, planUsedKb);
 
         double familyRemainKb =
-                RedisUsageCalculator.calculateRemain(familyLimitKb, familyUsedKb);
+                UsageCalculator.calculateRemain(familyLimitKb, familyUsedKb);
 
         double giftRemainKb =
-                RedisUsageCalculator.calculateRemain(giftLimitTotalKb, giftUsedTotalKb);
+                UsageCalculator.calculateRemain(giftLimitTotalKb, giftUsedTotalKb);
 
         double totalLimitKb =
                 planLimitKb + familyLimitKb + giftLimitTotalKb;
@@ -188,13 +188,13 @@ public class TotalUsageRedisRepository {
 
         return new TotalUsage(
 
-                RedisUsageCalculator.kbToGb(totalLimitKb),
-                RedisUsageCalculator.kbToGb(totalRemainKb),
-                RedisUsageCalculator.calculatePercent(totalRemainKb, totalLimitKb),
+                UsageCalculator.kbToGb(totalLimitKb),
+                UsageCalculator.kbToGb(totalRemainKb),
+                UsageCalculator.calculatePercent(totalRemainKb, totalLimitKb),
 
-                RedisUsageCalculator.kbToGb(planRemainKb),
-                RedisUsageCalculator.kbToGb(giftRemainKb),
-                RedisUsageCalculator.kbToGb(familyRemainKb)
+                UsageCalculator.kbToGb(planRemainKb),
+                UsageCalculator.kbToGb(giftRemainKb),
+                UsageCalculator.kbToGb(familyRemainKb)
         );
     }
 
@@ -205,8 +205,8 @@ public class TotalUsageRedisRepository {
                 -1, // remain
                 -1, // percent
                 -1,
-                RedisUsageCalculator.kbToGb(giftRemainKb),
-                RedisUsageCalculator.kbToGb(familyRemainKb)
+                UsageCalculator.kbToGb(giftRemainKb),
+                UsageCalculator.kbToGb(familyRemainKb)
         );
     }
 }

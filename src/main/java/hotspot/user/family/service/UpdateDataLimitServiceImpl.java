@@ -10,7 +10,7 @@ import hotspot.user.common.constant.FamilyConstant;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
-import hotspot.user.common.util.redis.RedisUsageCalculator;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.family.controller.port.UpdateDataLimitService;
 import hotspot.user.family.controller.request.UpdateDataLimitRequest;
 import hotspot.user.family.controller.response.UpdateDataLimitResponse;
@@ -63,7 +63,7 @@ public class UpdateDataLimitServiceImpl implements UpdateDataLimitService {
 
         // 4. 데이터 한도 업데이트
         // GB -> KB 변환 (-1은 무제한이므로 그대로 유지)
-        long dataLimitKb = RedisUsageCalculator.gbToKb(request.dataLimit());
+        long dataLimitKb = UsageCalculator.gbToKb(request.dataLimit());
 
         // 가족 전체 데이터 양 초과 여부 검증 (무제한 설정은 제외)
         if (dataLimitKb != FamilyConstant.UNLIMITED_DATA_LIMIT &&
