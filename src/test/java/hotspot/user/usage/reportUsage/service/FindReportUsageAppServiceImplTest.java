@@ -97,7 +97,7 @@ class FindReportUsageAppServiceImplTest {
         );
 
         when(appBlockedServiceRepository
-                .findAllActiveAndInDeleteByAppBlockedServiceIds(List.of(3L)))
+                .findAllByAppBlockedServiceIds(List.of(3L)))
                 .thenReturn(services);
 
         ReportUsageAppResponse response =
@@ -111,6 +111,6 @@ class FindReportUsageAppServiceImplTest {
                 .findDailyAppUsage(subId, LocalDate.now());
 
         verify(appBlockedServiceRepository)
-                .findAllActiveAndInDeleteByAppBlockedServiceIds(List.of(3L));
+                .findAllByAppBlockedServiceIds(List.of(3L));
     }
 }
