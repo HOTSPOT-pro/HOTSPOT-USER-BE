@@ -67,7 +67,7 @@ public class ReportUsageAppRedisRepository {
                                     : tuple.getScore();
 
                     double usedGb =
-                            UsageCalculator.kbToGb(usedKb);
+                            UsageCalculator.kbToGbApp(usedKb);
 
                     return new AppUsage(appId, usedGb);
                 })

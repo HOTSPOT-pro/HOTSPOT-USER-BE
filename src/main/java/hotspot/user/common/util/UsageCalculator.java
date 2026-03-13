@@ -19,6 +19,20 @@ public final class UsageCalculator {
         double gb = kb / KB_TO_GB;
 
         return BigDecimal.valueOf(gb)
+                .setScale(1, RoundingMode.HALF_UP)
+                .doubleValue();
+    }
+
+    public static double kbToGbApp(double kb) {
+
+
+        if (kb < 0) {
+            return -1;
+        }
+
+        double gb = kb / KB_TO_GB;
+
+        return BigDecimal.valueOf(gb)
                 .setScale(2, RoundingMode.HALF_UP)
                 .doubleValue();
     }
