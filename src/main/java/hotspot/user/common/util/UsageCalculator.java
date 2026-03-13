@@ -46,6 +46,11 @@ public final class UsageCalculator {
     }
 
     public static double calculateRemain(double limitKb, double usedKb) {
+
+        if (limitKb < 0) {
+            return -1;
+        }
+
         return Math.max(limitKb - usedKb, 0);
     }
 
