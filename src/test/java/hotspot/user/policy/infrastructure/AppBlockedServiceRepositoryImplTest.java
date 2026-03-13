@@ -93,7 +93,7 @@ class AppBlockedServiceRepositoryImplTest {
 
         // when
         List<AppBlockedService> result =
-                appBlockedServiceRepository.findAllByAppBlockedServiceIds(ids);
+                appBlockedServiceRepository.findAllActiveAndInDeleteByAppBlockedServiceIds(ids);
 
         // then
         assertThat(result).hasSize(2);

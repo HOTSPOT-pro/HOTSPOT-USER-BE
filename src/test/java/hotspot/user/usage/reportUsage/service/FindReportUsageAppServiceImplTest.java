@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.service.port.AppBlockedServiceRepository;
-import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.SubscriptionService;
 import hotspot.user.usage.reportUsage.controller.response.ReportUsageAppResponse;
 import hotspot.user.usage.reportUsage.domain.AppUsage;
@@ -39,22 +37,6 @@ class FindReportUsageAppServiceImplTest {
 
     private final Long memberId = 1L;
     private final Long subId = 10L;
-
-    @BeforeEach
-    void setup() {
-
-        Subscription subscription = Subscription.builder()
-                .id(subId)
-                .member(null)
-                .plan(null)
-                .phoneEnc(null)
-                .phoneHash(null)
-                .isLocked(false)
-                .build();
-
-        when(subscriptionService.findByMemberId(memberId))
-                .thenReturn(subscription);
-    }
 
     @Test
     void shouldReturnMonthlyAppUsage() {
@@ -91,8 +73,9 @@ class FindReportUsageAppServiceImplTest {
         assertThat(response.appUsages().get(0).appName())
                 .isEqualTo("YouTube");
 
-        verify(subscriptionService).findByMemberId(memberId);
         verify(reportUsageAppRepository).findMonthlyAppUsage(subId);
+        verify(appBlockedServiceRepository)
+                .findAllByAppBlockedServiceIds(List.of(1L, 2L));
     }
 
     @Test
@@ -123,5 +106,11 @@ class FindReportUsageAppServiceImplTest {
         assertThat(response.appUsages()).hasSize(1);
         assertThat(response.appUsages().get(0).appName())
                 .isEqualTo("Instagram");
+
+        verify(reportUsageAppRepository)
+                .findDailyAppUsage(subId, LocalDate.now());
+
+        verify(appBlockedServiceRepository)
+                .findAllByAppBlockedServiceIds(List.of(3L));
     }
 }

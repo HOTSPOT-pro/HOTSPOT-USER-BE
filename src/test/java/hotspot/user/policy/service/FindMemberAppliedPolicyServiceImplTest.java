@@ -127,7 +127,7 @@ class FindMemberAppliedPolicyServiceImplTest {
         given(blockedServiceSubRepository.findActiveBySubId(subId))
                 .willReturn(List.of(blockedSub));
 
-        given(appBlockedServiceRepository.findAllByAppBlockedServiceIds(List.of(appId)))
+        given(appBlockedServiceRepository.findAllActiveAndInDeleteByAppBlockedServiceIds(List.of(appId)))
                 .willReturn(List.of(app));
 
         given(findBlockStatusService.findMyBlockStatus(memberId))

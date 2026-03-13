@@ -56,7 +56,7 @@ public final class UsageCalculator {
 
     public static int calculatePercent(double remainKb, double limitKb) {
         if (limitKb <= 0) {
-            return 0;
+            return -1;
         }
 
         double safeRemain = Math.max(remainKb, 0);
