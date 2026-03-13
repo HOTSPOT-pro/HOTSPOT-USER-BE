@@ -3,6 +3,7 @@
   <b>공유는 여기서, 차단은 저기서? NO!!</b>
 </p>
 <p align="center"><b>가족 데이터 공유 + 사용 제어, 흩어진 기능을 하나의 통합 서비스로</b></p>
+<p align="center"><b>디지털 페어런팅의 시작, HotSpot</b></p>
 
 </br>
 
@@ -26,11 +27,10 @@ USER-BE 레포지토리는 실제 요금제 가입자를 대상으로 가족 간
 [💾 데이터베이스 및 ERD](#db)
   - [테이블 설계 핵심 전략](#db-table)
 
-[🚀 향후 고도화 계획](#plan)
-  - [🎯 정책](#plan-policy)
-  - [📡 데이터 제어 및 트래픽 관리](#plan-control)
-  - [👨‍👩‍👧 가족 매니지먼트 기능](#plan-management)
-  - [🔔 알림 시스템 확장](#plan-notification)
+[🏛️ 아키텍처 및 디렉토리 구조](#architecture)
+  - [📂 도메인별 표준 구조](#directory)
+  - [🧱 레이어별 책임](#layer)
+  - [🌟 아키텍처의 이점](#architecture-pros)
 
 </br>
 
@@ -97,37 +97,44 @@ USER-BE 레포지토리는 실제 요금제 가입자를 대상으로 가족 간
 ### 1) 인증 및 온보딩 프로세스
 * **소셜 로그인 및 실회선 검증**: 구글/카카오 OAuth2 인증 후, 전화번호와 생년월일 대조를 통해 **실제 요금제 가입자만** 서비스를 이용할 수 있도록 검증
 * **승인 기반 가족 구성원 추가**: 신규 구성원 추가 시 가족관계증명서를 제출받으며, 관리자 승인 전까지 `PENDING` 상태로 관리하여 보안성 강화
+ 
 </br>
 
 ### 2) 역할 기반 통합 대시보드
 * **데이터 현황 가시화**: 공유 데이터와 개인 데이터를 통합 집계하여 실시간 잔여량을 제공
 * **OWNER/PARENT**: 구성원별 데이터 점유율(%) 및 개별 할당량 대비 사용 현황을 한눈에 파악 가능
 * **CHILD**: 가족 전체 총량 및 본인 사용량/정책만 조회 가능 (타 구성원 접근 불가)
+ 
 </br>
 
 ### 3) 스마트 가족 정책 설정 및 관리 (OWNER 전용)
 자녀의 올바른 디지털 습관 형성을 위해 세밀한 제어 기능을 제공
 * **시간 기반 집중 모드 설정**: 요일별, 시간별(시작/종료 시간)로 데이터 통신을 자동 차단하는 정책 수립 (예: 평일 수업 시간 차단, 매일 취침 시간 차단)
+* **커스텀 정책**: 정해진 프리셋 외에 사용자가 직접 차단 요일, 시간, 대상 앱을 조합하는 커스텀 정책 생성 기능 제공
 * **서비스 및 앱별 핀포인트 차단**: 특정 앱(유튜브, 인스타그램 등)이나 특정 카테고리의 트래픽을 식별하여 해당 서비스만 개별적으로 제어
 * **데이터 한도 관리**: 가족 공유 데이터 풀 내에서 각 구성원이 사용할 수 있는 월간 최대 사용 한도를 설정하여 특정 인원의 독점을 방지
+ 
 </br>
 
 ### 4) 가족 구성원 및 권한 관리 프로세스
 가족 그룹의 보안성과 유연성을 유지하기 위한 관리 기능 제공
-* **가족 구성원 추가 및 승인**: 구성원이 제출한 가족관계증명서를 검토하고 가입 요청을 최종 승인(`APPROVED`)하거나 반려(`REJECTED`)
+* **가족 생성 & 구성원 추가 / 삭제 및 승인**: 구성원이 제출한 가족관계증명서를 검토하고 가입 요청을 최종 승인(`APPROVED`)하거나 반려(`REJECTED`)
 * **유동적인 역할 변경**: 가족 상황에 따라 구성원의 역할(OWNER, PARENT, CHILD)을 동적으로 변경하여 관리 권한을 위임 & 회수 가능
 * **데이터 우선순위 정책 결정**: 공유 데이터 사용 시 경합이 발생할 경우 적용할 방식(선착순 모드 또는 사용자별 순위 기반 우선순위 모드)을 선택
+
 </br>
 
 ### 5) 개인 요금제 및 선물 데이터 관리
 * 월별/일별 요금제 데이터 잔여량 제공 (% 표시)
 * 이번 달 선물한/받은 데이터 건수 및 용량 집계
 * **P2P 데이터 선물 기능**: 개인 요금제 제공 데이터 내에서 가족 내 구성원에게 데이터 선물
+
 </br>
 
 ### 6) 실시간 알림 시스템
 * 정책 적용/위반 및 데이터 소진 임박 시 즉시 알림 발송
-* **SSE(Server-Sent Events)** 기반 실시간 전송 (추후 Push/SMS 확장 예정)
+* **SSE(Server-Sent Events)** 기반 실시간 전송 (앱 내 알림 / SMS)
+
 </br>
 
 ### 7) 다차원 데이터 분석 리포트
@@ -136,7 +143,16 @@ USER-BE 레포지토리는 실제 요금제 가입자를 대상으로 가족 간
 
 </br>
 
+### 8) 주간 사용량 AI 분석 리포트
+* **💯 점수 기반 사용 습관 진단**: 주간 데이터 사용 패턴을 분석해 점수 산출 (Rule-based) & 지난주 대비 변화 추이를 직관적으로 제시
+* **🏷️ 태그 기반 소비 패턴 명시**: 주요 사용 시간대와 앱 카테고리를 분석하여 사용자별 맞춤형 태그(예: 심야 사용 빈번, SNS 탐험가 등)를 부여하고 소비 정체성 파악
+* **🛡️ 부모-자녀 양방향 맞춤 가이드**: 부모에게는 '효율적인 관리 팁'을, 자녀에게는 '자기주도적 절약 가이드'를 각각의 눈높이에 맞춰 차별화된 리포트 제공
+* **⚙️ 패턴 맞춤형 커스텀 정책 추천**: 실제 소비 패턴을 학습하여 불필요한 데이터 유출을 막기 위한 최적의 차단 시간대 및 서비스별 한도 정책을 AI가 선제적으로 제안
+
+<br/>
+
 ---
+
 </br>
 
 <a id="user-policy"></a>
@@ -145,7 +161,7 @@ USER-BE 레포지토리는 실제 요금제 가입자를 대상으로 가족 간
 ### 1) 복합 데이터 차감 우선순위 룰
 데이터 소멸을 방지하고 가족 전체의 사용 효율을 극대화하기 위해, 데이터는 다음 순서로 자동 차감됨
 1. **선물 받은 데이터**: 소멸 방지를 위해 최우선 차감
-2. **개인 요금제 데이터**: (본인 기본 할당량 차감)
+2. **개인 요금제 데이터**: 본인 기본 할당량 차감
 3. **가족 공유 데이터**: 개인 데이터 모두 소진 시 공용 풀에서 차감
 </br>
 
@@ -155,9 +171,9 @@ USER-BE 레포지토리는 실제 요금제 가입자를 대상으로 가족 간
 </br>
 
 ### 3) 시간 및 서비스 차단 정책
+* **🚨 즉시 차단**: 대표자가 구성원의 모든 모바일 데이터 사용 즉시 차단
 * **⏰ 시간 기반 정책**: 요일/시간 지정 차단 (예: 수면 모드 00-07시, 수업 모드 월-금 09-14시)
 * **📵 앱/카테고리 차단**: 특정 앱(유튜브, 인스타그램 등) 트래픽 식별 및 차단
-* **🔮 확장 계획(To-Do)**: 사용자 커스텀 정책 생성, 앱 가속(QoS), 특정 앱 전용 시간 정책 등
 </br>
 
 ### 4) P2P 데이터 선물하기 제약 조건
@@ -192,171 +208,208 @@ USER-BE 레포지토리는 실제 요금제 가입자를 대상으로 가족 간
 
 ```mermaid
 erDiagram
+    %% Entities
+    plan {
+        BIGSERIAL plan_id PK
+        VARCHAR(20) plan_name
+        BIGINT plan_data_amount
+        VARCHAR(10) data_period
+        BOOLEAN is_deleted
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
+    }
 
-    MEMBER{
-        BIGINT member_id PK
+    member {
+        BIGSERIAL member_id PK
         VARCHAR(10) name
-        VARCHAR(6) birth "YYMMDD"
-        ENUM status "APPROVED | PENDING"
-        BOOL is_deleted
-        DATETIME created_time
-        DATETIME modified_time
-    }
-    
-    SOCIAL_ACCOUNT {
-		    BIGINT social_account_id PK
-		    BIGINT member_id FK
-		    VARCHAR(20) email
-		    VARCHAR(20) social_id
-		    VARCHAR(20) provider "KAKAO | GOOGLE"
-        BOOL is_deleted
-        DATETIME created_time
-        DATETIME modified_time
+        VARCHAR(6) birth
+        VARCHAR(10) status
+        BOOLEAN is_deleted
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
     }
 
-    FAMILY {
-        BIGINT family_id PK
-        INTEGER family_num "2~8"
-        INTEGER family_data_amount "KB"
-        ENUM priority_type "FIFO | PRIORITY"
-        BOOL is_deleted
-        DATETIME created_time
-        DATETIME modified_time
-    }
-
-    FAMILY_SUB {
-        BIGINT family_sub_id PK
-        BIGINT sub_id FK
-        BIGINT family_id FK
-        ENUM family_role "OWNER | PARENT | CHILD"
-        INTEGER priority
-        INTEGER data_limit
-    }
-
-    SUBSCRIPTION {
-        BIGINT sub_id PK
-        BIGINT plan_id FK
+    social_account {
+        BIGSERIAL social_account_id PK
         BIGINT member_id FK
+        VARCHAR(50) email
+        VARCHAR(50) social_id
+        VARCHAR(10) provider
+        BOOLEAN is_deleted
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
+    }
+
+    subscription {
+        BIGSERIAL sub_id PK
+        BIGINT plan_id FK
+        BIGINT member_id FK "UK"
         VARCHAR(255) phone_enc
         VARCHAR(64) phone_hash
-        BOOL is_locked "차단 여부"
-        BOOL is_deleted "삭제 여부"
-        DATETIME created_time
-        DATETIME modified_time
+        INTEGER phone_key_bucket_id
+        INTEGER phone_key_version
+        BOOLEAN is_locked
+        BOOLEAN is_deleted
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
     }
-    
-    PLAN {
-		    BIGINT plan_id PK
-		    VARCHAR(10) plan_name
-		    INTEGER plan_data_amount "KB"
-		    VARCHAR(10) data_period "MONTH | DAY"
-		    BOOL is_deleted
-		    DATETIME created_time
-		    DATETIME modified_time
-	  }  
-	  
-	  NOTIFICATION {
-        BIGINT notification_id PK
-        BIGINT sub_id FK
-        ENUM notification_type
-        VARCHAR(50) notification_content
-        DATETIME created_time
-        BOOL is_read
-        VARCHAR(100) event_id
+
+    subscription_key {
+        BIGSERIAL subscription_key_id PK
+        INTEGER bucket_id "UK"
+        INTEGER key_version "UK"
+        TEXT encrypted_dek
+        VARCHAR(255) kek_key_id
+        VARCHAR(20) status
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
     }
-    
-    FAMILY_APPLY {
-        BIGINT family_apply_id PK
+
+    family {
+        BIGSERIAL family_id PK
+        INTEGER family_num
+        BIGINT family_data_amount
+        VARCHAR(10) priority_type
+        BOOLEAN is_deleted
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
+    }
+
+    family_sub {
+        BIGSERIAL family_sub_id PK
+        BIGINT sub_id FK "UK"
+        BIGINT family_id FK
+        VARCHAR(10) family_role
+        INTEGER priority
+        BIGINT data_limit
+    }
+
+    notification {
+        BIGSERIAL notification_id PK
+        BIGINT sub_id FK "UK"
+        VARCHAR(50) notification_type
+        VARCHAR(100) notification_title
+        VARCHAR(200) notification_content
+        TIMESTAMP created_time
+        BOOLEAN is_read
+        VARCHAR(100) event_id "UK"
+    }
+
+    family_apply {
+        BIGSERIAL family_apply_id PK
         BIGINT requester_sub_id FK
+        BIGINT family_id
+        VARCHAR(10) apply_type
+        VARCHAR(255) doc_url
+        VARCHAR(20) status
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
+    }
+
+    family_apply_target {
+        BIGSERIAL family_apply_target_id PK
+        BIGINT family_apply_id FK
+        BIGINT target_sub_id FK
+        VARCHAR(10) target_family_role
+    }
+
+    family_remove_schedule {
+        BIGSERIAL family_remove_schedule_id PK
         BIGINT target_sub_id FK
         BIGINT family_id FK
-        ENUM apply_type "ADD | REMOVE"
-        VARCHAR(100) doc_url
-        ENUM status "PENDING | APPROVED | REJECTED | CANCELLED"
-        DATETIME created_time
-        DATETIME modified_time
+        VARCHAR(20) status
+        DATE schedule_date
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
     }
 
-    NOTIFICATION_ALLOW {
-        BIGINT notification_allow_id PK
+    notification_allow {
+        BIGSERIAL notification_allow_id PK
         BIGINT sub_id FK
-        ENUM notification_category "DATA | POLICY | APP_SERVICE | PRESENT"
-        BOOL notification_allow
-        BOOL is_deleted
-        DATETIME created_time
-        DATETIME modified_time
+        VARCHAR(20) notification_category
+        BOOLEAN notification_allow
+        BOOLEAN is_deleted
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
     }
 
-    PRESENT_DATA {
-        BIGINT present_data_id PK
+    app_blocked_service {
+        BIGSERIAL app_blocked_service_id PK
+        VARCHAR(30) blocked_service_name
+        VARCHAR(30) blocked_service_code
+        BOOLEAN is_active
+        BOOLEAN is_deleted
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
+    }
+
+    blocked_service_sub {
+        BIGSERIAL blocked_service_sub_id PK
+        BIGINT sub_id FK "UK"
+        BIGINT blocked_service_id FK "UK"
+        BOOLEAN is_active
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
+    }
+
+    block_policy {
+        BIGSERIAL block_policy_id PK
+        VARCHAR(30) policy_name
+        VARCHAR(255) policy_description
+        BIGINT family_id FK
+        VARCHAR(20) policy_type
+        JSON policy_snapshot
+        BOOLEAN is_active
+        BOOLEAN is_deleted
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
+    }
+
+    policy_sub {
+        BIGSERIAL policy_sub_id PK
+        BIGINT sub_id FK "UK"
+        BIGINT block_policy_id FK "UK"
+        BOOLEAN is_active
+        TIMESTAMP created_time
+        TIMESTAMP modified_time
+    }
+
+    present_data {
+        BIGSERIAL present_data_id PK
         BIGINT target_sub_id FK
         BIGINT provide_sub_id FK
-        INTEGER data_amount "KB"
-        DATETIME created_time
+        BIGINT data_amount
+        TIMESTAMP created_time
     }
-    
-    BLOCKED_SERVICE_SUB {
-        BIGINT blocked_service_sub_id PK
-        BIGINT sub_id FK
-        BIGINT blocked_service_id FK
-        BOOL is_deleted
-        DATETIME created_time
-        DATETIME modified_time
-    }
-
-    APP_BLOCKED_SERVICE {
-        BIGINT app_blocked_service_id PK
-        VARCHAR(20) blocked_service_name
-        VARCHAR(10) blocked_service_code
-        BOOL is_deleted
-        DATETIME created_time
-        DATETIME modified_time
-    }
-    
-    BLOCK_POLICY {
-    BIGINT block_policy_id PK
-    VARCHAR(20) policy_name
-    ENUM policy_type "ONCE | SCHEDULED"
-    JSON policy_snapshot "기본 정책 스냅샷"
-    BOOL is_deleted
-    DATETIME created_time
-    DATETIME modified_time
-		}
-		
-		POLICY_SUB {
-    BIGINT policy_sub_id PK
-    BIGINT sub_id FK
-    JSON date_snapshot "회선별 적용 스냅샷"
-    BOOL is_deleted
-    DATETIME created_time
-    DATETIME modified_time
-		}
 
     %% Relationships
-		FAMILY ||--o{ FAMILY_SUB : has
-		SUBSCRIPTION ||--o{ FAMILY_SUB : mapped
-		
-		MEMBER ||--o{ SUBSCRIPTION : owns
-		MEMBER ||--o{ SOCIAL_ACCOUNT : has
-		
-		PLAN ||--o{ SUBSCRIPTION : provides
-		
-		SUBSCRIPTION ||--o{ NOTIFICATION : generates
-		
-		FAMILY ||--o{ FAMILY_APPLY : manages
-		SUBSCRIPTION ||--o{ FAMILY_APPLY : requester
-		SUBSCRIPTION ||--o{ FAMILY_APPLY : target
-		
-		SUBSCRIPTION ||--o{ NOTIFICATION_ALLOW : configures
-		
-		SUBSCRIPTION ||--o{ PRESENT_DATA : provide_sub
-		SUBSCRIPTION ||--o{ PRESENT_DATA : target_sub
-		
-		SUBSCRIPTION ||--o{ BLOCKED_SERVICE_SUB : applies
-		APP_BLOCKED_SERVICE ||--o{ BLOCKED_SERVICE_SUB : mapped
-
-    SUBSCRIPTION ||--o{ POLICY_SUB : applies
-
+    member ||--o{ social_account : "has"
+    member ||--o| subscription : "owns (1:1)"
+    plan ||--o{ subscription : "applied to"
+    
+    subscription ||--o| family_sub : "belongs to (1:1)"
+    family ||--o{ family_sub : "has members"
+    
+    subscription ||--o{ notification : "receives"
+    subscription ||--o{ notification_allow : "configures"
+    
+    subscription ||--o{ family_apply : "requests"
+    family ||--o{ family_apply : "targeted to"
+    family_apply ||--o{ family_apply_target : "contains targets"
+    subscription ||--o{ family_apply_target : "is target of"
+    
+    family ||--o{ family_remove_schedule : "schedules for"
+    subscription ||--o{ family_remove_schedule : "target of schedule"
+    
+    app_blocked_service ||--o{ blocked_service_sub : "blocked in"
+    subscription ||--o{ blocked_service_sub : "has blocked"
+    
+    family |o--o{ block_policy : "defines (optional)"
+    block_policy ||--o{ policy_sub : "applied in"
+    subscription ||--o{ policy_sub : "follows policy"
+    
+    subscription ||--o{ present_data : "provides data"
+    subscription ||--o{ present_data : "receives data"
 ```
 
 <a id="db-table"></a>
@@ -374,33 +427,55 @@ erDiagram
 
 </br>
 
----
-</br>
+<a id="architecture"></a>
+## 🏛️ 아키텍처 및 디렉토리 구조 (Clean Architecture)
 
-<a id="plan"></a>
-## 🚀 향후 고도화 계획
+<a id="directory"></a>
+### 📂 도메인별 표준 구조 (예시: {domain} 기반)
+모든 비즈니스 도메인은 아래와 같은 범용적인 레이어링 규칙을 따르며, 핵심 로직은 외부 환경의 변화에 영향을 받지 않도록 격리됩니다.
 
-<a id="plan-policy"></a>
-### 🎯 1) 정책
-* **커스텀 정책**: 정해진 프리셋 외에 사용자가 직접 차단 요일, 시간, 대상 앱을 조합하는 커스텀 정책 생성 기능 제공
-* **정책 템플릿화**: 여러 정책을 하나의 템플릿으로 묶어 다수의 구성원에게 일괄 적용할 수 있는 편의 기능
-* **정책 변경 이력(History) 추적**: 누가, 언제, 어떤 정책을 변경했는지 조회할 수 있는 감사 로그 기능 구현
-</br>
+```
+src/main/java/hotspot/user/{domain}
+├── 📂 controller            # [Driving Adapter] API 엔드포인트 및 요청 처리
+│   ├── 📂 port              # (Input Port) 애플리케이션 유스케이스 실행을 위한 진입 인터페이스
+│   │   └── XxxService.java
+│   ├── 📂 request           # 클라이언트 요청 데이터를 담는 객체 (DTO)
+│   │   └── CreateXxxRequest.java
+│   ├── 📂 response          # API 최종 응답 포맷을 정의하는 객체 (DTO)
+│   │   └── XxxResponse.java
+│   └── XxxController.java   # 웹 요청을 받아 서비스 계층을 호출하는 구현체
+│
+├── 📂 service               # [Application Layer] 비즈니스 흐름 및 유스케이스 관리
+│   ├── 📂 port              # (Output Port) 외부 인프라(DB 등) 접근을 위한 인터페이스
+│   │   └── XxxRepository.java
+│   └── XxxServiceImpl.java  # 핵심 비즈니스 로직 조립 및 트랜잭션(@Transactional) 제어
+│
+├── 📂 domain                # [Domain Layer] 시스템의 핵심 비즈니스 모델 (Pure Java)
+│   ├── 📂 mapper            # 도메인 모델과 엔티티/DTO 간의 상호 변환 로직
+│   │   └── XxxMapper.java
+│   └── Xxx.java             # 프레임워크에 의존하지 않는 순수 비즈니스 객체 및 규칙
+│
+└── 📂 infrastructure        # [Driven Adapter] 기술적 세부 구현 및 인프라 연동
+    ├── 📂 repository        # 데이터베이스 접근 구현 계층
+    │   ├── XxxRepositoryImpl.java # 서비스 계층의 Output Port를 실제로 구현
+    │   └── XxxJpaRepository.java  # Spring Data JPA 인터페이스
+    └── XxxEntity.java       # DB 테이블과 1:1 매핑되는 JPA 엔티티 객체
+```
 
-<a id="plan-control"></a>
-### 📡 2) 데이터 제어 및 트래픽 관리
-* **QoS (Quality of Service) 제어**: 데이터 전면 차단뿐만 아니라, 할당량 소진 시 400kbps 등으로 속도를 제한하는 로직 추가
-* **데이터 요청(조르기) 시스템**: 구성원 간의 데이터 선물을 요청할 수 있는 조르기 기능 추가
-* **앱별 트래픽 우선순위 지정**: 단순히 차단하는 것을 넘어, '교육용 앱'은 항상 최고 속도를 보장하는 등 앱별 우선순위/예외(기타 카테고리 포함) 규칙 확장
-</br>
+<a id="layer"></a>
+### 🧱 레이어별 책임
+1. **Domain Layer (Core)**
+  * 서비스의 핵심 비즈니스 규칙을 담고 있는 순수 자바 객체
+  * 특정 프레임워크(Spring)나 라이브러리에 의존하지 않아 유지보수성과 테스트 용이성이 높음
+2. **Application Layer (Use Cases)**
+  * 사용자 요청에 따른 유스케이스(비즈니스 흐름)를 조립 및 트랜잭션 관리
+  * **Port(Interface)** 를 통해 외부와 소통, 실제 구현체는 런타임에 주입받음
+3. **Adapters (Infrastructure & Web)**
+  * **Driving Adapter (Web)**: 사용자의 HTTP 요청을 받아 DTO로 변환 & 애플리케이션 유스케이스 호출
+  * **Driven Adapter (Persistence/External)**: DB 저장(JPA, Redis)이나 외부 알림 발송(SMS, Kafka) 등 구체적인 기술적 구현을 담당
 
-<a id="plan-management"></a>
-### 👨‍👩‍👧 3) 가족 매니지먼트 기능
-* **독립적인 그룹 관리**: 초기 온보딩 이후에도 자유롭게 새로운 가족 그룹을 생성하고 URL/QR 코드로 구성원을 초대하는 기능
-</br>
-
-<a id="plan-notification"></a>
-### 🔔 4) 알림 시스템 확장
-* **다채널 알림 인프라**: 현재의 실시간(SSE) 및 앱 내 알림을 넘어, SMS 및 모바일 Push 알림으로 채널 확장
-* **알림 수명 주기 관리**: 생성된 지 일정 기간(예: 30일)이 지난 알림의 자동 삭제(Soft-delete/Hard-delete) 배치 스케줄러 도입
-* **채널별 수신 동의/거부**: 사용자가 정책/한도/선물 등 알림 카테고리별로 수신 채널(앱/Push/SMS)을 개별 제어할 수 있는 설정 기능
+<a id="architecture-pros"></a>
+### 🌟 아키텍처의 이점
+*   **기술 교체의 유연성**: DB를 JPA에서 다른 기술로 바꾸거나 외부 메시징 시스템을 변경해도 도메인 로직을 수정할 필요 없음
+*   **테스트 용이성**: 외부 인프라 없이도 순수 자바 코드로 도메인과 유스케이스에 대한 단위 테스트 가능
+*   **코드 응집도 향상**: 기능별로 레이어가 명확히 분리되어 있어 협업과 코드 파악이 용이함
