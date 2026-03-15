@@ -91,7 +91,7 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
 
         Map<Long, AppBlockedService> appBlockedServiceMap =
                 appBlockedServiceRepository
-                        .findAllByAppBlockedServiceIds(appIds).stream()
+                        .findAllActiveAndInDeleteByAppBlockedServiceIds(appIds).stream()
                         .collect(Collectors.toMap(AppBlockedService::getId, s -> s));
 
         // 7. 실시간 차단 여부

@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.policy.domain.AppBlockedService;
 import hotspot.user.policy.service.port.AppBlockedServiceRepository;
-import hotspot.user.subscription.domain.Subscription;
 import hotspot.user.subscription.service.SubscriptionService;
 import hotspot.user.usage.reportUsage.controller.port.FindReportUsageAppDayService;
 import hotspot.user.usage.reportUsage.controller.port.FindReportUsageAppMonthService;
@@ -32,9 +31,6 @@ public class FindReportUsageAppServiceImpl
     @Transactional(readOnly = true)
     @Override
     public ReportUsageAppResponse findReportUsageAppMonth(Long memberId, Long targetSubId) {
-
-        Subscription subscription =
-                subscriptionService.findByMemberId(memberId);
 
         // Redis 조회
         List<AppUsage> appUsages =
@@ -63,9 +59,6 @@ public class FindReportUsageAppServiceImpl
     @Transactional(readOnly = true)
     @Override
     public ReportUsageAppResponse findReportUsageAppDay(Long memberId, Long targetSubId, LocalDate date) {
-
-        Subscription subscription =
-                subscriptionService.findByMemberId(memberId);
 
         List<AppUsage> appUsages =
                 reportUsageAppRepository

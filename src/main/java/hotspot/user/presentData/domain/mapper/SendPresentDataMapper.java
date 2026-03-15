@@ -2,6 +2,7 @@ package hotspot.user.presentData.domain.mapper;
 
 import java.time.LocalDateTime;
 
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.presentData.controller.response.SendPresentDataResponse;
 import hotspot.user.presentData.domain.PresentData;
 import hotspot.user.subscription.domain.Subscription;
@@ -27,10 +28,11 @@ public class SendPresentDataMapper {
 
     // domain -> response
     public static SendPresentDataResponse toSendPresentDataResponse(PresentData presentData) {
+        double dataAmount = UsageCalculator.kbToGb(presentData.getDataAmount());
         return SendPresentDataResponse.builder()
                 .targetSubId(presentData.getTargetSubscription().getId())
                 .provideSubId(presentData.getProvideSubscription().getId())
-                .dataAmount(presentData.getDataAmount())
+                .dataAmount((long) dataAmount)
                 .createdTime(presentData.getCreatedTime())
                 .build();
     }

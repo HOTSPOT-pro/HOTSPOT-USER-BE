@@ -139,6 +139,34 @@ class FamilySubUsageRedisRepositoryTest {
     }
 
     @Test
+    @DisplayName("무제한 요금제에서 사용량이 있어도 remain은 -1")
+    void unlimitedPlanWithUsage() {
+
+        LocalDate now = LocalDate.now();
+        String yyyyMM = now.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+
+        Map<Long, DataPeriod> subPeriodMap = new LinkedHashMap<>();
+        subPeriodMap.put(3L, DataPeriod.MONTH);
+
+        redisTemplate.opsForHash().put(
+                "usage:sub:3:" + yyyyMM,
+                "plan_used",
+                String.valueOf(5L * 1024 * 1024)
+        );
+        redisTemplate.opsForHash().put(
+                "limit:sub:3",
+                "plan_limit",
+                "-1"
+        );
+
+        Map<Long, SubUsage> result = repository.findUsageAndLimit(subPeriodMap);
+        SubUsage sub3 = result.get(3L);
+
+        assertThat(sub3.limitGb()).isEqualTo(-1.0);
+        assertThat(sub3.remainGb()).isEqualTo(-1.0);
+    }
+
+    @Test
     @DisplayName("Redis에 값이 없으면 0으로 처리")
     void shouldReturnZeroWhenMissing() {
 
@@ -151,11 +179,11 @@ class FamilySubUsageRedisRepositoryTest {
         assertThat(sub1.usedGb()).isEqualTo(0.0);
         assertThat(sub1.limitGb()).isEqualTo(0.0);
         assertThat(sub1.remainGb()).isEqualTo(0.0);
-        assertThat(sub1.percent()).isEqualTo(0);
+        assertThat(sub1.percent()).isEqualTo(-1);
     }
 
     @Test
-    @DisplayName("무제한(-1) 한도는 -1GB로 내려가도록(현재 구현 그대로면 0.0이 나올 수 있음) - 정책에 맞게 조정 필요")
+    @DisplayName("무제한(-1) 요금제는 limit=-1, remain=-1로 반환")
     void unlimitedPlanLimitShouldBeHandled() {
 
         LocalDate now = LocalDate.now();
@@ -179,9 +207,9 @@ class FamilySubUsageRedisRepositoryTest {
         Map<Long, SubUsage> result = repository.findUsageAndLimit(subPeriodMap);
         SubUsage sub2 = result.get(2L);
 
-        // 현재 Calculator 정책(음수 clamp) 기준
         assertThat(sub2.limitGb()).isEqualTo(-1.0);
         assertThat(sub2.usedGb()).isEqualTo(0.0);
-        assertThat(sub2.percent()).isEqualTo(0);
+        assertThat(sub2.remainGb()).isEqualTo(-1.0);
+        assertThat(sub2.percent()).isEqualTo(-1);
     }
 }

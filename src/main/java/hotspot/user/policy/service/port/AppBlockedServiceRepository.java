@@ -11,5 +11,6 @@ import hotspot.user.policy.domain.AppBlockedService;
 public interface AppBlockedServiceRepository {
     List<AppBlockedService> findAll();
     long countByIdIn(Set<Long> ids);
+    List<AppBlockedService> findAllActiveAndInDeleteByAppBlockedServiceIds(List<Long> ids);
     List<AppBlockedService> findAllByAppBlockedServiceIds(List<Long> ids);
 }

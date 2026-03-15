@@ -91,6 +91,7 @@ class SendPresentDataServiceImplTest {
         plan = Plan.builder()
                 .id(1L)
                 .dataPeriod(DataPeriod.MONTH)
+                .dataAmount(10L)
                 .build();
 
         giverSub = createSubscription(1L, memberId);
@@ -156,7 +157,7 @@ class SendPresentDataServiceImplTest {
         // ===== 기본 응답 검증 =====
         assertThat(response.provideSubId()).isEqualTo(1L);
         assertThat(response.targetSubId()).isEqualTo(2L);
-        assertThat(response.dataAmount()).isEqualTo(ONE_GB_IN_KB);
+        assertThat(response.dataAmount()).isEqualTo(1L);
 
         // ===== 알림 Publisher 검증 =====
         ArgumentCaptor<PresentDataGiftedOutboxEvent> alertEventCaptor =
@@ -189,7 +190,7 @@ class SendPresentDataServiceImplTest {
     }
 
     // ===============================
-    // ✅ amount 검증
+    // amount 검증
     // ===============================
 
     @Test
@@ -219,7 +220,7 @@ class SendPresentDataServiceImplTest {
     }
 
     // ===============================
-    // ✅ 다른 가족
+    // 다른 가족
     // ===============================
 
     @Test
@@ -249,7 +250,7 @@ class SendPresentDataServiceImplTest {
     }
 
     // ===============================
-    // ✅ 잔여 데이터 부족
+    // 잔여 데이터 부족
     // ===============================
 
     @Test
@@ -278,7 +279,7 @@ class SendPresentDataServiceImplTest {
     }
 
     // ===============================
-    // ✅ 월간 한도 초과
+    // 월간 한도 초과
     // ===============================
 
     @Test
