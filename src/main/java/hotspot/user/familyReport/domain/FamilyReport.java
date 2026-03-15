@@ -16,7 +16,7 @@ public class FamilyReport {
     private Long id;
     private Family family;
     private DayOfWeek receiveDay;
-    private boolean active;
+    private boolean isActive;
     private LocalDateTime createdTime;
     private LocalDateTime modifiedTime;
 
@@ -25,10 +25,10 @@ public class FamilyReport {
     }
 
     public void activate() {
-        this.active = true;
+        this.isActive = true;
     }
 
     public void deactivate() {
-        this.active = false;
+        this.isActive = false;
     }
 }

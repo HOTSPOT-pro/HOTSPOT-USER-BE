@@ -39,7 +39,7 @@ public class CreateFamilyReportSubscriptionServiceImpl implements CreateFamilyRe
                 .orElseGet(() -> FamilyReport.builder()
                         .family(Family.builder().id(familyId).build())
                         .receiveDay(request.receiveDay())
-                        .active(true)
+                        .isActive(true)
                         .build());
 
         familyReportRepository.save(familyReport);

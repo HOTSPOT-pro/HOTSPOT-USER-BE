@@ -57,7 +57,7 @@ class FamilyReportRepositoryImplTest {
         FamilyReport familyReport = FamilyReport.builder()
                 .family(Family.builder().id(1L).build())
                 .receiveDay(DayOfWeek.FRIDAY)
-                .active(true)
+                .isActive(true)
                 .build();
 
         FamilyReportEntity savedEntity = FamilyReportEntity.builder()

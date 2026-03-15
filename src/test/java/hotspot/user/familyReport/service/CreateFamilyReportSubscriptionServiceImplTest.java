@@ -44,7 +44,7 @@ class CreateFamilyReportSubscriptionServiceImplTest {
                         .id(10L)
                         .family(Family.builder().id(1L).build())
                         .receiveDay(DayOfWeek.WEDNESDAY)
-                        .active(true)
+                        .isActive(true)
                         .build());
 
         service.createSubscription(1L, FamilyRole.OWNER, request);
@@ -63,7 +63,7 @@ class CreateFamilyReportSubscriptionServiceImplTest {
                         .id(10L)
                         .family(Family.builder().id(1L).build())
                         .receiveDay(DayOfWeek.MONDAY)
-                        .active(false)
+                        .isActive(false)
                         .build()));
         given(familyReportRepository.save(any(FamilyReport.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));

@@ -30,10 +30,10 @@ class FindFamilyReportSubscriptionServiceImplTest {
     @DisplayName("활성화된 구독이 있으면 구독 상태와 수신 요일을 반환한다")
     void findSubscriptionSuccess() {
         given(familyReportRepository.findByFamilyId(1L))
-                        .willReturn(Optional.of(FamilyReport.builder()
+                .willReturn(Optional.of(FamilyReport.builder()
                         .id(10L)
                         .family(Family.builder().id(1L).build())
-                        .active(true)
+                        .isActive(true)
                         .build()));
 
         FamilyReportSubscriptionResponse result = service.findSubscription(1L);
@@ -55,10 +55,10 @@ class FindFamilyReportSubscriptionServiceImplTest {
     @DisplayName("비활성화된 구독은 미구독 상태로 반환한다")
     void findSubscriptionWhenInactive() {
         given(familyReportRepository.findByFamilyId(1L))
-                        .willReturn(Optional.of(FamilyReport.builder()
+                .willReturn(Optional.of(FamilyReport.builder()
                         .id(10L)
                         .family(Family.builder().id(1L).build())
-                        .active(false)
+                        .isActive(false)
                         .build()));
 
         FamilyReportSubscriptionResponse result = service.findSubscription(1L);

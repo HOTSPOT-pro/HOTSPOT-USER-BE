@@ -62,7 +62,7 @@ public class FamilyReportEntity extends BaseEntity {
                 .id(this.familyReportId)
                 .family(this.family.entityToDomain())
                 .receiveDay(this.receiveDay)
-                .active(Boolean.TRUE.equals(this.isActive))
+                .isActive(Boolean.TRUE.equals(this.isActive))
                 .createdTime(getCreatedTime())
                 .modifiedTime(getModifiedTime())
                 .build();
