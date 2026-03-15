@@ -1,10 +1,15 @@
 package hotspot.user.familyReport.controller;
 
 import static hotspot.user.util.TestSecurityUtil.setAuthentication;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +22,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
+import hotspot.user.familyReport.controller.port.CreateFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.FindFamilyReportSubscriptionService;
+import hotspot.user.familyReport.controller.request.CreateFamilyReportSubscriptionRequest;
 import hotspot.user.familyReport.controller.response.FamilyReportSubscriptionResponse;
 import hotspot.user.member.domain.FamilyRole;
 
@@ -27,6 +34,12 @@ class FamilyReportControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private CreateFamilyReportSubscriptionService createFamilyReportSubscriptionService;
 
     @MockBean
     private FindFamilyReportSubscriptionService findFamilyReportSubscriptionService;
@@ -67,5 +80,24 @@ class FamilyReportControllerTest {
         mockMvc.perform(get("/api/v1/ai-reports/families"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.subscribed").value(false));
+    }
+
+    @Test
+    @DisplayName("가족 AI 리포트 구독 신청 성공")
+    void createFamilyReportSubscriptionSuccess() throws Exception {
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+
+        CreateFamilyReportSubscriptionRequest request =
+                new CreateFamilyReportSubscriptionRequest(java.time.DayOfWeek.TUESDAY);
+
+        doNothing().when(createFamilyReportSubscriptionService)
+                .createSubscription(100L, FamilyRole.OWNER, any(CreateFamilyReportSubscriptionRequest.class));
+
+        mockMvc.perform(post("/api/v1/ai-reports/families")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 }
