@@ -4,6 +4,7 @@ import static hotspot.user.util.TestSecurityUtil.setAuthentication;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -24,7 +25,9 @@ import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.familyReport.controller.port.CreateFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.FindFamilyReportSubscriptionService;
+import hotspot.user.familyReport.controller.port.UpdateFamilyReportReceiveDayService;
 import hotspot.user.familyReport.controller.request.CreateFamilyReportSubscriptionRequest;
+import hotspot.user.familyReport.controller.request.UpdateFamilyReportReceiveDayRequest;
 import hotspot.user.familyReport.controller.response.FamilyReportSubscriptionResponse;
 import hotspot.user.member.domain.FamilyRole;
 
@@ -43,6 +46,9 @@ class FamilyReportControllerTest {
 
     @MockBean
     private FindFamilyReportSubscriptionService findFamilyReportSubscriptionService;
+
+    @MockBean
+    private UpdateFamilyReportReceiveDayService updateFamilyReportReceiveDayService;
 
     @MockBean
     private JwtFilter jwtFilter;
@@ -94,6 +100,25 @@ class FamilyReportControllerTest {
                 .createSubscription(100L, FamilyRole.OWNER, any(CreateFamilyReportSubscriptionRequest.class));
 
         mockMvc.perform(post("/api/v1/ai-reports/families")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("가족 AI 리포트 수신 요일 변경 성공")
+    void updateFamilyReportReceiveDaySuccess() throws Exception {
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+
+        UpdateFamilyReportReceiveDayRequest request =
+                new UpdateFamilyReportReceiveDayRequest(java.time.DayOfWeek.THURSDAY);
+
+        doNothing().when(updateFamilyReportReceiveDayService)
+                .updateReceiveDay(100L, FamilyRole.OWNER, any(UpdateFamilyReportReceiveDayRequest.class));
+
+        mockMvc.perform(patch("/api/v1/ai-reports/families/receive-day")
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
