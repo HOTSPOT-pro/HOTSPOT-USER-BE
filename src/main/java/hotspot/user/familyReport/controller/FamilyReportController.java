@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +15,9 @@ import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.familyReport.controller.port.CreateFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.FindFamilyReportSubscriptionService;
+import hotspot.user.familyReport.controller.port.UpdateFamilyReportReceiveDayService;
 import hotspot.user.familyReport.controller.request.CreateFamilyReportSubscriptionRequest;
+import hotspot.user.familyReport.controller.request.UpdateFamilyReportReceiveDayRequest;
 import hotspot.user.familyReport.controller.response.FamilyReportSubscriptionResponse;
 import hotspot.user.familyReport.controller.swagger.FamilyReportApi;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ public class FamilyReportController implements FamilyReportApi {
 
     private final CreateFamilyReportSubscriptionService createFamilyReportSubscriptionService;
     private final FindFamilyReportSubscriptionService findFamilyReportSubscriptionService;
+    private final UpdateFamilyReportReceiveDayService updateFamilyReportReceiveDayService;
 
     @Override
     @GetMapping("/families")
@@ -45,6 +49,21 @@ public class FamilyReportController implements FamilyReportApi {
             @AuthenticationPrincipal PrincipalDetails principal) {
 
         createFamilyReportSubscriptionService.createSubscription(
+                principal.getFamilyId(),
+                principal.getRole(),
+                request
+        );
+
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @Override
+    @PatchMapping("/families/receive-day")
+    public ResponseEntity<ApiResponse<Void>> updateFamilyReportReceiveDay(
+            @Valid @RequestBody UpdateFamilyReportReceiveDayRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        updateFamilyReportReceiveDayService.updateReceiveDay(
                 principal.getFamilyId(),
                 principal.getRole(),
                 request
