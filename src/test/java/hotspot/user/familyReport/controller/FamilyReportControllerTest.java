@@ -2,6 +2,7 @@ package hotspot.user.familyReport.controller;
 
 import static hotspot.user.util.TestSecurityUtil.setAuthentication;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -139,7 +140,11 @@ class FamilyReportControllerTest {
                 new CreateFamilyReportSubscriptionRequest(java.time.DayOfWeek.TUESDAY);
 
         doNothing().when(createFamilyReportSubscriptionService)
-                .createSubscription(100L, FamilyRole.OWNER, any(CreateFamilyReportSubscriptionRequest.class));
+                .createSubscription(
+                        eq(100L),
+                        eq(FamilyRole.OWNER),
+                        any(CreateFamilyReportSubscriptionRequest.class)
+                );
 
         mockMvc.perform(post("/api/v1/ai-reports/families")
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
@@ -158,7 +163,11 @@ class FamilyReportControllerTest {
                 new UpdateFamilyReportReceiveDayRequest(java.time.DayOfWeek.THURSDAY);
 
         doNothing().when(updateFamilyReportReceiveDayService)
-                .updateReceiveDay(100L, FamilyRole.OWNER, any(UpdateFamilyReportReceiveDayRequest.class));
+                .updateReceiveDay(
+                        eq(100L),
+                        eq(FamilyRole.OWNER),
+                        any(UpdateFamilyReportReceiveDayRequest.class)
+                );
 
         mockMvc.perform(patch("/api/v1/ai-reports/families/receive-day")
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
