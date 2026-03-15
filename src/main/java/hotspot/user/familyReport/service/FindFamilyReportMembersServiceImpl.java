@@ -48,7 +48,7 @@ public class FindFamilyReportMembersServiceImpl implements FindFamilyReportMembe
                         .subId(familySubscription.getSubscription().getId())
                         .name(familySubscription.getSubscription().getMember().getName())
                         .familyRole(familySubscription.getFamilyRole())
-                        // TODO: batch DB weekly_report 연동 후 이번 주 reportId 세팅
+                        // batch DB weekly_report 연동 후 이번 주 reportId 세팅 예정
                         .reportId(null)
                         .build())
                 .toList();

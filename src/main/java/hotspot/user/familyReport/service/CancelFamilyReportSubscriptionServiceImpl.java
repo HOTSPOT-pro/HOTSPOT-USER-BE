@@ -27,7 +27,8 @@ public class CancelFamilyReportSubscriptionServiceImpl implements CancelFamilyRe
 
         FamilyReport familyReport = familyReportRepository.findByFamilyId(familyId)
                 .filter(FamilyReport::isActive)
-                .orElseThrow(() -> new ApplicationException(FamilyReportErrorCode.FAMILY_REPORT_SUBSCRIPTION_NOT_FOUND));
+                .orElseThrow(() ->
+                        new ApplicationException(FamilyReportErrorCode.FAMILY_REPORT_SUBSCRIPTION_NOT_FOUND));
 
         familyReport.deactivate();
         familyReportRepository.save(familyReport);

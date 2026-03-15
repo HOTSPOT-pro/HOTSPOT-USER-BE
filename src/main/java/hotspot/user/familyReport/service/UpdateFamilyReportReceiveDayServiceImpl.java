@@ -32,7 +32,8 @@ public class UpdateFamilyReportReceiveDayServiceImpl implements UpdateFamilyRepo
 
         FamilyReport familyReport = familyReportRepository.findByFamilyId(familyId)
                 .filter(FamilyReport::isActive)
-                .orElseThrow(() -> new ApplicationException(FamilyReportErrorCode.FAMILY_REPORT_SUBSCRIPTION_NOT_FOUND));
+                .orElseThrow(() ->
+                        new ApplicationException(FamilyReportErrorCode.FAMILY_REPORT_SUBSCRIPTION_NOT_FOUND));
 
         familyReport.updateReceiveDay(request.receiveDay());
         familyReportRepository.save(familyReport);
