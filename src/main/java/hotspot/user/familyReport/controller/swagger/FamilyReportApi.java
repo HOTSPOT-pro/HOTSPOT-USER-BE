@@ -1,13 +1,13 @@
 package hotspot.user.familyReport.controller.swagger;
 
-import jakarta.validation.Valid;
-
 import java.util.List;
+
+import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ErrorResponse;
