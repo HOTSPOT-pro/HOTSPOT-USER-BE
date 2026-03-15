@@ -2,6 +2,8 @@ package hotspot.user.familyReport.controller;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,10 +18,12 @@ import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.familyReport.controller.port.CancelFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.CreateFamilyReportSubscriptionService;
+import hotspot.user.familyReport.controller.port.FindFamilyReportMembersService;
 import hotspot.user.familyReport.controller.port.FindFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.UpdateFamilyReportReceiveDayService;
 import hotspot.user.familyReport.controller.request.CreateFamilyReportSubscriptionRequest;
 import hotspot.user.familyReport.controller.request.UpdateFamilyReportReceiveDayRequest;
+import hotspot.user.familyReport.controller.response.FamilyReportMemberResponse;
 import hotspot.user.familyReport.controller.response.FamilyReportSubscriptionResponse;
 import hotspot.user.familyReport.controller.swagger.FamilyReportApi;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +35,7 @@ public class FamilyReportController implements FamilyReportApi {
 
     private final CancelFamilyReportSubscriptionService cancelFamilyReportSubscriptionService;
     private final CreateFamilyReportSubscriptionService createFamilyReportSubscriptionService;
+    private final FindFamilyReportMembersService findFamilyReportMembersService;
     private final FindFamilyReportSubscriptionService findFamilyReportSubscriptionService;
     private final UpdateFamilyReportReceiveDayService updateFamilyReportReceiveDayService;
 
@@ -41,6 +46,17 @@ public class FamilyReportController implements FamilyReportApi {
 
         FamilyReportSubscriptionResponse response =
                 findFamilyReportSubscriptionService.findSubscription(principal.getFamilyId());
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @Override
+    @GetMapping("/families/members")
+    public ResponseEntity<ApiResponse<List<FamilyReportMemberResponse>>> findFamilyReportMembers(
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        List<FamilyReportMemberResponse> response =
+                findFamilyReportMembersService.findMembers(principal.getFamilyId());
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
