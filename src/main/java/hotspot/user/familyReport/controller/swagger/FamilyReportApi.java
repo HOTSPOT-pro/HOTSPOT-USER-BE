@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.exception.ErrorResponse;
@@ -58,5 +59,18 @@ public interface FamilyReportApi {
     })
     ResponseEntity<ApiResponse<Void>> updateFamilyReportReceiveDay(
             @Valid @RequestBody UpdateFamilyReportReceiveDayRequest request,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
+
+    @Operation(summary = "가족 AI 리포트 구독 취소",
+            description = "가족 OWNER가 현재 구독 중인 AI 주간 리포트를 취소합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "취소 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "구독 정보를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @DeleteMapping("/families")
+    ResponseEntity<ApiResponse<Void>> cancelFamilyReportSubscription(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
 }
