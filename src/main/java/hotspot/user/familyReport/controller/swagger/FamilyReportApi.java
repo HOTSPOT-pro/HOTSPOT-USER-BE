@@ -2,6 +2,8 @@ package hotspot.user.familyReport.controller.swagger;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,6 +14,7 @@ import hotspot.user.common.exception.ErrorResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.familyReport.controller.request.CreateFamilyReportSubscriptionRequest;
 import hotspot.user.familyReport.controller.request.UpdateFamilyReportReceiveDayRequest;
+import hotspot.user.familyReport.controller.response.FamilyReportMemberResponse;
 import hotspot.user.familyReport.controller.response.FamilyReportSubscriptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,6 +34,16 @@ public interface FamilyReportApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<ApiResponse<FamilyReportSubscriptionResponse>> findFamilyReportSubscription(
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
+
+    @Operation(summary = "가족 AI 리포트 구성원 목록 조회",
+            description = "현재 로그인한 사용자가 속한 가족의 구성원 목록과 이번 주 리포트 식별자를 조회합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    ResponseEntity<ApiResponse<List<FamilyReportMemberResponse>>> findFamilyReportMembers(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
 
     @Operation(summary = "가족 AI 리포트 구독 신청",
