@@ -11,7 +11,7 @@ public interface FamilyReportRepository {
 
     FamilyReport save(FamilyReport familyReport);
 
-    void updateReceiveDay(Long familyId, DayOfWeek receiveDay);
+    int updateReceiveDay(Long familyId, DayOfWeek receiveDay);
 
-    void updateActive(Long familyId, boolean isActive);
+    int updateActive(Long familyId, boolean currentIsActive, boolean newIsActive);
 }

@@ -29,12 +29,12 @@ public class FamilyReportRepositoryImpl implements FamilyReportRepository {
     }
 
     @Override
-    public void updateReceiveDay(Long familyId, DayOfWeek receiveDay) {
-        familyReportJpaRepository.updateReceiveDay(familyId, receiveDay);
+    public int updateReceiveDay(Long familyId, DayOfWeek receiveDay) {
+        return familyReportJpaRepository.updateReceiveDay(familyId, receiveDay);
     }
 
     @Override
-    public void updateActive(Long familyId, boolean isActive) {
-        familyReportJpaRepository.updateActive(familyId, isActive);
+    public int updateActive(Long familyId, boolean currentIsActive, boolean newIsActive) {
+        return familyReportJpaRepository.updateActive(familyId, currentIsActive, newIsActive);
     }
 }

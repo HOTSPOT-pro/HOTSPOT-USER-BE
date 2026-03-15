@@ -7,7 +7,6 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyReportErrorCode;
 import hotspot.user.familyReport.controller.port.CancelFamilyReportSubscriptionService;
-import hotspot.user.familyReport.domain.FamilyReport;
 import hotspot.user.familyReport.service.port.FamilyReportRepository;
 import hotspot.user.member.domain.FamilyRole;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +24,10 @@ public class CancelFamilyReportSubscriptionServiceImpl implements CancelFamilyRe
             throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
         }
 
-        FamilyReport familyReport = familyReportRepository.findByFamilyId(familyId)
-                .filter(FamilyReport::isActive)
-                .orElseThrow(() ->
-                        new ApplicationException(FamilyReportErrorCode.FAMILY_REPORT_SUBSCRIPTION_NOT_FOUND));
+        int updatedCount = familyReportRepository.updateActive(familyId, true, false);
 
-        familyReport.deactivate();
-        familyReportRepository.save(familyReport);
+        if (updatedCount == 0) {
+            throw new ApplicationException(FamilyReportErrorCode.FAMILY_REPORT_SUBSCRIPTION_NOT_FOUND);
+        }
     }
 }

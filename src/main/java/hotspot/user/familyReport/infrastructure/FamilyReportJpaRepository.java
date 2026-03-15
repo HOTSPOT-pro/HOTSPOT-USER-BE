@@ -21,14 +21,20 @@ public interface FamilyReportJpaRepository extends JpaRepository<FamilyReportEnt
             UPDATE FamilyReportEntity fr
             SET fr.receiveDay = :receiveDay
             WHERE fr.family.familyId = :familyId
+              AND fr.isActive = true
             """)
-    void updateReceiveDay(@Param("familyId") Long familyId, @Param("receiveDay") DayOfWeek receiveDay);
+    int updateReceiveDay(@Param("familyId") Long familyId, @Param("receiveDay") DayOfWeek receiveDay);
 
     @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE FamilyReportEntity fr
-            SET fr.isActive = :isActive
+            SET fr.isActive = :newIsActive
             WHERE fr.family.familyId = :familyId
+              AND fr.isActive = :currentIsActive
             """)
-    void updateActive(@Param("familyId") Long familyId, @Param("isActive") boolean isActive);
+    int updateActive(
+            @Param("familyId") Long familyId,
+            @Param("currentIsActive") boolean currentIsActive,
+            @Param("newIsActive") boolean newIsActive
+    );
 }

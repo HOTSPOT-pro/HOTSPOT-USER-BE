@@ -1,5 +1,6 @@
 package hotspot.user.familyReport.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,21 +30,13 @@ public class FindFamilyReportMembersServiceImpl implements FindFamilyReportMembe
     public List<FamilyReportMemberResponse> findMembers(Long familyId) {
         return familySubscriptionRepository.findByFamilyId(familyId)
                 .stream()
-                .sorted((left, right) -> {
-                    int roleCompare = Integer.compare(
-                            FAMILY_ROLE_ORDER.getOrDefault(left.getFamilyRole(), Integer.MAX_VALUE),
-                            FAMILY_ROLE_ORDER.getOrDefault(right.getFamilyRole(), Integer.MAX_VALUE)
-                    );
-
-                    if (roleCompare != 0) {
-                        return roleCompare;
-                    }
-
-                    return Long.compare(
-                            left.getSubscription().getId(),
-                            right.getSubscription().getId()
-                    );
-                })
+                .sorted(Comparator
+                        .comparing((hotspot.user.family.domain.FamilySubscription familySubscription) ->
+                                FAMILY_ROLE_ORDER.getOrDefault(
+                                        familySubscription.getFamilyRole(),
+                                        Integer.MAX_VALUE
+                                ))
+                        .thenComparing(familySubscription -> familySubscription.getSubscription().getId()))
                 .map(familySubscription -> FamilyReportMemberResponse.builder()
                         .subId(familySubscription.getSubscription().getId())
                         .name(familySubscription.getSubscription().getMember().getName())

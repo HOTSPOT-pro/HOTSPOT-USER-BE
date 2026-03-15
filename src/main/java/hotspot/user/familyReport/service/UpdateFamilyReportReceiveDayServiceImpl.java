@@ -8,7 +8,6 @@ import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyReportErrorCode;
 import hotspot.user.familyReport.controller.port.UpdateFamilyReportReceiveDayService;
 import hotspot.user.familyReport.controller.request.UpdateFamilyReportReceiveDayRequest;
-import hotspot.user.familyReport.domain.FamilyReport;
 import hotspot.user.familyReport.service.port.FamilyReportRepository;
 import hotspot.user.member.domain.FamilyRole;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +29,10 @@ public class UpdateFamilyReportReceiveDayServiceImpl implements UpdateFamilyRepo
             throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
         }
 
-        FamilyReport familyReport = familyReportRepository.findByFamilyId(familyId)
-                .filter(FamilyReport::isActive)
-                .orElseThrow(() ->
-                        new ApplicationException(FamilyReportErrorCode.FAMILY_REPORT_SUBSCRIPTION_NOT_FOUND));
+        int updatedCount = familyReportRepository.updateReceiveDay(familyId, request.receiveDay());
 
-        familyReport.updateReceiveDay(request.receiveDay());
-        familyReportRepository.save(familyReport);
+        if (updatedCount == 0) {
+            throw new ApplicationException(FamilyReportErrorCode.FAMILY_REPORT_SUBSCRIPTION_NOT_FOUND);
+        }
     }
 }

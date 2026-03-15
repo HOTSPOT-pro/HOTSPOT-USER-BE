@@ -89,8 +89,8 @@ class FamilyReportRepositoryImplTest {
     @Test
     @DisplayName("가족별 활성 상태를 수정할 수 있다")
     void updateActiveSuccess() {
-        familyReportRepository.updateActive(1L, false);
+        familyReportRepository.updateActive(1L, true, false);
 
-        verify(familyReportJpaRepository).updateActive(1L, false);
+        verify(familyReportJpaRepository).updateActive(1L, true, false);
     }
 }
