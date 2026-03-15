@@ -33,7 +33,9 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String uri = request.getRequestURI();
-        return uri.equals("/health") || uri.equals("/actuator/health") || uri.equals("/actuator/prometheus");
+        return uri.equals("/health")
+                || uri.startsWith("/actuator/health")
+                || uri.equals("/actuator/prometheus");
     }
 
     @Override
