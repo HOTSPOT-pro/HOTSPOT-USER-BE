@@ -26,10 +26,12 @@ import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.familyReport.controller.port.CancelFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.CreateFamilyReportSubscriptionService;
+import hotspot.user.familyReport.controller.port.FindFamilyReportMembersService;
 import hotspot.user.familyReport.controller.port.FindFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.UpdateFamilyReportReceiveDayService;
 import hotspot.user.familyReport.controller.request.CreateFamilyReportSubscriptionRequest;
 import hotspot.user.familyReport.controller.request.UpdateFamilyReportReceiveDayRequest;
+import hotspot.user.familyReport.controller.response.FamilyReportMemberResponse;
 import hotspot.user.familyReport.controller.response.FamilyReportSubscriptionResponse;
 import hotspot.user.member.domain.FamilyRole;
 
@@ -48,6 +50,9 @@ class FamilyReportControllerTest {
 
     @MockBean
     private CreateFamilyReportSubscriptionService createFamilyReportSubscriptionService;
+
+    @MockBean
+    private FindFamilyReportMembersService findFamilyReportMembersService;
 
     @MockBean
     private FindFamilyReportSubscriptionService findFamilyReportSubscriptionService;
@@ -78,6 +83,38 @@ class FamilyReportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data.subscribed").value(true));
+    }
+
+    @Test
+    @DisplayName("가족 AI 리포트 구성원 목록 조회 성공")
+    void findFamilyReportMembersSuccess() throws Exception {
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+
+        given(findFamilyReportMembersService.findMembers(100L))
+                .willReturn(java.util.List.of(
+                        FamilyReportMemberResponse.builder()
+                                .subId(10L)
+                                .name("홍길동")
+                                .familyRole(FamilyRole.OWNER)
+                                .reportId(null)
+                                .build(),
+                        FamilyReportMemberResponse.builder()
+                                .subId(11L)
+                                .name("김철수")
+                                .familyRole(FamilyRole.CHILD)
+                                .reportId(null)
+                                .build()
+                ));
+
+        mockMvc.perform(get("/api/v1/ai-reports/families/members"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data[0].subId").value(10L))
+                .andExpect(jsonPath("$.data[0].name").value("홍길동"))
+                .andExpect(jsonPath("$.data[0].familyRole").value("OWNER"))
+                .andExpect(jsonPath("$.data[1].subId").value(11L))
+                .andExpect(jsonPath("$.data[1].name").value("김철수"))
+                .andExpect(jsonPath("$.data[1].familyRole").value("CHILD"));
     }
 
     @Test
