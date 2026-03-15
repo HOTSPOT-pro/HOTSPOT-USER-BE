@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.familyReport.controller.port.CancelFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.CreateFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.FindFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.UpdateFamilyReportReceiveDayService;
@@ -27,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/ai-reports")
 public class FamilyReportController implements FamilyReportApi {
 
+    private final CancelFamilyReportSubscriptionService cancelFamilyReportSubscriptionService;
     private final CreateFamilyReportSubscriptionService createFamilyReportSubscriptionService;
     private final FindFamilyReportSubscriptionService findFamilyReportSubscriptionService;
     private final UpdateFamilyReportReceiveDayService updateFamilyReportReceiveDayService;
@@ -67,6 +70,19 @@ public class FamilyReportController implements FamilyReportApi {
                 principal.getFamilyId(),
                 principal.getRole(),
                 request
+        );
+
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @Override
+    @DeleteMapping("/families")
+    public ResponseEntity<ApiResponse<Void>> cancelFamilyReportSubscription(
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        cancelFamilyReportSubscriptionService.cancelSubscription(
+                principal.getFamilyId(),
+                principal.getRole()
         );
 
         return ResponseEntity.ok(ApiResponse.success());
