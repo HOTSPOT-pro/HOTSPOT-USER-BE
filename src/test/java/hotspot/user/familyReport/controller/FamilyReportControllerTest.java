@@ -4,6 +4,7 @@ import static hotspot.user.util.TestSecurityUtil.setAuthentication;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProvider;
+import hotspot.user.familyReport.controller.port.CancelFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.CreateFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.FindFamilyReportSubscriptionService;
 import hotspot.user.familyReport.controller.port.UpdateFamilyReportReceiveDayService;
@@ -40,6 +42,9 @@ class FamilyReportControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private CancelFamilyReportSubscriptionService cancelFamilyReportSubscriptionService;
 
     @MockBean
     private CreateFamilyReportSubscriptionService createFamilyReportSubscriptionService;
@@ -121,6 +126,20 @@ class FamilyReportControllerTest {
         mockMvc.perform(patch("/api/v1/ai-reports/families/receive-day")
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("가족 AI 리포트 구독 취소 성공")
+    void cancelFamilyReportSubscriptionSuccess() throws Exception {
+        setAuthentication(1L, 100L, FamilyRole.OWNER);
+
+        doNothing().when(cancelFamilyReportSubscriptionService)
+                .cancelSubscription(100L, FamilyRole.OWNER);
+
+        mockMvc.perform(delete("/api/v1/ai-reports/families"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data").doesNotExist());
