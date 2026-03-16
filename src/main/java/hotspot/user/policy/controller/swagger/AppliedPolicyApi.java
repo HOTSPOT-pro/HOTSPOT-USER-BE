@@ -73,4 +73,19 @@ public interface AppliedPolicyApi {
     ResponseEntity<ApiResponse<BlockedStatusResponse>> getBlockedStatus(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principalDetails
     );
+
+    @Operation(summary = "구성원별 데이터 사용 불가능한 시간대 조회", description = "가족 전체 또는 본인의 요일별 차단 시간대 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
+                                         + "- AUTH_004: 해당 요청에 대한 접근 권한이 없습니다.",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    ResponseEntity<ApiResponse<Object>> getBlockedTime(
+            @Parameter(description = "true일 경우 가족 전체 조회, false일 경우 본인 정책 조회", example = "false")
+            @RequestParam(defaultValue = "false") boolean isFamily,
+
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal PrincipalDetails principal
+    );
 }

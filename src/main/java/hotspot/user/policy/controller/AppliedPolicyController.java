@@ -98,4 +98,27 @@ public class AppliedPolicyController implements AppliedPolicyApi {
         return ResponseEntity.ok()
                 .body(ApiResponse.success(response));
     }
+
+    /**
+     * 구성원별 데이터 사용 불가능한 시간대 리턴
+     * @param isFamily true일 경우 가족 전체, false일 경우 본인 시간대만 조회
+     */
+    @Override
+    @GetMapping("/blockedTime")
+    public ResponseEntity<ApiResponse<Object>> getBlockedTime(
+            @RequestParam(defaultValue = "false") boolean isFamily,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        if (isFamily) {
+
+            // TODO: FindBlockedTimeService 구현 후 호출 예정
+            // return ResponseEntity.ok(ApiResponse.success(findBlockedTimeService.findFamilyBlockedTime(principal.getFamilyId())));
+            return ResponseEntity.ok(ApiResponse.success(null));
+        }
+
+        // TODO: FindBlockedTimeService 구현 후 호출 예정
+        // return ResponseEntity.ok(ApiResponse.success(findBlockedTimeService.findMemberBlockedTime(principal.getId())));
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }
