@@ -1,14 +1,11 @@
 package hotspot.user.weeklyReport.domain;
 
-import java.util.List;
-
 import lombok.Builder;
 
 @Builder
 public record SummaryData(
         DailySummary dailySummary,
-        HourlySummary hourlySummary,
-        List<CategorySummary> categorySummary
+        HourlySummary hourlySummary
 ) {
     @Builder
     public record DailySummary(
@@ -28,11 +25,5 @@ public record SummaryData(
             Long studyTimeUsageDiff,
             Double lateNightUsageChangeRate,
             Double studyTimeUsageChangeRate
-    ) {}
-
-    @Builder
-    public record CategorySummary(
-            String category,
-            Double percent
     ) {}
 }

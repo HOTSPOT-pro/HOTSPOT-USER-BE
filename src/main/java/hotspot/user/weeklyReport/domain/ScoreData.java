@@ -8,6 +8,7 @@ import lombok.Builder;
 public record ScoreData(
         Integer totalScore,
         ScoreLevel scoreLevel,
+        Integer scoreDiff,
         List<ScoreReason> reasons
 
 ) {

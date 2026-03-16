@@ -11,7 +11,7 @@ public record UsageListData(
         Long totalUsage,
         List<DailyUsage> dailyUsageList,
         List<HourlyUsage> hourlyUsageList,
-        List<CategoryUsage> categoryUsageList
+        CategoryUsageReport categoryUsageList
 ) {
     @Builder
     public record DailyUsage(
@@ -31,10 +31,22 @@ public record UsageListData(
     ) {}
 
     @Builder
-    public record CategoryUsage(
+    public record CategoryUsageReport(
+            List<CategoryUsageItem> lastWeek,
+            List<CategoryUsageItem> thisWeek,
+            List<CategoryComparison> comparison
+    ) {}
+
+    @Builder
+    public record CategoryUsageItem(
             String category,
-            Long lastWeek,
-            Long thisWeek,
+            Long usage,
+            Double percent
+    ) {}
+
+    @Builder
+    public record CategoryComparison(
+            String category,
             Double changeRate
     ) {}
 }
