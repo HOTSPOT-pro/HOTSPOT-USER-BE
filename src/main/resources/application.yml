@@ -21,7 +21,7 @@ spring:
 
   config:
     import:
-      - classpath:postgres.yml
+      - classpath:postgres-main.yml
       - classpath:redis.yml
       - classpath:kafka.yml
       - classpath:oauth.yml
