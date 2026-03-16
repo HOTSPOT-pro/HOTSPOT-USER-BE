@@ -1,0 +1,52 @@
+package hotspot.user.common.config;
+
+import jakarta.persistence.EntityManagerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.sql.DataSource;
+
+/**
+ * 배치 DB 설정
+ */
+@Configuration
+@EnableTransactionManagement
+@EnableJpaRepositories(
+        basePackages = "hotspot.user.weeklyReport", // 배치 DB용 패키지만 스캔
+        entityManagerFactoryRef = "batchEntityManagerFactory",
+        transactionManagerRef = "batchTransactionManager"
+)
+public class BatchDbConfig {
+
+    @Bean(name = "batchDataSource")
+    @ConfigurationProperties(prefix = "spring.datasource.batch") // postgres-batch.yml의 배치 DB 설정
+    public DataSource batchDataSource() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "batchEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean batchEntityManagerFactory(
+            EntityManagerFactoryBuilder builder,
+            @Qualifier("batchDataSource") DataSource dataSource) {
+        return builder
+                .dataSource(dataSource)
+                .packages("hotspot.user.weeklyReport") // 배치 DB용 엔티티 위치
+                .persistenceUnit("batch")
+                .build();
+    }
+
+    @Bean(name = "batchTransactionManager")
+    public PlatformTransactionManager batchTransactionManager(
+            @Qualifier("batchEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
+    }
+}

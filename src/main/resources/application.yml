@@ -29,6 +29,7 @@ spring:
       - classpath:crypto.yml
       - classpath:s3.yml
       - classpath:sms.yml
+      - classpath:postgres-batch.yml
 
   web:
     resources:

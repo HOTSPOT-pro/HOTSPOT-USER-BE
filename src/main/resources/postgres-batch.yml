@@ -1,10 +1,10 @@
 spring:
   datasource:
-    main:
+    batch:
       driver-class-name: org.postgresql.Driver
-      jdbc-url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DATABASE}
-      username: ${POSTGRES_USER}
-      password: ${POSTGRES_PASSWORD}
+      jdbc-url: jdbc:postgresql://${POSTGRES_BATCH_HOST:localhost}:${POSTGRES_BATCH_PORT:5432}/${POSTGRES_BATCH_DATABASE:hotspot_batch}
+      username: ${POSTGRES_BATCH_USER}
+      password: ${POSTGRES_BATCH_PASSWORD}
       hikari:
         max-lifetime: 300000
         validation-timeout: 5000
