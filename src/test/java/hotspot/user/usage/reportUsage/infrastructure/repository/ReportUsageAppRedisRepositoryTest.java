@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Clock;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -13,51 +12,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
+import hotspot.user.common.config.AbstractRedisTest;
+import hotspot.user.common.util.redis.RedisPipelineExecutor;
 import hotspot.user.usage.reportUsage.domain.AppUsage;
 import hotspot.user.usage.reportUsage.infrastructure.keybuilder.ReportUsageRedisKeyBuilder;
 
-@Testcontainers
-@DataRedisTest
 @Import({
         ReportUsageAppRedisRepository.class,
         ReportUsageAppRedisRepositoryTest.RedisTestConfig.class
 })
-class ReportUsageAppRedisRepositoryTest {
-
-    @SpringBootConfiguration
-    @EnableAutoConfiguration
-    static class TestBootConfig {
-    }
-
-    @Container
-    static GenericContainer<?> redis =
-            new GenericContainer<>("redis:7-alpine")
-                    .withExposedPorts(6379)
-                    .waitingFor(
-                            Wait.forListeningPort()
-                                    .withStartupTimeout(Duration.ofSeconds(30))
-                    );
-
-    @DynamicPropertySource
-    static void redisProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port",
-                () -> redis.getMappedPort(6379));
-    }
+class ReportUsageAppRedisRepositoryTest extends AbstractRedisTest {
 
     @Autowired
     ReportUsageAppRedisRepository repository;
@@ -67,6 +36,13 @@ class ReportUsageAppRedisRepositoryTest {
 
     @TestConfiguration
     static class RedisTestConfig {
+
+        @Bean
+        RedisPipelineExecutor redisPipelineExecutor(
+                StringRedisTemplate redisTemplate
+        ) {
+            return new RedisPipelineExecutor(redisTemplate);
+        }
 
         @Bean
         Clock clock() {
