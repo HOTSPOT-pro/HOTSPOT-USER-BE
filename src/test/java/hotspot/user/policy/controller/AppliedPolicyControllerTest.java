@@ -251,4 +251,25 @@ class AppliedPolicyControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].subId").value(10L));
     }
+
+    @Test
+    @DisplayName("가족 차단 시간대 조회 실패: CHILD 권한일 때 (ACCESS_DENIED)")
+    void getBlockedTimeFamilyFailByChild() throws Exception {
+        // given
+        setAuthentication(FamilyRole.CHILD);
+
+        given(findBlockedTimeService.findFamilyBlockedTime(1L))
+                .willThrow(new ApplicationException(AuthErrorCode.ACCESS_DENIED));
+
+        // when & then
+        mockMvc.perform(get("/api/v1/policies/blockedTime")
+                        .param("isFamily", "true")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(result -> {
+                    assertThat(result.getResolvedException())
+                            .isInstanceOf(ApplicationException.class)
+                            .hasMessage(AuthErrorCode.ACCESS_DENIED.getMessage());
+                });
+    }
 }
