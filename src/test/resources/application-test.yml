@@ -5,3 +5,7 @@ spring:
       port: 6379
       password:
       timeout: 30s
+
+logging:
+  level:
+    io.lettuce.core.protocol.ConnectionWatchdog: ERROR
