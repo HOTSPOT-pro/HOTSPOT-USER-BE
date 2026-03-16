@@ -65,6 +65,35 @@ class WeeklyReportRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("회선과 월로 월별 주간 리포트 목록을 조회할 수 있다")
+    void findMonthlyReportsBySubIdSuccess() {
+        WeeklyReportEntity latestEntity = WeeklyReportEntity.builder()
+                .weeklyReportId(101L)
+                .subId(10L)
+                .weekStartDate(LocalDate.of(2026, 3, 11))
+                .weekEndDate(LocalDate.of(2026, 3, 17))
+                .build();
+        WeeklyReportEntity olderEntity = WeeklyReportEntity.builder()
+                .weeklyReportId(100L)
+                .subId(10L)
+                .weekStartDate(LocalDate.of(2026, 3, 4))
+                .weekEndDate(LocalDate.of(2026, 3, 10))
+                .build();
+
+        given(weeklyReportJpaRepository.findMonthlyReportsBySubId(
+                10L,
+                LocalDate.of(2026, 2, 28),
+                LocalDate.of(2026, 3, 30)))
+                .willReturn(List.of(latestEntity, olderEntity));
+
+        List<WeeklyReport> result = repository.findMonthlyReportsBySubId(10L, java.time.YearMonth.of(2026, 3));
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getWeeklyReportId()).isEqualTo(101L);
+        assertThat(result.get(1).getWeeklyReportId()).isEqualTo(100L);
+    }
+
+    @Test
     @DisplayName("회선 목록과 현재 주차 범위로 이번 주 완료 리포트 ID를 조회할 수 있다")
     void findCompletedCurrentWeekReportIdsBySubIdsSuccess() {
         WeeklyReportJpaRepository.WeeklyReportIdRow row1 = mock(WeeklyReportJpaRepository.WeeklyReportIdRow.class);
