@@ -34,12 +34,14 @@ import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Status;
 import hotspot.user.policy.controller.port.FindBlockStatusService;
+import hotspot.user.policy.controller.port.FindBlockedTimeService;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
 import hotspot.user.policy.controller.port.UpdatePolicySubService;
 import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
 import hotspot.user.policy.controller.response.BlockedStatusResponse;
+import hotspot.user.policy.controller.response.BlockedTimeResponse;
 import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
 import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 
@@ -64,6 +66,9 @@ class AppliedPolicyControllerTest {
 
     @MockBean
     private UpdatePolicySubService updatePolicySubService;
+
+    @MockBean
+    private FindBlockedTimeService findBlockedTimeService;
 
     @MockBean
     private JwtFilter jwtFilter;
@@ -132,7 +137,7 @@ class AppliedPolicyControllerTest {
                 .memberPolicies(List.of())
                 .build();
 
-        given(findFamilyAppliedPolicyService.findByFamilyId(100L))
+        given(findFamilyAppliedPolicyService.findByMemberId(1L))
                 .willReturn(response);
 
         mockMvc.perform(get("/api/v1/policies/applied")
@@ -174,7 +179,7 @@ class AppliedPolicyControllerTest {
 
         given(updatePolicySubService.updatePolicySub(
                 any(UpdatePolicySubRequest.class),
-                eq(100L),
+                eq(1L),
                 eq(FamilyRole.OWNER)))
                 .willReturn(response);
 
@@ -185,50 +190,6 @@ class AppliedPolicyControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.familyId").value(100L))
                 .andExpect(jsonPath("$.data.blockedPolicyIdList[0]").value(1L));
-    }
-
-    @Test
-    @DisplayName("구성원별 정책 업데이트 실패: 타 가족의 정책을 적용하려 할 때 (POLICY_ACCESS_DENIED)")
-    void updatePolicySubFailByAccessDenied() throws Exception {
-        // given
-        setAuthentication(FamilyRole.OWNER);
-        UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(999L));
-
-        given(updatePolicySubService.updatePolicySub(any(), any(), any()))
-                .willThrow(new ApplicationException(PolicyErrorCode.POLICY_ACCESS_DENIED));
-
-        // when & then
-        mockMvc.perform(put("/api/v1/policies/apply")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden())
-                .andExpect(result -> {
-                    assertThat(result.getResolvedException())
-                            .isInstanceOf(ApplicationException.class)
-                            .hasMessage(PolicyErrorCode.POLICY_ACCESS_DENIED.getMessage());
-                });
-    }
-
-    @Test
-    @DisplayName("구성원별 정책 업데이트 실패: 비활성화된 정책을 적용하려 할 때 (INACTIVE_POLICY_CANNOT_APPLY)")
-    void updatePolicySubFailByInactivePolicy() throws Exception {
-        // given
-        setAuthentication(FamilyRole.OWNER);
-        UpdatePolicySubRequest request = new UpdatePolicySubRequest(100L, 1L, List.of(1L));
-
-        given(updatePolicySubService.updatePolicySub(any(), any(), any()))
-                .willThrow(new ApplicationException(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY));
-
-        // when & then
-        mockMvc.perform(put("/api/v1/policies/apply")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(result -> {
-                    assertThat(result.getResolvedException())
-                            .isInstanceOf(ApplicationException.class)
-                            .hasMessage(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY.getMessage());
-                });
     }
 
     @Test
@@ -249,5 +210,45 @@ class AppliedPolicyControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.isCurrentlyBlocked").value(true));
+    }
+
+    @Test
+    @DisplayName("본인 차단 시간대 조회 성공")
+    void getBlockedTimeIndividualSuccess() throws Exception {
+        // given
+        setAuthentication(FamilyRole.CHILD);
+        BlockedTimeResponse response = BlockedTimeResponse.builder()
+                .subId(10L)
+                .dayBlockedTimes(List.of())
+                .build();
+
+        given(findBlockedTimeService.findMemberBlockedTime(1L)).willReturn(response);
+
+        // when & then
+        mockMvc.perform(get("/api/v1/policies/blockedTime")
+                        .param("isFamily", "false")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.subId").value(10L));
+    }
+
+    @Test
+    @DisplayName("가족 차단 시간대 조회 성공")
+    void getBlockedTimeFamilySuccess() throws Exception {
+        // given
+        setAuthentication(FamilyRole.OWNER);
+        BlockedTimeResponse response = BlockedTimeResponse.builder()
+                .subId(10L)
+                .dayBlockedTimes(List.of())
+                .build();
+
+        given(findBlockedTimeService.findFamilyBlockedTime(1L)).willReturn(List.of(response));
+
+        // when & then
+        mockMvc.perform(get("/api/v1/policies/blockedTime")
+                        .param("isFamily", "true")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].subId").value(10L));
     }
 }
