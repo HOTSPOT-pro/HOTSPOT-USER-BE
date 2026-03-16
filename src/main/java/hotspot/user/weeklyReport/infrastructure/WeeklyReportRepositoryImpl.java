@@ -1,6 +1,10 @@
 package hotspot.user.weeklyReport.infrastructure;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -19,5 +23,28 @@ public class WeeklyReportRepositoryImpl implements WeeklyReportRepository {
     public Optional<WeeklyReport> findByReportId(Long reportId) {
         return weeklyReportJpaRepository.findById(reportId)
                 .map(WeeklyReportEntity::entityToDomain);
+    }
+
+    @Override
+    public Map<Long, Long> findCompletedCurrentWeekReportIdsBySubIds(
+            List<Long> subIds,
+            LocalDate currentWeekStartDate,
+            LocalDate currentWeekEndDate
+    ) {
+        if (subIds == null || subIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return weeklyReportJpaRepository.findCompletedCurrentWeekReportIdsBySubIds(
+                        subIds,
+                        currentWeekStartDate.minusDays(1),
+                        currentWeekEndDate.minusDays(1)
+                )
+                .stream()
+                .collect(Collectors.toMap(
+                        WeeklyReportJpaRepository.WeeklyReportIdRow::getSubId,
+                        WeeklyReportJpaRepository.WeeklyReportIdRow::getWeeklyReportId,
+                        (left, right) -> left
+                ));
     }
 }
