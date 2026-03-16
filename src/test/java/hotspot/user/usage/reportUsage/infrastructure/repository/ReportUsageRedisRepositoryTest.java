@@ -11,49 +11,38 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
+import hotspot.user.common.config.AbstractRedisTest;
 import hotspot.user.common.config.RedisLuaConfig;
+import hotspot.user.common.util.redis.RedisPipelineExecutor;
 import hotspot.user.usage.reportUsage.infrastructure.keybuilder.ReportUsageRedisKeyBuilder;
 
-@Testcontainers
-@DataRedisTest
 @Import({
         ReportUsageRedisRepository.class,
         RedisLuaConfig.class
 })
-class ReportUsageRedisRepositoryTest {
-
-    @SpringBootConfiguration
-    @EnableAutoConfiguration
-    static class TestBootConfig {}
-
-    @Container
-    static GenericContainer<?> redis =
-            new GenericContainer<>("redis:7-alpine")
-                    .withExposedPorts(6379);
-
-    @DynamicPropertySource
-    static void redisProps(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port",
-                () -> redis.getMappedPort(6379));
-    }
+class ReportUsageRedisRepositoryTest extends AbstractRedisTest {
 
     @Autowired
     ReportUsageRedisRepository repository;
 
     @Autowired
     StringRedisTemplate redisTemplate;
+
+    @TestConfiguration
+    static class RedisTestConfig {
+
+        @Bean
+        RedisPipelineExecutor redisPipelineExecutor(
+                StringRedisTemplate redisTemplate
+        ) {
+            return new RedisPipelineExecutor(redisTemplate);
+        }
+    }
 
     @BeforeEach
     void clearRedis() {
