@@ -1,6 +1,5 @@
 package hotspot.user.familyReport.controller;
 
-import java.util.List;
 
 import jakarta.validation.Valid;
 
@@ -23,7 +22,7 @@ import hotspot.user.familyReport.controller.port.FindFamilyReportSubscriptionSer
 import hotspot.user.familyReport.controller.port.UpdateFamilyReportReceiveDayService;
 import hotspot.user.familyReport.controller.request.CreateFamilyReportSubscriptionRequest;
 import hotspot.user.familyReport.controller.request.UpdateFamilyReportReceiveDayRequest;
-import hotspot.user.familyReport.controller.response.FamilyReportMemberResponse;
+import hotspot.user.familyReport.controller.response.FamilyReportMembersResponse;
 import hotspot.user.familyReport.controller.response.FamilyReportSubscriptionResponse;
 import hotspot.user.familyReport.controller.swagger.FamilyReportApi;
 import lombok.RequiredArgsConstructor;
@@ -52,10 +51,10 @@ public class FamilyReportController implements FamilyReportApi {
 
     @Override
     @GetMapping("/families/members")
-    public ResponseEntity<ApiResponse<List<FamilyReportMemberResponse>>> findFamilyReportMembers(
+    public ResponseEntity<ApiResponse<FamilyReportMembersResponse>> findFamilyReportMembers(
             @AuthenticationPrincipal PrincipalDetails principal) {
 
-        List<FamilyReportMemberResponse> response =
+        FamilyReportMembersResponse response =
                 findFamilyReportMembersService.findMembers(principal.getFamilyId());
 
         return ResponseEntity.ok(ApiResponse.success(response));

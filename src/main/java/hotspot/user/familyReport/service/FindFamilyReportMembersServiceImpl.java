@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.familyReport.controller.port.FindFamilyReportMembersService;
 import hotspot.user.familyReport.controller.response.FamilyReportMemberResponse;
+import hotspot.user.familyReport.controller.response.FamilyReportMembersResponse;
+import hotspot.user.familyReport.service.port.FamilyReportRepository;
 import hotspot.user.member.domain.FamilyRole;
 import lombok.RequiredArgsConstructor;
 
@@ -25,10 +27,11 @@ public class FindFamilyReportMembersServiceImpl implements FindFamilyReportMembe
     );
 
     private final FamilySubscriptionRepository familySubscriptionRepository;
+    private final FamilyReportRepository familyReportRepository;
 
     @Override
-    public List<FamilyReportMemberResponse> findMembers(Long familyId) {
-        return familySubscriptionRepository.findByFamilyId(familyId)
+    public FamilyReportMembersResponse findMembers(Long familyId) {
+        List<FamilyReportMemberResponse> members = familySubscriptionRepository.findByFamilyId(familyId)
                 .stream()
                 .sorted(Comparator
                         .comparing((hotspot.user.family.domain.FamilySubscription familySubscription) ->
@@ -45,5 +48,13 @@ public class FindFamilyReportMembersServiceImpl implements FindFamilyReportMembe
                         .reportId(null)
                         .build())
                 .toList();
+
+        return FamilyReportMembersResponse.builder()
+                .receiveDay(familyReportRepository.findByFamilyId(familyId)
+                        .filter(hotspot.user.familyReport.domain.FamilyReport::isActive)
+                        .map(hotspot.user.familyReport.domain.FamilyReport::getReceiveDay)
+                        .orElse(null))
+                .members(members)
+                .build();
     }
 }
