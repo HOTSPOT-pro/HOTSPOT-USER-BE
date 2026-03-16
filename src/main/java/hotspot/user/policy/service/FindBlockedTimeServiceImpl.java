@@ -6,6 +6,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.AuthErrorCode;
+import hotspot.user.common.exception.code.MemberErrorCode;
+import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.policy.controller.port.FindBlockedTimeService;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
@@ -25,6 +31,7 @@ public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
 
     private final FindMemberAppliedPolicyService findMemberAppliedPolicyService;
     private final FindFamilyAppliedPolicyService findFamilyAppliedPolicyService;
+    private final FamilySubscriptionRepository familySubscriptionRepository;
 
     /**
      * 특정 구성원의 차단 시간대 조회
@@ -44,6 +51,7 @@ public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
 
     /**
      * 사용자가 속한 가족 전체 구성원의 차단 시간대 조회
+     * 요청자는 OWNER 또는 PARENT 권한을 가져야 합니다.
      * 
      * @param memberId 기준이 되는 구성원의 ID (가족 정보를 찾기 위해 사용)
      * @return 가족 구성원 각각의 병합된 차단 시간대 리스트
@@ -51,10 +59,18 @@ public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
     @Override
     @Transactional
     public List<BlockedTimeResponse> findFamilyBlockedTime(Long memberId) {
-        // 1. 가족 전체 구성원의 적용 정책 리스트 조회 (memberId 기반 최신 소속 조회)
+        // 1. 요청자의 권한 확인 (OWNER 또는 PARENT만 가능)
+        FamilySubscription requesterSub = familySubscriptionRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (requesterSub.getFamilyRole() != FamilyRole.OWNER && requesterSub.getFamilyRole() != FamilyRole.PARENT) {
+            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
+        }
+
+        // 2. 가족 전체 구성원의 적용 정책 리스트 조회 (memberId 기반 최신 소속 조회)
         FamilyAppliedPolicyResponse familyPolicyResponse = findFamilyAppliedPolicyService.findByMemberId(memberId);
 
-        // 2. 각 구성원별로 적용된 정책 리스트를 순회하며 차단 시간대 계산
+        // 3. 각 구성원별로 적용된 정책 리스트를 순회하며 차단 시간대 계산
         return familyPolicyResponse.memberPolicies().stream()
                 .map(this::calculateBlockedTime)
                 .collect(Collectors.toList());

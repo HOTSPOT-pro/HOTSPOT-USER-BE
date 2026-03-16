@@ -52,21 +52,26 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
             Long requesterMemberId,
             FamilyRole requesterRole) {
 
-        // 1. 요청자의 최신 가족 ID 조회 (memberId 기반)
+        // 1. 요청자의 권한을 먼저 검증한다. (OWNER만 가능)
+        if (requesterRole != FamilyRole.OWNER) {
+            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
+        }
+
+        // 2. 요청자의 최신 가족 ID 조회 (memberId 기반)
         FamilySubscription requesterFamilySub = familySubscriptionRepository.findByMemberId(requesterMemberId)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
         
         Long requesterFamilyId = requesterFamilySub.getFamily().getId();
 
-        // 2. 요청자의 권한과 가족 소속을 검증한다.
-        validateAuthorityAndFamily(request.subId(), requesterFamilyId, requesterRole);
+        // 3. 타겟 회선의 가족 소속을 검증한다.
+        validateTargetFamily(request.subId(), requesterFamilyId);
 
         List<Long> targetIdsList = request.blockPolicyIdList();
 
-        // 3. 해당 회선의 모든 정책 매핑 정보를 먼저 조회한다. (활성 + 비활성 포함)
+        // 4. 해당 회선의 모든 정책 매핑 정보를 먼저 조회한다. (활성 + 비활성 포함)
         List<PolicySub> existingSubs = policySubRepository.findBySubId(request.subId());
 
-        // 4. 쿼리 최적화: 신규 요청 ID와 기존 등록된 ID를 모두 합쳐 단 1번의 DB 조회를 수행한다.
+        // 5. 쿼리 최적화: 신규 요청 ID와 기존 등록된 ID를 모두 합쳐 단 1번의 DB 조회를 수행한다.
         Set<Long> allRequiredPolicyIds = existingSubs.stream()
                 .map(PolicySub::getBlockPolicyId)
                 .collect(Collectors.toSet());
@@ -79,7 +84,7 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
                     .collect(Collectors.toMap(BlockPolicy::getId, p -> p));
         }
 
-        // 5. 요청된 타겟 정책 검증
+        // 6. 요청된 타겟 정책 검증
         for (Long targetId : targetIdsList) {
             BlockPolicy policy = policyMap.get(targetId);
             if (policy == null) {
@@ -100,20 +105,18 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
         List<BlockPolicy> appliedAlertPolicies = new ArrayList<>();
         List<BlockPolicy> releasedAlertPolicies = new ArrayList<>();
 
-        // 6. 요청된 정책들을 순회하며 신규 추가 또는 활성화 처리
+        // 7. 요청된 정책들을 순회하며 신규 추가 또는 활성화 처리
         for (Long targetId : targetIdsList) {
             BlockPolicy policy = policyMap.get(targetId);
             PolicySub sub = existingMap.remove(targetId);
 
             if (sub != null) {
-                // 비활성 상태인 경우에만 활성화 및 알림 대상 추가
                 if (!sub.isActive()) {
                     sub.updateIsActive(true);
                     domainsToSave.add(sub);
                     appliedAlertPolicies.add(policy);
                 }
             } else {
-                // DB에 아예 없는 경우 신규 생성 및 알림 대상 추가
                 PolicySub newSub = PolicySub.builder()
                         .subId(request.subId())
                         .blockPolicyId(targetId)
@@ -124,7 +127,7 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
             }
         }
 
-        // 7. 요청에 없는데 DB에는 활성 상태로 남아있는 정책들을 비활성화 처리
+        // 8. 요청에 없는데 DB에는 활성 상태로 남아있는 정책들을 비활성화 처리
         for (PolicySub remainingSub : existingMap.values()) {
             if (remainingSub.isActive()) {
                 remainingSub.updateIsActive(false);
@@ -137,14 +140,13 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
             }
         }
 
-        // 8. 변경 사항이 있는 경우에만 저장 및 알림 발송
+        // 9. 변경 사항이 있는 경우에만 저장 및 알림 발송
         if (!domainsToSave.isEmpty()) {
             policySubRepository.saveAll(domainsToSave);
             publishPolicyAppliedAlerts(appliedAlertPolicies, request.subId(), requesterFamilyId);
             publishPolicyReleasedAlerts(releasedAlertPolicies, request.subId(), requesterFamilyId);
 
 
-            // subId에 적용된 정책 목록 조회
             List<PolicySub> activeSubs =
                     policySubRepository.findActiveBySubId(request.subId());
 
@@ -161,12 +163,8 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
         );
     }
 
-    // 요청자 권한과 가족 소유 관계를 검증한다.
-    private void validateAuthorityAndFamily(Long subId, Long requesterFamilyId, FamilyRole requesterRole) {
-        if (requesterRole != FamilyRole.OWNER) {
-            throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
-        }
-
+    // 타겟 회선의 가족 소유 관계를 검증한다.
+    private void validateTargetFamily(Long subId, Long requesterFamilyId) {
         FamilySubscription familySub = familySubscriptionRepository.findBySubId(subId)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_SUBSCRIPTION_NOT_FOUND));
 
@@ -175,7 +173,6 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
         }
     }
 
-    // 적용된 정책에 대한 알림 outbox 이벤트를 발행한다.
     private void publishPolicyAppliedAlerts(List<BlockPolicy> policies, Long subId, Long familyId) {
         for (BlockPolicy policy : policies) {
             userAlertNotificationOutboxPort.appendPolicyAlert(new PolicyAlertOutboxEvent(
@@ -188,7 +185,6 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
         }
     }
 
-    // 해제된 정책에 대한 알림 outbox 이벤트를 발행한다.
     private void publishPolicyReleasedAlerts(List<BlockPolicy> policies, Long subId, Long familyId) {
         for (BlockPolicy policy : policies) {
             userAlertNotificationOutboxPort.appendPolicyAlert(new PolicyAlertOutboxEvent(
