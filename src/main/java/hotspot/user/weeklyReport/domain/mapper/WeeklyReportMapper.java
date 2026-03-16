@@ -42,11 +42,15 @@ public class WeeklyReportMapper {
                                 .toList())
                         .build())
                 .hourlyUsage(WeeklyReportResponse.HourlyUsage.builder()
-                        .lateNightUsage(UsageCalculator.kbToGb(domain.getSummaryData().hourlySummary().lateNightUsage()))
-                        .lateNightUsageDiff(UsageCalculator.kbToGb(domain.getSummaryData().hourlySummary().lateNightUsageDiff()))
+                        .lateNightUsage(UsageCalculator.kbToGb(
+                                domain.getSummaryData().hourlySummary().lateNightUsage()))
+                        .lateNightUsageDiff(UsageCalculator.kbToGb(
+                                domain.getSummaryData().hourlySummary().lateNightUsageDiff()))
                         .lateNightUsageChangeRate(domain.getSummaryData().hourlySummary().lateNightUsageChangeRate())
-                        .studyTimeUsage(UsageCalculator.kbToGb(domain.getSummaryData().hourlySummary().studyTimeUsage()))
-                        .studyTimeUsageDiff(UsageCalculator.kbToGb(domain.getSummaryData().hourlySummary().studyTimeUsageDiff()))
+                        .studyTimeUsage(UsageCalculator.kbToGb(
+                                domain.getSummaryData().hourlySummary().studyTimeUsage()))
+                        .studyTimeUsageDiff(UsageCalculator.kbToGb(
+                                domain.getSummaryData().hourlySummary().studyTimeUsageDiff()))
                         .studyTimeUsageChangeRate(domain.getSummaryData().hourlySummary().studyTimeUsageChangeRate())
                         .ai_feedback(domain.getAiFeedback().summaryText().hourly())
                         .hourlyUsageList(domain.getUsageListData().hourlyUsageList().stream()
