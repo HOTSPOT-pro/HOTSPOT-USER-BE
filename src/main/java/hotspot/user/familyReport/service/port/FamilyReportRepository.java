@@ -8,6 +8,7 @@ import hotspot.user.familyReport.domain.FamilyReport;
 public interface FamilyReportRepository {
 
     Optional<FamilyReport> findByFamilyId(Long familyId);
+    Optional<DayOfWeek> findActiveReceiveDayByFamilyId(Long familyId);
 
     FamilyReport save(FamilyReport familyReport);
 

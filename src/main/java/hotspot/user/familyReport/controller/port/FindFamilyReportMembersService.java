@@ -1,10 +1,8 @@
 package hotspot.user.familyReport.controller.port;
 
-import java.util.List;
-
-import hotspot.user.familyReport.controller.response.FamilyReportMemberResponse;
+import hotspot.user.familyReport.controller.response.FamilyReportMembersResponse;
 
 public interface FindFamilyReportMembersService {
 
-    List<FamilyReportMemberResponse> findMembers(Long familyId);
+    FamilyReportMembersResponse findMembers(Long familyId);
 }

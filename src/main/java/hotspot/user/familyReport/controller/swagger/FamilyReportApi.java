@@ -1,6 +1,5 @@
 package hotspot.user.familyReport.controller.swagger;
 
-import java.util.List;
 
 import jakarta.validation.Valid;
 
@@ -14,7 +13,7 @@ import hotspot.user.common.exception.ErrorResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.familyReport.controller.request.CreateFamilyReportSubscriptionRequest;
 import hotspot.user.familyReport.controller.request.UpdateFamilyReportReceiveDayRequest;
-import hotspot.user.familyReport.controller.response.FamilyReportMemberResponse;
+import hotspot.user.familyReport.controller.response.FamilyReportMembersResponse;
 import hotspot.user.familyReport.controller.response.FamilyReportSubscriptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -43,7 +42,7 @@ public interface FamilyReportApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<ApiResponse<List<FamilyReportMemberResponse>>> findFamilyReportMembers(
+    ResponseEntity<ApiResponse<FamilyReportMembersResponse>> findFamilyReportMembers(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal);
 
     @Operation(summary = "가족 AI 리포트 구독 신청",

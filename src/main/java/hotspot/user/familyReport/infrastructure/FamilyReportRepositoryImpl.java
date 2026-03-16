@@ -23,6 +23,11 @@ public class FamilyReportRepositoryImpl implements FamilyReportRepository {
     }
 
     @Override
+    public Optional<DayOfWeek> findActiveReceiveDayByFamilyId(Long familyId) {
+        return familyReportJpaRepository.findActiveReceiveDayByFamilyId(familyId);
+    }
+
+    @Override
     public FamilyReport save(FamilyReport familyReport) {
         FamilyReportEntity entity = FamilyReportEntity.domainToEntity(familyReport);
         return familyReportJpaRepository.save(entity).entityToDomain();
