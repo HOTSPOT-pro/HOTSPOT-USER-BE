@@ -127,7 +127,8 @@ class WeeklyReportMapperTest {
                         .build())
                 .usageListData(UsageListData.builder()
                         .totalUsage(1048576L)
-                        .dailyUsageList(List.of(new UsageListData.DailyUsage(DayOfWeek.MONDAY, LocalDate.now(), 100L, 120L)))
+                        .dailyUsageList(List.of(
+                                new UsageListData.DailyUsage(DayOfWeek.MONDAY, LocalDate.now(), 100L, 120L)))
                         .hourlyUsageList(List.of(new UsageListData.HourlyUsage(0, 10L, 12L, true, false)))
                         .categoryUsageList(UsageListData.CategoryUsageReport.builder()
                                 .lastWeek(List.of(new UsageListData.CategoryUsageItem("MEDIA", 500L, 50.0)))
@@ -138,7 +139,8 @@ class WeeklyReportMapperTest {
                 .aiFeedback(AIFeedback.builder()
                         .feedback(new AIFeedback.FeedbackMessage("Child FB", "Parent FB"))
                         .summaryText(new AIFeedback.SummaryText("Overall", "Daily", "Hourly", "Category"))
-                        .policyRecommendList(List.of(new AIFeedback.PolicyRecommend("Policy Title", "Description", "Reason")))
+                        .policyRecommendList(List.of(
+                                new AIFeedback.PolicyRecommend("Policy Title", "Description", "Reason")))
                         .build())
                 .build();
     }
