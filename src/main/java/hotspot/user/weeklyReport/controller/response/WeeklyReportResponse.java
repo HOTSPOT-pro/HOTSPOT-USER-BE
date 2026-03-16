@@ -16,7 +16,7 @@ public record WeeklyReportResponse(
         DailyUsage dailyUsage,
         HourlyUsage hourlyUsage,
         CategoryUsageList categoryUsageList,
-        FinalFeedback final_feedback
+        FinalFeedback finalFeedback
 ) {
     @Builder
     public record Overview(

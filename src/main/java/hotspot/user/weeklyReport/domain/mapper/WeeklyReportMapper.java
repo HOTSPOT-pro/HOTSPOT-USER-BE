@@ -89,7 +89,7 @@ public class WeeklyReportMapper {
                                         .build())
                                 .toList())
                         .build())
-                .final_feedback(WeeklyReportResponse.FinalFeedback.builder()
+                .finalFeedback(WeeklyReportResponse.FinalFeedback.builder()
                         .parent(domain.getAiFeedback().feedback().toParent())
                         .child(domain.getAiFeedback().feedback().toChild())
                         .policyRecommendList(domain.getAiFeedback().policyRecommendList().stream()
