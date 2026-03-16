@@ -33,6 +33,7 @@ import hotspot.user.familyReport.controller.port.UpdateFamilyReportReceiveDaySer
 import hotspot.user.familyReport.controller.request.CreateFamilyReportSubscriptionRequest;
 import hotspot.user.familyReport.controller.request.UpdateFamilyReportReceiveDayRequest;
 import hotspot.user.familyReport.controller.response.FamilyReportMemberResponse;
+import hotspot.user.familyReport.controller.response.FamilyReportMembersResponse;
 import hotspot.user.familyReport.controller.response.FamilyReportSubscriptionResponse;
 import hotspot.user.member.domain.FamilyRole;
 
@@ -92,30 +93,34 @@ class FamilyReportControllerTest {
         setAuthentication(1L, 100L, FamilyRole.OWNER);
 
         given(findFamilyReportMembersService.findMembers(100L))
-                .willReturn(java.util.List.of(
-                        FamilyReportMemberResponse.builder()
-                                .subId(10L)
-                                .name("홍길동")
-                                .familyRole(FamilyRole.OWNER)
-                                .reportId(null)
-                                .build(),
-                        FamilyReportMemberResponse.builder()
-                                .subId(11L)
-                                .name("김철수")
-                                .familyRole(FamilyRole.CHILD)
-                                .reportId(null)
-                                .build()
-                ));
+                .willReturn(FamilyReportMembersResponse.builder()
+                        .receiveDay(java.time.DayOfWeek.WEDNESDAY)
+                        .members(java.util.List.of(
+                                FamilyReportMemberResponse.builder()
+                                        .subId(10L)
+                                        .name("홍길동")
+                                        .familyRole(FamilyRole.OWNER)
+                                        .reportId(null)
+                                        .build(),
+                                FamilyReportMemberResponse.builder()
+                                        .subId(11L)
+                                        .name("김철수")
+                                        .familyRole(FamilyRole.CHILD)
+                                        .reportId(null)
+                                        .build()
+                        ))
+                        .build());
 
         mockMvc.perform(get("/api/v1/ai-reports/families/members"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
-                .andExpect(jsonPath("$.data[0].subId").value(10L))
-                .andExpect(jsonPath("$.data[0].name").value("홍길동"))
-                .andExpect(jsonPath("$.data[0].familyRole").value("OWNER"))
-                .andExpect(jsonPath("$.data[1].subId").value(11L))
-                .andExpect(jsonPath("$.data[1].name").value("김철수"))
-                .andExpect(jsonPath("$.data[1].familyRole").value("CHILD"));
+                .andExpect(jsonPath("$.data.receiveDay").value("WEDNESDAY"))
+                .andExpect(jsonPath("$.data.members[0].subId").value(10L))
+                .andExpect(jsonPath("$.data.members[0].name").value("홍길동"))
+                .andExpect(jsonPath("$.data.members[0].familyRole").value("OWNER"))
+                .andExpect(jsonPath("$.data.members[1].subId").value(11L))
+                .andExpect(jsonPath("$.data.members[1].name").value("김철수"))
+                .andExpect(jsonPath("$.data.members[1].familyRole").value("CHILD"));
     }
 
     @Test

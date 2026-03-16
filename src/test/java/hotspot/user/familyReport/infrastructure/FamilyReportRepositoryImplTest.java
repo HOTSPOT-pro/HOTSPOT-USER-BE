@@ -52,6 +52,18 @@ class FamilyReportRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("가족 ID로 활성화된 리포트 수신 요일을 조회할 수 있다")
+    void findActiveReceiveDayByFamilyIdSuccess() {
+        given(familyReportJpaRepository.findActiveReceiveDayByFamilyId(1L))
+                .willReturn(Optional.of(DayOfWeek.WEDNESDAY));
+
+        Optional<DayOfWeek> result = familyReportRepository.findActiveReceiveDayByFamilyId(1L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEqualTo(DayOfWeek.WEDNESDAY);
+    }
+
+    @Test
     @DisplayName("가족 리포트 구독 정보를 저장할 수 있다")
     void saveSuccess() {
         FamilyReport familyReport = FamilyReport.builder()
