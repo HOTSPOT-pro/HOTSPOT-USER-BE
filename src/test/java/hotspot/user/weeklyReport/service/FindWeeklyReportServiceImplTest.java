@@ -22,6 +22,7 @@ import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.weeklyReport.controller.response.WeeklyReportResponse;
 import hotspot.user.weeklyReport.domain.AIFeedback;
+import hotspot.user.weeklyReport.domain.ReportTag;
 import hotspot.user.weeklyReport.domain.ScoreData;
 import hotspot.user.weeklyReport.domain.ScoreLevel;
 import hotspot.user.weeklyReport.domain.SummaryData;
@@ -66,6 +67,7 @@ class FindWeeklyReportServiceImplTest {
         // then
         assertThat(response).isNotNull();
         assertThat(response.subId()).isEqualTo(subId);
+        assertThat(response.overview().tags()).contains("심야 사용 높음");
     }
 
     @Test
@@ -127,6 +129,7 @@ class FindWeeklyReportServiceImplTest {
                         .scoreDiff(5)
                         .reasons(java.util.List.of())
                         .build())
+                .tags(java.util.List.of(ReportTag.LATE_NIGHT_HIGH))
                 .summaryData(SummaryData.builder()
                         .dailySummary(SummaryData.DailySummary.builder()
                                 .weekdayAvg(1024L * 1024L)
