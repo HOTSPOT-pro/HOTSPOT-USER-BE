@@ -50,10 +50,7 @@ public class FindFamilyReportMembersServiceImpl implements FindFamilyReportMembe
                 .toList();
 
         return FamilyReportMembersResponse.builder()
-                .receiveDay(familyReportRepository.findByFamilyId(familyId)
-                        .filter(hotspot.user.familyReport.domain.FamilyReport::isActive)
-                        .map(hotspot.user.familyReport.domain.FamilyReport::getReceiveDay)
-                        .orElse(null))
+                .receiveDay(familyReportRepository.findActiveReceiveDayByFamilyId(familyId).orElse(null))
                 .members(members)
                 .build();
     }

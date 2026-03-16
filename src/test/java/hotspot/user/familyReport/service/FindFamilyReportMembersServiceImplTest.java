@@ -17,7 +17,6 @@ import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.familyReport.controller.response.FamilyReportMembersResponse;
-import hotspot.user.familyReport.domain.FamilyReport;
 import hotspot.user.familyReport.service.port.FamilyReportRepository;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.Member;
@@ -65,13 +64,8 @@ class FindFamilyReportMembersServiceImplTest {
                                 .familyRole(FamilyRole.OWNER)
                                 .build()
                 ));
-        given(familyReportRepository.findByFamilyId(1L))
-                .willReturn(java.util.Optional.of(FamilyReport.builder()
-                        .id(10L)
-                        .family(Family.builder().id(1L).build())
-                        .receiveDay(DayOfWeek.WEDNESDAY)
-                        .isActive(true)
-                        .build()));
+        given(familyReportRepository.findActiveReceiveDayByFamilyId(1L))
+                .willReturn(java.util.Optional.of(DayOfWeek.WEDNESDAY));
 
         FamilyReportMembersResponse result = service.findMembers(1L);
 

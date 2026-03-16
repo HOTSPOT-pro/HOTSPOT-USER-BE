@@ -16,6 +16,14 @@ public interface FamilyReportJpaRepository extends JpaRepository<FamilyReportEnt
     @EntityGraph(attributePaths = {"family"})
     Optional<FamilyReportEntity> findByFamilyFamilyId(Long familyId);
 
+    @Query("""
+            SELECT fr.receiveDay
+            FROM FamilyReportEntity fr
+            WHERE fr.family.familyId = :familyId
+              AND fr.isActive = true
+            """)
+    Optional<DayOfWeek> findActiveReceiveDayByFamilyId(@Param("familyId") Long familyId);
+
     @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE FamilyReportEntity fr
