@@ -61,8 +61,6 @@ public class WeeklyReportEntity extends BaseEntity {
     @Column(columnDefinition = "jsonb")
     private ScoreData scoreData;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
     private List<String> tags;
 
     @JdbcTypeCode(SqlTypes.JSON)

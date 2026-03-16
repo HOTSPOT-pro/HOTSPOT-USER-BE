@@ -26,7 +26,7 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "hotspot.user.weeklyReport", // 배치 DB용 패키지만 스캔
+        basePackages = "hotspot.user.weeklyReport.infrastructure", // 배치 DB용 패키지만 스캔
         entityManagerFactoryRef = "batchEntityManagerFactory",
         transactionManagerRef = "batchTransactionManager"
 )
@@ -56,7 +56,7 @@ public class BatchDbConfig {
 
         return builder
                 .dataSource(dataSource)
-                .packages("hotspot.user.weeklyReport") // 배치 DB용 엔티티 위치
+                .packages("hotspot.user.weeklyReport.infrastructure.entity") // 배치 DB용 엔티티 위치
                 .persistenceUnit("batch")
                 .properties(properties)
                 .build();

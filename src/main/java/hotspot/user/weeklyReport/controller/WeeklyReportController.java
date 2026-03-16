@@ -11,15 +11,17 @@ import hotspot.user.common.ApiResponse;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.weeklyReport.controller.port.FindWeeklyReportService;
 import hotspot.user.weeklyReport.controller.response.WeeklyReportResponse;
+import hotspot.user.weeklyReport.controller.swagger.WeeklyReportApi;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/ai-reports")
-public class WeeklyReportController {
+public class WeeklyReportController implements WeeklyReportApi {
 
     private final FindWeeklyReportService findWeeklyReportService;
 
+    @Override
     @GetMapping("/families/members/{subId}/reports/{reportId}")
     public ResponseEntity<ApiResponse<WeeklyReportResponse>> findWeeklyReport(
             @AuthenticationPrincipal PrincipalDetails principal,
