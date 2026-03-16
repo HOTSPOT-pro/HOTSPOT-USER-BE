@@ -40,11 +40,11 @@ public record WeeklyReportResponse(
 
     @Builder
     public record DailyUsage(
-            Long weekdayAvg,
-            Long weekdayAvgDiff,
+            Double weekdayAvg,
+            Double weekdayAvgDiff,
             Double weekdayAvgChangeRate,
-            Long weekendAvg,
-            Long weekendAvgDiff,
+            Double weekendAvg,
+            Double weekendAvgDiff,
             Double weekendAvgChangeRate,
             String ai_feedback,
             List<DailyUsageItem> dailyUsageList
@@ -53,17 +53,17 @@ public record WeeklyReportResponse(
     @Builder
     public record DailyUsageItem(
             DayOfWeek day,
-            Long lastWeek,
-            Long thisWeek
+            Double lastWeek,
+            Double thisWeek
     ) {}
 
     @Builder
     public record HourlyUsage(
-            Long lateNightUsage,
-            Long lateNightUsageDiff,
+            Double lateNightUsage,
+            Double lateNightUsageDiff,
             Double lateNightUsageChangeRate,
-            Long studyTimeUsage,
-            Long studyTimeUsageDiff,
+            Double studyTimeUsage,
+            Double studyTimeUsageDiff,
             Double studyTimeUsageChangeRate,
             String ai_feedback,
             List<HourlyUsageItem> hourlyUsageList
@@ -74,8 +74,8 @@ public record WeeklyReportResponse(
             Integer hour,
             Boolean isLateNight,
             Boolean isStudyTime,
-            Long lastWeek,
-            Long thisWeek
+            Double lastWeek,
+            Double thisWeek
     ) {}
 
     @Builder
@@ -89,7 +89,7 @@ public record WeeklyReportResponse(
     @Builder
     public record CategoryUsageItem(
             String category,
-            Long usage,
+            Double usage,
             Double percent
     ) {}
 
