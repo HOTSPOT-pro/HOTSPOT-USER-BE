@@ -1,7 +1,12 @@
 package hotspot.user.common.config;
 
+import java.util.Map;
+
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -27,6 +32,14 @@ import javax.sql.DataSource;
 )
 public class BatchDbConfig {
 
+    private final JpaProperties jpaProperties;
+    private final HibernateProperties hibernateProperties;
+
+    public BatchDbConfig(JpaProperties jpaProperties, HibernateProperties hibernateProperties) {
+        this.jpaProperties = jpaProperties;
+        this.hibernateProperties = hibernateProperties;
+    }
+
     @Bean(name = "batchDataSource")
     @ConfigurationProperties(prefix = "spring.datasource.batch") // postgres-batch.yml의 배치 DB 설정
     public DataSource batchDataSource() {
@@ -37,10 +50,15 @@ public class BatchDbConfig {
     public LocalContainerEntityManagerFactoryBean batchEntityManagerFactory(
             EntityManagerFactoryBuilder builder,
             @Qualifier("batchDataSource") DataSource dataSource) {
+
+        Map<String, Object> properties = hibernateProperties.determineHibernateProperties(
+                jpaProperties.getProperties(), new HibernateSettings());
+
         return builder
                 .dataSource(dataSource)
                 .packages("hotspot.user.weeklyReport") // 배치 DB용 엔티티 위치
                 .persistenceUnit("batch")
+                .properties(properties)
                 .build();
     }
 

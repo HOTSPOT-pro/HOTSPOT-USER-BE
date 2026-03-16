@@ -1,7 +1,12 @@
 package hotspot.user.common.config;
 
+import java.util.Map;
+
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -34,6 +39,14 @@ import javax.sql.DataSource;
 )
 public class MainDbConfig {
 
+    private final JpaProperties jpaProperties;
+    private final HibernateProperties hibernateProperties;
+
+    public MainDbConfig(JpaProperties jpaProperties, HibernateProperties hibernateProperties) {
+        this.jpaProperties = jpaProperties;
+        this.hibernateProperties = hibernateProperties;
+    }
+
     @Primary
     @Bean(name = "mainDataSource")
     @ConfigurationProperties(prefix = "spring.datasource") // postgres.yml의 기본 DB 설정
@@ -46,6 +59,10 @@ public class MainDbConfig {
     public LocalContainerEntityManagerFactoryBean mainEntityManagerFactory(
             EntityManagerFactoryBuilder builder,
             @Qualifier("mainDataSource") DataSource dataSource) {
+
+        Map<String, Object> properties = hibernateProperties.determineHibernateProperties(
+                jpaProperties.getProperties(), new HibernateSettings());
+
         return builder
                 .dataSource(dataSource)
                 .packages(
@@ -67,6 +84,7 @@ public class MainDbConfig {
                         "hotspot.user.usage"
                 )
                 .persistenceUnit("main")
+                .properties(properties)
                 .build();
     }
 
