@@ -12,6 +12,19 @@ import hotspot.user.weeklyReport.infrastructure.entity.WeeklyReportEntity;
 public interface WeeklyReportJpaRepository extends JpaRepository<WeeklyReportEntity, Long> {
 
     @Query("""
+            SELECT wr
+            FROM WeeklyReportEntity wr
+            WHERE wr.subId = :subId
+              AND wr.weekEndDate BETWEEN :monthStartMinusOneDay AND :monthEndMinusOneDay
+            ORDER BY wr.weekEndDate DESC, wr.weeklyReportId DESC
+            """)
+    List<WeeklyReportEntity> findMonthlyReportsBySubId(
+            @Param("subId") Long subId,
+            @Param("monthStartMinusOneDay") LocalDate monthStartMinusOneDay,
+            @Param("monthEndMinusOneDay") LocalDate monthEndMinusOneDay
+    );
+
+    @Query("""
             SELECT wr.weeklyReportId as weeklyReportId, wr.subId as subId
             FROM WeeklyReportEntity wr
             WHERE wr.subId IN :subIds

@@ -1,6 +1,7 @@
 package hotspot.user.weeklyReport.infrastructure;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,6 +24,21 @@ public class WeeklyReportRepositoryImpl implements WeeklyReportRepository {
     public Optional<WeeklyReport> findByReportId(Long reportId) {
         return weeklyReportJpaRepository.findById(reportId)
                 .map(WeeklyReportEntity::entityToDomain);
+    }
+
+    @Override
+    public List<WeeklyReport> findMonthlyReportsBySubId(Long subId, YearMonth yearMonth) {
+        LocalDate monthStartDate = yearMonth.atDay(1);
+        LocalDate monthEndDate = yearMonth.atEndOfMonth();
+
+        return weeklyReportJpaRepository.findMonthlyReportsBySubId(
+                        subId,
+                        monthStartDate.minusDays(1),
+                        monthEndDate.minusDays(1)
+                )
+                .stream()
+                .map(WeeklyReportEntity::entityToDomain)
+                .toList();
     }
 
     @Override
