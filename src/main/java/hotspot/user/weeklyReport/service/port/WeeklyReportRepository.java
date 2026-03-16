@@ -1,5 +1,9 @@
 package hotspot.user.weeklyReport.service.port;
 
+import java.util.Optional;
+
+import hotspot.user.weeklyReport.domain.WeeklyReport;
+
 public interface WeeklyReportRepository {
-    WeeklyReport findByReportId(Long reportId);
+    Optional<WeeklyReport> findByReportId(Long reportId);
 }
