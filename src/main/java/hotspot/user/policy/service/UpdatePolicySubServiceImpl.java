@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.exception.code.FamilyErrorCode;
+import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
@@ -48,19 +49,24 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
     @Override
     public UpdatePolicySubResponse updatePolicySub(
             UpdatePolicySubRequest request,
-            Long requesterFamilyId,
+            Long requesterMemberId,
             FamilyRole requesterRole) {
 
-        // 1. 요청자의 권한과 가족 소속을 검증한다.
+        // 1. 요청자의 최신 가족 ID 조회 (memberId 기반)
+        FamilySubscription requesterFamilySub = familySubscriptionRepository.findByMemberId(requesterMemberId)
+                .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
+        
+        Long requesterFamilyId = requesterFamilySub.getFamily().getId();
+
+        // 2. 요청자의 권한과 가족 소속을 검증한다.
         validateAuthorityAndFamily(request.subId(), requesterFamilyId, requesterRole);
 
         List<Long> targetIdsList = request.blockPolicyIdList();
 
-        // 2. 해당 회선의 모든 정책 매핑 정보를 먼저 조회한다. (활성 + 비활성 포함)
+        // 3. 해당 회선의 모든 정책 매핑 정보를 먼저 조회한다. (활성 + 비활성 포함)
         List<PolicySub> existingSubs = policySubRepository.findBySubId(request.subId());
 
-        // 3. 쿼리 최적화: 신규 요청 ID와 기존 등록된 ID를 모두 합쳐 단 1번의 DB 조회를 수행한다.
-        // Set: 중복 방지
+        // 4. 쿼리 최적화: 신규 요청 ID와 기존 등록된 ID를 모두 합쳐 단 1번의 DB 조회를 수행한다.
         Set<Long> allRequiredPolicyIds = existingSubs.stream()
                 .map(PolicySub::getBlockPolicyId)
                 .collect(Collectors.toSet());
@@ -73,7 +79,7 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
                     .collect(Collectors.toMap(BlockPolicy::getId, p -> p));
         }
 
-        // 4. 요청된 타겟 정책 검증 (Map을 이용한 O(1) 검증)
+        // 5. 요청된 타겟 정책 검증
         for (Long targetId : targetIdsList) {
             BlockPolicy policy = policyMap.get(targetId);
             if (policy == null) {
@@ -94,7 +100,7 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
         List<BlockPolicy> appliedAlertPolicies = new ArrayList<>();
         List<BlockPolicy> releasedAlertPolicies = new ArrayList<>();
 
-        // 5. 요청된 정책들을 순회하며 신규 추가 또는 활성화 처리
+        // 6. 요청된 정책들을 순회하며 신규 추가 또는 활성화 처리
         for (Long targetId : targetIdsList) {
             BlockPolicy policy = policyMap.get(targetId);
             PolicySub sub = existingMap.remove(targetId);
@@ -118,13 +124,12 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
             }
         }
 
-        // 6. 요청에 없는데 DB에는 활성 상태로 남아있는 정책들을 비활성화 처리
+        // 7. 요청에 없는데 DB에는 활성 상태로 남아있는 정책들을 비활성화 처리
         for (PolicySub remainingSub : existingMap.values()) {
             if (remainingSub.isActive()) {
                 remainingSub.updateIsActive(false);
                 domainsToSave.add(remainingSub);
 
-                // 미리 조회해둔 Map에서 BlockPolicy를 바로 꺼내 알림 대상에 추가
                 BlockPolicy policy = policyMap.get(remainingSub.getBlockPolicyId());
                 if (policy != null) {
                     releasedAlertPolicies.add(policy);
@@ -132,7 +137,7 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
             }
         }
 
-        // 7. 변경 사항이 있는 경우에만 저장 및 알림 발송
+        // 8. 변경 사항이 있는 경우에만 저장 및 알림 발송
         if (!domainsToSave.isEmpty()) {
             policySubRepository.saveAll(domainsToSave);
             publishPolicyAppliedAlerts(appliedAlertPolicies, request.subId(), requesterFamilyId);

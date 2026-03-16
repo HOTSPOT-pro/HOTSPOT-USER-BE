@@ -10,6 +10,6 @@ import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
 public interface UpdatePolicySubService {
     UpdatePolicySubResponse updatePolicySub(
             UpdatePolicySubRequest request,
-            Long requesterFamilyId,
+            Long requesterMemberId,
             FamilyRole requesterRole);
 }
