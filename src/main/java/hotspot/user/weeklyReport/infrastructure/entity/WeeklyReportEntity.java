@@ -18,6 +18,7 @@ import org.hibernate.type.SqlTypes;
 import hotspot.user.common.BaseEntity;
 import hotspot.user.weeklyReport.domain.AIFeedback;
 import hotspot.user.weeklyReport.domain.ReportStatus;
+import hotspot.user.weeklyReport.domain.ReportTag;
 import hotspot.user.weeklyReport.domain.ScoreData;
 import hotspot.user.weeklyReport.domain.SummaryData;
 import hotspot.user.weeklyReport.domain.UsageListData;
@@ -61,7 +62,7 @@ public class WeeklyReportEntity extends BaseEntity {
     @Column(columnDefinition = "jsonb")
     private ScoreData scoreData;
 
-    private List<String> tags;
+    private List<ReportTag> tags;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")

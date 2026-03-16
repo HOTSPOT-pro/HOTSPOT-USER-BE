@@ -2,6 +2,7 @@ package hotspot.user.weeklyReport.domain.mapper;
 
 import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.weeklyReport.controller.response.WeeklyReportResponse;
+import hotspot.user.weeklyReport.domain.ReportTag;
 import hotspot.user.weeklyReport.domain.WeeklyReport;
 
 public class WeeklyReportMapper {
@@ -23,7 +24,9 @@ public class WeeklyReportMapper {
                                                 .build())
                                         .toList())
                                 .build())
-                        .tags(domain.getTags())
+                        .tags(domain.getTags().stream()
+                                .map(ReportTag::getDescription)
+                                .toList())
                         .build())
                 .dailyUsage(WeeklyReportResponse.DailyUsage.builder()
                         .weekdayAvg(UsageCalculator.kbToGb(domain.getSummaryData().dailySummary().weekdayAvg()))

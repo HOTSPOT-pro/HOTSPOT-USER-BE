@@ -20,7 +20,7 @@ public class WeeklyReport {
     private ReportStatus reportStatus;
     private Long totalUsage;
     private ScoreData scoreData;
-    private List<String> tags;
+    private List<ReportTag> tags;
     private SummaryData summaryData;
     private UsageListData usageListData;
     private AIFeedback aiFeedback;
