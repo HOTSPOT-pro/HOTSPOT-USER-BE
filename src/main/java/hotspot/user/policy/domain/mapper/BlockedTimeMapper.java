@@ -1,6 +1,5 @@
 package hotspot.user.policy.domain.mapper;
 
-import java.time.DayOfWeek;
 import java.util.List;
 import java.util.stream.Collectors;
 

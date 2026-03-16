@@ -60,7 +60,7 @@ public class UpdatePolicySubServiceImpl implements UpdatePolicySubService {
         // 2. 요청자의 최신 가족 ID 조회 (memberId 기반)
         FamilySubscription requesterFamilySub = familySubscriptionRepository.findByMemberId(requesterMemberId)
                 .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
-        
+
         Long requesterFamilyId = requesterFamilySub.getFamily().getId();
 
         // 3. 타겟 회선의 가족 소속을 검증한다.

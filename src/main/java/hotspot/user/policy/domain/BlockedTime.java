@@ -28,7 +28,9 @@ public class BlockedTime {
      * 정책 스냅샷을 기반으로 차단 시간대 추가 (자정 처리 포함)
      */
     public void addPolicy(PolicySnapshot snapshot, PolicyType type) {
-        if (snapshot == null) return;
+        if (snapshot == null) {
+            return;
+        }
 
         if (type == PolicyType.SCHEDULED && snapshot.getDays() != null) {
             for (DayOfWeek day : snapshot.getDays()) {
@@ -45,7 +47,9 @@ public class BlockedTime {
      * 자정 넘김 처리를 포함하여 시간 구간 추가
      */
     private void addRangeWithMidnightSplit(DayOfWeek day, LocalTime start, LocalTime end) {
-        if (start == null || end == null) return;
+        if (start == null || end == null) {
+            return;
+        }
 
         if (end.isBefore(start)) {
             // 자정을 넘기는 경우: 당일(start~23:59)과 익일(00:00~end)로 분리
@@ -62,7 +66,9 @@ public class BlockedTime {
     public void mergeAll() {
         for (DayOfWeek day : DayOfWeek.values()) {
             List<TimeRange> ranges = dayRanges.get(day);
-            if (ranges.size() <= 1) continue;
+            if (ranges.size() <= 1) {
+                continue;
+            }
 
             // 시작 시간 순 정렬
             ranges.sort(Comparator.comparing(TimeRange::start));

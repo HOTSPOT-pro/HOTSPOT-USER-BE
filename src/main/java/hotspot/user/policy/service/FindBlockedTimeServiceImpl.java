@@ -35,7 +35,7 @@ public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
 
     /**
      * 특정 구성원의 차단 시간대 조회
-     * 
+     *
      * @param memberId 조회할 구성원의 ID
      * @return 요일별 병합된 차단 시간대 정보
      */
@@ -44,7 +44,7 @@ public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
     public BlockedTimeResponse findMemberBlockedTime(Long memberId) {
         // 1. 해당 멤버에게 현재 적용된 모든 정책 리스트 조회 (만료 체크 포함)
         AppliedPolicyResponse policyResponse = findMemberAppliedPolicyService.findByMemberId(memberId);
-        
+
         // 2. 조회된 정책들을 기반으로 실제 차단 시간 계산 및 병합
         return calculateBlockedTime(policyResponse);
     }
@@ -52,7 +52,7 @@ public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
     /**
      * 사용자가 속한 가족 전체 구성원의 차단 시간대 조회
      * 요청자는 OWNER 또는 PARENT 권한을 가져야 합니다.
-     * 
+     *
      * @param memberId 기준이 되는 구성원의 ID (가족 정보를 찾기 위해 사용)
      * @return 가족 구성원 각각의 병합된 차단 시간대 리스트
      */
@@ -77,9 +77,9 @@ public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
     }
 
     /**
-     * 특정 구성원의 정책 리스트(`AppliedPolicyResponse`)를 분석하여 
+     * 특정 구성원의 정책 리스트(`AppliedPolicyResponse`)를 분석하여
      * 중복되거나 인접한 시간대를 병합한 최종 차단 시간대 DTO 생성
-     * 
+     *
      * @param policyResponse 적용된 정책 응답 객체
      * @return 병합된 차단 시간대 응답 객체
      */
