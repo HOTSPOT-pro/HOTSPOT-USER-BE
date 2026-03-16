@@ -4,5 +4,5 @@ import hotspot.user.weeklyReport.controller.response.WeeklyReportResponse;
 
 public interface FindWeeklyReportService {
 
-    WeeklyReportResponse findWeeklyReport(Long memberId, Long subId, Long reportId);
+    WeeklyReportResponse findWeeklyReport(Long requesterMemberId, Long subId, Long reportId);
 }
