@@ -34,9 +34,9 @@ class WeeklyReportMapperTest {
         assertThat(response).isNotNull();
         assertThat(response.subId()).isEqualTo(10L);
         assertThat(response.overview().scoreData().totalScore()).isEqualTo(85);
-        
+
         // 커버리지 확보를 위한 Record 객체별 세부 검증 (Accessor 호출)
-        
+
         // 1. ScoreReason 커버리지
         ScoreData.ScoreReason reason = domain.getScoreData().reasons().get(0);
         assertThat(reason.value()).isEqualTo(10);
@@ -84,7 +84,7 @@ class WeeklyReportMapperTest {
         for (ReportStatus status : ReportStatus.values()) {
             assertThat(ReportStatus.valueOf(status.name())).isEqualTo(status);
         }
-        
+
         // 8. ReportTag (Enum) 커버리지 보완
         assertThat(ReportTag.toKorean("LATE_NIGHT_HIGH")).isEqualTo("심야 사용 높음");
         assertThat(ReportTag.valuesInPriorityOrder()).isNotEmpty();
