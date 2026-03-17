@@ -60,13 +60,14 @@ class UpdatePolicySubServiceImplTest {
     @DisplayName("성공: 신규 정책 추가 - DB에 매핑이 없을 경우 새로 생성된다")
     void updatePolicySubSuccessWithNew() {
 
+        Long requesterMemberId = 1000L;
         Long familyId = 100L;
         Long subId = 1L;
 
         UpdatePolicySubRequest request =
                 new UpdatePolicySubRequest(familyId, subId, List.of(1L));
 
-        setAuthMock(familyId, subId);
+        setAuthMock(requesterMemberId, familyId, subId);
 
         given(policySubRepository.findBySubId(subId))
                 .willReturn(new ArrayList<>());
@@ -87,7 +88,7 @@ class UpdatePolicySubServiceImplTest {
         UpdatePolicySubResponse response =
                 updatePolicySubService.updatePolicySub(
                         request,
-                        familyId,
+                        requesterMemberId,
                         FamilyRole.OWNER
                 );
 
@@ -103,13 +104,14 @@ class UpdatePolicySubServiceImplTest {
     @DisplayName("성공: 기존 비활성 정책 재활용 - 이미 매핑이 있지만 비활성인 경우 활성화된다")
     void updatePolicySubSuccessWithActivation() {
 
+        Long requesterMemberId = 1000L;
         Long familyId = 100L;
         Long subId = 1L;
 
         UpdatePolicySubRequest request =
                 new UpdatePolicySubRequest(familyId, subId, List.of(1L));
 
-        setAuthMock(familyId, subId);
+        setAuthMock(requesterMemberId, familyId, subId);
 
         PolicySub existingSub =
                 PolicySub.builder()
@@ -136,7 +138,7 @@ class UpdatePolicySubServiceImplTest {
 
         updatePolicySubService.updatePolicySub(
                 request,
-                familyId,
+                requesterMemberId,
                 FamilyRole.OWNER
         );
 
@@ -151,13 +153,14 @@ class UpdatePolicySubServiceImplTest {
     @DisplayName("성공: 요청 목록에 없는 기존 정책은 비활성화된다")
     void updatePolicySubSuccessWithDeactivation() {
 
+        Long requesterMemberId = 1000L;
         Long familyId = 100L;
         Long subId = 1L;
 
         UpdatePolicySubRequest request =
                 new UpdatePolicySubRequest(familyId, subId, List.of());
 
-        setAuthMock(familyId, subId);
+        setAuthMock(requesterMemberId, familyId, subId);
 
         PolicySub existingSub =
                 PolicySub.builder()
@@ -184,7 +187,7 @@ class UpdatePolicySubServiceImplTest {
 
         updatePolicySubService.updatePolicySub(
                 request,
-                familyId,
+                requesterMemberId,
                 FamilyRole.OWNER
         );
 
@@ -199,13 +202,14 @@ class UpdatePolicySubServiceImplTest {
     @DisplayName("실패: 타 가족의 정책을 적용하려 하면 예외가 발생한다")
     void updatePolicySubFailByPolicyAccessDenied() {
 
+        Long requesterMemberId = 1000L;
         Long myFamilyId = 100L;
         Long otherFamilyId = 200L;
 
         UpdatePolicySubRequest request =
                 new UpdatePolicySubRequest(myFamilyId, 1L, List.of(1L));
 
-        setAuthMock(myFamilyId, 1L);
+        setAuthMock(requesterMemberId, myFamilyId, 1L);
 
         given(policySubRepository.findBySubId(1L))
                 .willReturn(new ArrayList<>());
@@ -222,7 +226,7 @@ class UpdatePolicySubServiceImplTest {
         assertThatThrownBy(() ->
                 updatePolicySubService.updatePolicySub(
                         request,
-                        myFamilyId,
+                        requesterMemberId,
                         FamilyRole.OWNER))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(PolicyErrorCode.POLICY_ACCESS_DENIED.getMessage());
@@ -232,12 +236,13 @@ class UpdatePolicySubServiceImplTest {
     @DisplayName("실패: 현재 비활성 상태인 정책을 적용하려 하면 예외가 발생한다")
     void updatePolicySubFailByInactivePolicy() {
 
+        Long requesterMemberId = 1000L;
         Long familyId = 100L;
 
         UpdatePolicySubRequest request =
                 new UpdatePolicySubRequest(familyId, 1L, List.of(1L));
 
-        setAuthMock(familyId, 1L);
+        setAuthMock(requesterMemberId, familyId, 1L);
 
         given(policySubRepository.findBySubId(1L))
                 .willReturn(new ArrayList<>());
@@ -254,7 +259,7 @@ class UpdatePolicySubServiceImplTest {
         assertThatThrownBy(() ->
                 updatePolicySubService.updatePolicySub(
                         request,
-                        familyId,
+                        requesterMemberId,
                         FamilyRole.OWNER))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(PolicyErrorCode.INACTIVE_POLICY_CANNOT_APPLY.getMessage());
@@ -270,7 +275,7 @@ class UpdatePolicySubServiceImplTest {
         assertThatThrownBy(() ->
                 updatePolicySubService.updatePolicySub(
                         request,
-                        100L,
+                        1000L,
                         FamilyRole.CHILD))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(AuthErrorCode.ACCESS_DENIED.getMessage());
@@ -280,10 +285,11 @@ class UpdatePolicySubServiceImplTest {
     @DisplayName("실패: 요청한 정책 중 일부가 존재하지 않으면 예외가 발생한다")
     void updatePolicySubFailByPolicyNotFound() {
 
+        Long requesterMemberId = 1000L;
         UpdatePolicySubRequest request =
                 new UpdatePolicySubRequest(100L, 1L, List.of(1L, 2L));
 
-        setAuthMock(100L, 1L);
+        setAuthMock(requesterMemberId, 100L, 1L);
 
         given(policySubRepository.findBySubId(1L))
                 .willReturn(new ArrayList<>());
@@ -299,13 +305,13 @@ class UpdatePolicySubServiceImplTest {
         assertThatThrownBy(() ->
                 updatePolicySubService.updatePolicySub(
                         request,
-                        100L,
+                        requesterMemberId,
                         FamilyRole.OWNER))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(PolicyErrorCode.POLICY_NOT_FOUND.getMessage());
     }
 
-    private void setAuthMock(Long familyId, Long subId) {
+    private void setAuthMock(Long requesterMemberId, Long familyId, Long subId) {
 
         Family family =
                 Family.builder()
@@ -317,6 +323,11 @@ class UpdatePolicySubServiceImplTest {
                         .family(family)
                         .build();
 
+        // 요청자의 소속 조회
+        given(familySubscriptionRepository.findByMemberId(requesterMemberId))
+                .willReturn(Optional.of(familySub));
+
+        // 타겟 subId의 소속 조회
         given(familySubscriptionRepository.findBySubId(subId))
                 .willReturn(Optional.of(familySub));
     }

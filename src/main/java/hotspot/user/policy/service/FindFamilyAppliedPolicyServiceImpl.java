@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.FamilyErrorCode;
+import hotspot.user.common.exception.code.MemberErrorCode;
 import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
@@ -35,8 +36,14 @@ public class FindFamilyAppliedPolicyServiceImpl implements FindFamilyAppliedPoli
 
     @Override
     @Transactional
-    public FamilyAppliedPolicyResponse findByFamilyId(Long familyId) {
+    public FamilyAppliedPolicyResponse findByMemberId(Long memberId) {
+        // 1. memberId를 통해 현재 소속된 가족 매핑 정보 조회
+        FamilySubscription familySub = familySubscriptionRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new ApplicationException(MemberErrorCode.MEMBER_NOT_FOUND));
 
+        Long familyId = familySub.getFamily().getId();
+
+        // 2. 가족 정보 조회
         Family family = familyRepository.findById(familyId)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
 
@@ -58,11 +65,11 @@ public class FindFamilyAppliedPolicyServiceImpl implements FindFamilyAppliedPoli
                 memberMappings.stream()
                         .map(mapping -> {
 
-                            Long memberId =
+                            Long subMemberId =
                                     mapping.getSubscription().getMember().getId();
 
                             AppliedPolicyResponse base =
-                                    findMemberAppliedPolicyService.findByMemberId(memberId);
+                                    findMemberAppliedPolicyService.findByMemberId(subMemberId);
 
                             FamilyDataControl.SubFamilyDataControl redis =
                                     redisMap.get(base.subId());

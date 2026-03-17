@@ -17,6 +17,7 @@ import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.policy.controller.port.FindBlockStatusService;
+import hotspot.user.policy.controller.port.FindBlockedTimeService;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
 import hotspot.user.policy.controller.port.UpdatePolicySubService;
@@ -36,6 +37,7 @@ public class AppliedPolicyController implements AppliedPolicyApi {
 
     private final FindMemberAppliedPolicyService findMemberAppliedPolicyService; // 구성원별 적용 정책 조회
     private final FindFamilyAppliedPolicyService findFamilyAppliedPolicyService; // 가족 구성원 전체 적용 정책 조회
+    private final FindBlockedTimeService findBlockedTimeService; // 차단 시간 조회 서비스
     private final UpdatePolicySubService updatePolicySubService; // 구성원 별 정책 업데이트 (적용)
     private final FindBlockStatusService findBlockStatusService; // 차단 상태 조회 서비스
 
@@ -55,9 +57,9 @@ public class AppliedPolicyController implements AppliedPolicyApi {
                 throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
             }
 
-            // 토큰에 저장된 familyId를 사용하여 조회
+            // memberId를 통해 현재 소속된 가족 정보를 조회하여 처리
             return ResponseEntity.ok(ApiResponse.success(
-                findFamilyAppliedPolicyService.findByFamilyId(principal.getFamilyId())
+                findFamilyAppliedPolicyService.findByMemberId(principal.getId())
             ));
         }
 
@@ -78,7 +80,7 @@ public class AppliedPolicyController implements AppliedPolicyApi {
 
         UpdatePolicySubResponse response = updatePolicySubService.updatePolicySub(
                 request,
-                principalDetails.getFamilyId(),
+                principalDetails.getId(),
                 principalDetails.getRole()
         );
 
@@ -98,4 +100,26 @@ public class AppliedPolicyController implements AppliedPolicyApi {
         return ResponseEntity.ok()
                 .body(ApiResponse.success(response));
     }
+
+    /**
+     * 구성원별 데이터 사용 불가능한 시간대 리턴
+     * @param isFamily true일 경우 가족 전체, false일 경우 본인 시간대만 조회
+     */
+    @Override
+    @GetMapping("/blockedTime")
+    public ResponseEntity<ApiResponse<Object>> getBlockedTime(
+            @RequestParam(defaultValue = "false") boolean isFamily,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        if (isFamily) {
+            return ResponseEntity.ok(ApiResponse.success(
+                    findBlockedTimeService.findFamilyBlockedTime(principal.getId())
+            ));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success(
+                findBlockedTimeService.findMemberBlockedTime(principal.getId())
+        ));
+    }
+
 }

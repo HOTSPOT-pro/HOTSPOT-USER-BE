@@ -45,7 +45,7 @@ class FindFamilyAppliedPolicyServiceImplTest {
     private FindFamilyAppliedPolicyServiceImpl findFamilyAppliedPolicyService;
 
     @Test
-    @DisplayName("가족 ID로 전체 구성원의 통합 정책을 조회한다")
+    @DisplayName("구성원 ID로 해당 구성원이 속한 가족 전체 구성원의 통합 정책을 조회한다")
     void findFamilyAppliedPoliciesSuccess() {
 
         // given
@@ -72,6 +72,7 @@ class FindFamilyAppliedPolicyServiceImplTest {
 
         FamilySubscription mapping = FamilySubscription.builder()
                 .subscription(sub)
+                .family(family)
                 .build();
 
         AppliedPolicyResponse memberResponse =
@@ -92,6 +93,10 @@ class FindFamilyAppliedPolicyServiceImplTest {
                         )
                 );
 
+        // memberId로 소속된 가족 정보 찾기
+        given(familySubscriptionRepository.findByMemberId(memberId))
+                .willReturn(Optional.of(mapping));
+
         given(familyRepository.findById(familyId))
                 .willReturn(Optional.of(family));
 
@@ -106,7 +111,7 @@ class FindFamilyAppliedPolicyServiceImplTest {
 
         // when
         FamilyAppliedPolicyResponse response =
-                findFamilyAppliedPolicyService.findByFamilyId(familyId);
+                findFamilyAppliedPolicyService.findByMemberId(memberId);
 
         // then
         assertThat(response.familyId()).isEqualTo(familyId);
