@@ -14,7 +14,7 @@ class TimeRangeTest {
     @DisplayName("성공: 두 시간 구간이 겹치거나 맞닿아 있는지 확인한다")
     void overlapsOrAbutsSuccess() {
         TimeRange base = new TimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0));
-        
+
         // 겹치는 경우
         assertThat(base.overlapsOrAbuts(new TimeRange(LocalTime.of(11, 0), LocalTime.of(13, 0)))).isTrue();
         // 맞닿아 있는 경우
@@ -30,9 +30,9 @@ class TimeRangeTest {
     void mergeSuccess() {
         TimeRange range1 = new TimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0));
         TimeRange range2 = new TimeRange(LocalTime.of(11, 0), LocalTime.of(13, 0));
-        
+
         TimeRange merged = range1.merge(range2);
-        
+
         assertThat(merged.start()).isEqualTo(LocalTime.of(10, 0));
         assertThat(merged.end()).isEqualTo(LocalTime.of(13, 0));
     }

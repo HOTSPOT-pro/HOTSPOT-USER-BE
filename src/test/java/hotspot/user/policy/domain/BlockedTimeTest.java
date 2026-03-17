@@ -20,7 +20,7 @@ class BlockedTimeTest {
                 .startTime("10:00")
                 .endTime("12:00")
                 .build();
-        
+
         // 같은 요일에 겹치는 정책 추가
         PolicySnapshot snapshot2 = PolicySnapshot.builder()
                 .days(List.of(DayOfWeek.MONDAY))
@@ -71,7 +71,7 @@ class BlockedTimeTest {
                 .build();
 
         blockedTime.addPolicy(snapshot, PolicyType.ONCE);
-        
+
         DayOfWeek today = java.time.LocalDate.now().getDayOfWeek();
         assertThat(blockedTime.getDayRanges().get(today)).isNotEmpty();
     }
@@ -80,16 +80,16 @@ class BlockedTimeTest {
     @DisplayName("성공: 스냅샷이 null이거나 리스트가 비어있을 때 안전하게 동작한다")
     void addPolicyWithNullOrEmpty() {
         BlockedTime blockedTime = new BlockedTime();
-        
+
         // null 스냅샷
         blockedTime.addPolicy(null, PolicyType.SCHEDULED);
-        
+
         // 날짜 리스트가 null인 경우
         PolicySnapshot snapshot = PolicySnapshot.builder().build();
         blockedTime.addPolicy(snapshot, PolicyType.SCHEDULED);
-        
+
         blockedTime.mergeAll();
-        
+
         for (DayOfWeek day : DayOfWeek.values()) {
             assertThat(blockedTime.getDayRanges().get(day)).isEmpty();
         }
