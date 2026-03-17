@@ -79,6 +79,9 @@ public interface AppliedPolicyApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음\n"
                                          + "- AUTH_004: 해당 요청에 대한 접근 권한이 없습니다.",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "찾을 수 없음\n"
+                                         + "- MEMBER_001: 회원 정보를 찾을 수 없습니다.",
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<ApiResponse<Object>> getBlockedTime(
