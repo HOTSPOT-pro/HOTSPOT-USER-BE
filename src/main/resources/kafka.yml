@@ -14,7 +14,6 @@ spring:
       batch-size: 16384
 
     consumer:
-      group-id: ${KAFKA_CONSUMER_GROUP_ID}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       auto-offset-reset: earliest
@@ -22,3 +21,13 @@ spring:
 
     listener:
       ack-mode: manual
+      auto-startup: false
+
+app:
+  topics:
+    user-alert-events: user-alert-events
+    sms-dispatch: sms-dispatch
+
+  consumer-groups:
+    user-alert: user-alert-consumer-group
+    sms-dispatch: sms-dispatch-consumer-group

@@ -3,25 +3,33 @@ project:
   version: 1.0.0
 
 server:
+  forward-headers-strategy: framework
   port: 8080
 
   # 프론트 주소
   domain:
     local: ${LOCAL_SERVER_URL}
     dev: ${DEV_SERVER_URL}
+    onboarding: ${ONBOARDING_URL}
 
 spring:
   application:
-    name: backend
+    name: hotspot-user
 
   profiles:
     default: local
 
   config:
     import:
-      - classpath:postgres.yml
+      - classpath:postgres-main.yml
       - classpath:redis.yml
       - classpath:kafka.yml
+      - classpath:oauth.yml
+      - classpath:jwt.yml
+      - classpath:crypto.yml
+      - classpath:s3.yml
+      - classpath:sms.yml
+      - classpath:postgres-batch.yml
 
   web:
     resources:
@@ -31,6 +39,24 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 ---
 spring:

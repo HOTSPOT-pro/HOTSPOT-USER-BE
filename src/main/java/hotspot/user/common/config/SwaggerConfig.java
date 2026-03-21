@@ -1,12 +1,13 @@
 package hotspot.user.common.config;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SwaggerConfig {
@@ -22,10 +23,7 @@ public class SwaggerConfig {
     }
 
     private Info apiInfo() {
-        return new Info()
-                .title("Hotspot User API")
-                .version("v1")
-                .description("Hotspot 사용자 API 명세");
+        return new Info().title("Hotspot User API").version("v1").description("Hotspot 사용자 API 명세");
     }
 
     private SecurityRequirement securityRequirement() {
@@ -40,7 +38,6 @@ public class SwaggerConfig {
                                 .name(SECURITY_SCHEME_NAME)
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
-                                .bearerFormat("JWT")
-                );
+                                .bearerFormat("JWT"));
     }
 }

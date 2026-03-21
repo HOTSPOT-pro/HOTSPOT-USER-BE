@@ -1,0 +1,125 @@
+package hotspot.user.policy.controller;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import hotspot.user.common.ApiResponse;
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.common.exception.code.AuthErrorCode;
+import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.member.domain.FamilyRole;
+import hotspot.user.policy.controller.port.FindBlockStatusService;
+import hotspot.user.policy.controller.port.FindBlockedTimeService;
+import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
+import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
+import hotspot.user.policy.controller.port.UpdatePolicySubService;
+import hotspot.user.policy.controller.request.UpdatePolicySubRequest;
+import hotspot.user.policy.controller.response.BlockedStatusResponse;
+import hotspot.user.policy.controller.response.UpdatePolicySubResponse;
+import hotspot.user.policy.controller.swagger.AppliedPolicyApi;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * 적용된 정책(시간 정책 및 앱 차단) 조회 컨트롤러
+ */
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/policies")
+public class AppliedPolicyController implements AppliedPolicyApi {
+
+    private final FindMemberAppliedPolicyService findMemberAppliedPolicyService; // 구성원별 적용 정책 조회
+    private final FindFamilyAppliedPolicyService findFamilyAppliedPolicyService; // 가족 구성원 전체 적용 정책 조회
+    private final FindBlockedTimeService findBlockedTimeService; // 차단 시간 조회 서비스
+    private final UpdatePolicySubService updatePolicySubService; // 구성원 별 정책 업데이트 (적용)
+    private final FindBlockStatusService findBlockStatusService; // 차단 상태 조회 서비스
+
+    /**
+     * 적용된 정책 목록을 조회 API
+     * @param isFamily true일 경우 가족 전체의 정책을, false일 경우 본인의 정책만 조회
+     */
+    @Override
+    @GetMapping("/applied")
+    public ResponseEntity<ApiResponse<Object>> getAppliedPolicies(
+            @RequestParam(defaultValue = "false") boolean isFamily,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        if (isFamily) {
+            // 가족 전체 조회 시 권한 검증: OWNER 또는 PARENT만 가능
+            if (principal.getRole() != FamilyRole.OWNER && principal.getRole() != FamilyRole.PARENT) {
+                throw new ApplicationException(AuthErrorCode.ACCESS_DENIED);
+            }
+
+            // memberId를 통해 현재 소속된 가족 정보를 조회하여 처리
+            return ResponseEntity.ok(ApiResponse.success(
+                findFamilyAppliedPolicyService.findByMemberId(principal.getId())
+            ));
+        }
+
+        // 본인 정책 조회
+        return ResponseEntity.ok(ApiResponse.success(
+            findMemberAppliedPolicyService.findByMemberId(principal.getId())
+        ));
+    }
+
+
+    // 구성원별 앱 차단 설정 업데이트
+    @Override
+    @PutMapping("/apply")
+    public ResponseEntity<ApiResponse<UpdatePolicySubResponse>> updatePolicySub(
+            @Valid @RequestBody UpdatePolicySubRequest request,
+            @AuthenticationPrincipal PrincipalDetails principalDetails
+            ) {
+
+        UpdatePolicySubResponse response = updatePolicySubService.updatePolicySub(
+                request,
+                principalDetails.getId(),
+                principalDetails.getRole()
+        );
+
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(response));
+    }
+
+    // 나의 데이터 사용 차단 여부 조회
+    // - 현재는 다른 구성원의 차단 여부는 전체 적용된 정책 시 필드에 포함할 거라서 내 차단 여부만 조회한다.
+    @Override
+    @GetMapping("/blocked")
+    public ResponseEntity<ApiResponse<BlockedStatusResponse>> getBlockedStatus(
+            @AuthenticationPrincipal PrincipalDetails principalDetails
+    ) {
+        BlockedStatusResponse response = findBlockStatusService.findMyBlockStatus(principalDetails.getId());
+
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(response));
+    }
+
+    /**
+     * 구성원별 데이터 사용 불가능한 시간대 리턴
+     * @param isFamily true일 경우 가족 전체, false일 경우 본인 시간대만 조회
+     */
+    @Override
+    @GetMapping("/blockedTime")
+    public ResponseEntity<ApiResponse<Object>> getBlockedTime(
+            @RequestParam(defaultValue = "false") boolean isFamily,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        if (isFamily) {
+            return ResponseEntity.ok(ApiResponse.success(
+                    findBlockedTimeService.findFamilyBlockedTime(principal.getId())
+            ));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success(
+                findBlockedTimeService.findMemberBlockedTime(principal.getId())
+        ));
+    }
+
+}

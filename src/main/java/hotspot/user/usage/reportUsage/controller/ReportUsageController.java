@@ -1,0 +1,109 @@
+package hotspot.user.usage.reportUsage.controller;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import hotspot.user.common.ApiResponse;
+import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.usage.reportUsage.controller.port.FindReportFamilyService;
+import hotspot.user.usage.reportUsage.controller.port.FindReportUsageAppDayService;
+import hotspot.user.usage.reportUsage.controller.port.FindReportUsageAppMonthService;
+import hotspot.user.usage.reportUsage.controller.port.FindReportUsageDayService;
+import hotspot.user.usage.reportUsage.controller.port.FindReportUsageMonthService;
+import hotspot.user.usage.reportUsage.controller.response.ReportFamilyResponse;
+import hotspot.user.usage.reportUsage.controller.response.ReportUsageAppResponse;
+import hotspot.user.usage.reportUsage.controller.response.ReportUsageDayResponse;
+import hotspot.user.usage.reportUsage.controller.response.ReportUsageMonthResponse;
+import hotspot.user.usage.reportUsage.controller.swagger.ReportUsageApi;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/reportUsage")
+public class ReportUsageController implements ReportUsageApi {
+
+    private final FindReportUsageAppMonthService findReportUsageAppMonthService;
+    private final FindReportUsageAppDayService findReportUsageAppDayService;
+    private final FindReportUsageDayService findReportUsageDayService;
+    private final FindReportUsageMonthService findReportUsageMonthService;
+    private final FindReportFamilyService findReportFamilyService;
+
+    @GetMapping("/family")
+    public ResponseEntity<ApiResponse<List<ReportFamilyResponse>>> findReportFamily(
+            @AuthenticationPrincipal PrincipalDetails details) {
+        return ResponseEntity.ok(ApiResponse.success(
+                findReportFamilyService.findReportFamily(details.getFamilyId())));
+    }
+
+    @GetMapping("/app/month")
+    public ResponseEntity<ApiResponse<ReportUsageAppResponse>> findReportUsageAppMonth(
+            @AuthenticationPrincipal PrincipalDetails details,
+            @RequestParam Long targetSubId) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        findReportUsageAppMonthService
+                                .findReportUsageAppMonth(details.getId(), targetSubId)));
+    }
+
+    @GetMapping("/app/day")
+    public ResponseEntity<ApiResponse<ReportUsageAppResponse>> findReportUsageAppDay(
+            @AuthenticationPrincipal PrincipalDetails details,
+            @RequestParam Long targetSubId,
+            @DateTimeFormat(pattern = "yyyy-MM-dd")
+            LocalDate date)
+    {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        findReportUsageAppDayService
+                                .findReportUsageAppDay(
+                                        details.getId(),
+                                        targetSubId,
+                                        date)
+                )
+        );
+    }
+
+    @GetMapping("/day")
+    public ResponseEntity<ApiResponse<ReportUsageDayResponse>> findReportUsageDay(
+            @AuthenticationPrincipal PrincipalDetails details,
+            @RequestParam(required = false) Long targetSubId,
+            @RequestParam
+            @DateTimeFormat(pattern = "yyyy-MM")
+            YearMonth month
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        findReportUsageDayService.findReportUsageDay(
+                                details.getFamilyId(),
+                                targetSubId,
+                                month
+                        )
+                )
+        );
+    }
+
+    @GetMapping("/month")
+    public ResponseEntity<ApiResponse<ReportUsageMonthResponse>> findReportUsageMonth(
+            @AuthenticationPrincipal PrincipalDetails details,
+            @RequestParam(required = false) Long targetSubId
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        findReportUsageMonthService.findReportUsageMonth(
+                                details.getFamilyId(),
+                                targetSubId
+                        )
+                )
+        );
+    }
+}

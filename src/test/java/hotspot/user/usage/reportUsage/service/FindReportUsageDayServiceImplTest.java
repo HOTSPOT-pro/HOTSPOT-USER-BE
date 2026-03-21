@@ -1,0 +1,179 @@
+package hotspot.user.usage.reportUsage.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.when;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import hotspot.user.common.exception.ApplicationException;
+import hotspot.user.family.domain.FamilySubscription;
+import hotspot.user.family.service.port.FamilySubscriptionRepository;
+import hotspot.user.member.domain.Member;
+import hotspot.user.member.domain.Status;
+import hotspot.user.subscription.domain.Subscription;
+import hotspot.user.usage.reportUsage.controller.response.ReportUsageDayResponse;
+import hotspot.user.usage.reportUsage.service.port.ReportUsageRepository;
+
+@ExtendWith(MockitoExtension.class)
+class FindReportUsageDayServiceImplTest {
+
+    @Mock private ReportUsageRepository reportUsageRepository;
+    @Mock private FamilySubscriptionRepository familySubscriptionRepository;
+
+    private Clock clock;
+    private FindReportUsageDayServiceImpl service;
+
+    private final Long familyId = 100L;
+    private final Long sub1 = 10L;
+    private final Long sub2 = 20L;
+
+    @BeforeEach
+    void setUp() {
+        clock = Clock.fixed(
+                LocalDate.of(2026, 2, 23)
+                        .atStartOfDay(ZoneId.systemDefault())
+                        .toInstant(),
+                ZoneId.systemDefault()
+        );
+
+        service = new FindReportUsageDayServiceImpl(
+                reportUsageRepository,
+                familySubscriptionRepository,
+                clock
+        );
+    }
+
+    @Test
+    void shouldReturnSuccessfully() {
+
+        when(familySubscriptionRepository.findByFamilyId(familyId))
+                .thenReturn(List.of(
+                        mockFamily(sub1, "본인"),
+                        mockFamily(sub2, "가족")
+                ));
+
+        when(reportUsageRepository.findReportUsageDailyGb(anyList(), anyList()))
+                .thenReturn(Map.of());
+
+        ReportUsageDayResponse response =
+                service.findReportUsageDay(
+                        familyId,
+                        sub2,
+                        YearMonth.of(2026, 2)
+                );
+
+        assertThat(response.subUsages()).hasSize(2);
+    }
+
+    @Test
+    void shouldThrowWhenTargetNotInFamily() {
+
+        when(familySubscriptionRepository.findByFamilyId(familyId))
+                .thenReturn(List.of(mockFamily(sub1, "본인")));
+
+        assertThatThrownBy(() ->
+                service.findReportUsageDay(
+                        familyId,
+                        sub2,
+                        YearMonth.of(2026, 2)
+                )
+        ).isInstanceOf(ApplicationException.class);
+    }
+
+    @Test
+    void shouldGenerateDatesUntilTodayWhenMonthIsCurrentMonth() {
+
+        when(familySubscriptionRepository.findByFamilyId(familyId))
+                .thenReturn(List.of(mockFamily(sub1, "본인")));
+
+        when(reportUsageRepository.findReportUsageDailyGb(anyList(), anyList()))
+                .thenReturn(Map.of());
+
+        ReportUsageDayResponse response =
+                service.findReportUsageDay(
+                        familyId,
+                        sub1,
+                        YearMonth.of(2026, 2)
+                );
+
+        List<ReportUsageDayResponse.SubUsageResponse.DataUsageDayResponse> days =
+                response.subUsages()
+                        .get(0)
+                        .dataUsageDays();
+
+        assertThat(days.get(0).usageDate())
+                .isEqualTo(LocalDate.of(2026, 2, 1));
+
+        assertThat(days.get(days.size() - 1).usageDate())
+                .isEqualTo(LocalDate.of(2026, 2, 23));
+    }
+
+    @Test
+    void shouldGenerateFullMonthWhenPastMonth() {
+
+        when(familySubscriptionRepository.findByFamilyId(familyId))
+                .thenReturn(List.of(mockFamily(sub1, "본인")));
+
+        when(reportUsageRepository.findReportUsageDailyGb(anyList(), anyList()))
+                .thenReturn(Map.of());
+
+        ReportUsageDayResponse response =
+                service.findReportUsageDay(
+                        familyId,
+                        sub1,
+                        YearMonth.of(2026, 1)
+                );
+
+        List<ReportUsageDayResponse.SubUsageResponse.DataUsageDayResponse> days =
+                response.subUsages()
+                        .get(0)
+                        .dataUsageDays();
+
+        assertThat(days.get(0).usageDate())
+                .isEqualTo(LocalDate.of(2026, 1, 1));
+
+        assertThat(days.get(days.size() - 1).usageDate())
+                .isEqualTo(LocalDate.of(2026, 1, 31));
+    }
+
+    private FamilySubscription mockFamily(Long subId, String name) {
+
+        Member member = Member.builder()
+                .id(1L)
+                .name(name)
+                .birth("000101")
+                .status(Status.APPROVED)
+                .build();
+
+        Subscription subscription = Subscription.builder()
+                .id(subId)
+                .member(member)
+                .plan(null)
+                .phoneEnc(null)
+                .phoneHash(null)
+                .isLocked(false)
+                .build();
+
+        return FamilySubscription.builder()
+                .id(1L)
+                .subscription(subscription)
+                .family(null)
+                .familyRole(null)
+                .priority(0)
+                .dataLimit(0)
+                .build();
+    }
+}
