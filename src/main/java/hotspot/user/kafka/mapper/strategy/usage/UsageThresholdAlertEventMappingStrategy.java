@@ -3,7 +3,6 @@ package hotspot.user.kafka.mapper.strategy.usage;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import hotspot.user.common.exception.ApplicationException;
@@ -22,11 +21,6 @@ public class UsageThresholdAlertEventMappingStrategy implements UserAlertEventMa
 
     private final PresentDataRepository presentDataRepository;
 
-    public UsageThresholdAlertEventMappingStrategy() {
-        this.presentDataRepository = null;
-    }
-
-    @Autowired
     public UsageThresholdAlertEventMappingStrategy(PresentDataRepository presentDataRepository) {
         this.presentDataRepository = presentDataRepository;
     }
@@ -106,7 +100,7 @@ public class UsageThresholdAlertEventMappingStrategy implements UserAlertEventMa
         }
 
         Long giftId = parseGiftId(event.giftId());
-        if (giftId != null && presentDataRepository != null) {
+        if (giftId != null) {
             Map<Long, String> giverNames = presentDataRepository.findGiftGiverNames(List.of(giftId));
             String senderNameFromGift = giverNames.get(giftId);
             if (senderNameFromGift != null && !senderNameFromGift.isBlank()) {
