@@ -2,6 +2,7 @@ package hotspot.user.kafka.mapper.registry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ import hotspot.user.kafka.mapper.strategy.policy.PolicyAlertEventMappingStrategy
 import hotspot.user.kafka.mapper.strategy.present.PresentDataAlertEventMappingStrategy;
 import hotspot.user.kafka.mapper.strategy.usage.UsageThresholdAlertEventMappingStrategy;
 import hotspot.user.kafka.model.AlertNotificationMappingResult;
+import hotspot.user.presentData.service.port.PresentDataRepository;
 
 class UserAlertEventMappingStrategyRegistryTest {
 
@@ -49,7 +51,7 @@ class UserAlertEventMappingStrategyRegistryTest {
 
         assertThatThrownBy(() -> new UserAlertEventMappingStrategyRegistry(
                 List.of(
-                        new UsageThresholdAlertEventMappingStrategy(),
+                        new UsageThresholdAlertEventMappingStrategy(mock(PresentDataRepository.class)),
                         duplicated,
                         new PolicyAlertEventMappingStrategy(),
                         new AppServiceAlertEventMappingStrategy(),
@@ -66,7 +68,7 @@ class UserAlertEventMappingStrategyRegistryTest {
     void unsupportedEventType() {
         assertThatThrownBy(() -> new UserAlertEventMappingStrategyRegistry(
                 List.of(
-                        new UsageThresholdAlertEventMappingStrategy(),
+                        new UsageThresholdAlertEventMappingStrategy(mock(PresentDataRepository.class)),
                         new AppServiceAlertEventMappingStrategy(),
                         new PresentDataAlertEventMappingStrategy(),
                         new FamilyMemberApplyAlertEventMappingStrategy()
@@ -78,7 +80,7 @@ class UserAlertEventMappingStrategyRegistryTest {
 
     private List<UserAlertEventMappingStrategy> defaultStrategies() {
         return List.of(
-                new UsageThresholdAlertEventMappingStrategy(),
+                new UsageThresholdAlertEventMappingStrategy(mock(PresentDataRepository.class)),
                 new PolicyAlertEventMappingStrategy(),
                 new AppServiceAlertEventMappingStrategy(),
                 new PresentDataAlertEventMappingStrategy(),

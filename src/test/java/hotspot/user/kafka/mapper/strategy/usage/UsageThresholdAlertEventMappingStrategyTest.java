@@ -2,6 +2,7 @@ package hotspot.user.kafka.mapper.strategy.usage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import java.time.LocalDateTime;
 
@@ -12,10 +13,12 @@ import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.KafkaErrorCode;
 import hotspot.user.kafka.domain.NotificationType;
 import hotspot.user.kafka.dto.UserAlertEvent;
+import hotspot.user.presentData.service.port.PresentDataRepository;
 
 class UsageThresholdAlertEventMappingStrategyTest {
 
-    private final UsageThresholdAlertEventMappingStrategy strategy = new UsageThresholdAlertEventMappingStrategy();
+    private final UsageThresholdAlertEventMappingStrategy strategy =
+            new UsageThresholdAlertEventMappingStrategy(mock(PresentDataRepository.class));
 
     @Test
     @DisplayName("maps plan/family/gift threshold types")
