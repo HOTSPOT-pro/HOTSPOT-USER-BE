@@ -18,6 +18,9 @@ import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.MemberDetailInfo;
 import hotspot.user.member.service.port.MemberRepository;
+import hotspot.user.outbox.notificationOutbox.domain.event.AlertAction;
+import hotspot.user.outbox.notificationOutbox.domain.event.PolicyAlertOutboxEvent;
+import hotspot.user.outbox.notificationOutbox.service.port.UserAlertNotificationOutboxPort;
 import hotspot.user.policy.controller.port.UpdateFamilyBlockPolicyStatusService;
 import hotspot.user.policy.controller.request.UpdateFamilyBlockPolicyStatusRequest;
 import hotspot.user.policy.controller.response.UpdateFamilyBlockPolicyStatusResponse;
@@ -41,6 +44,7 @@ public class UpdateFamilyBlockPolicyStatusServiceImpl implements UpdateFamilyBlo
     private final BlockPolicyRepository blockPolicyRepository;
     private final PolicySubRepository policySubRepository;
     private final FamilyPolicyDeactivatePublisher familyPolicyDeactivatePublisher;
+    private final UserAlertNotificationOutboxPort userAlertNotificationOutboxPort;
 
     @Override
     public UpdateFamilyBlockPolicyStatusResponse updateFamilyBlockPolicyStatus(
@@ -53,6 +57,8 @@ public class UpdateFamilyBlockPolicyStatusServiceImpl implements UpdateFamilyBlo
 
         // 2. 해당 가족이 생성한 모든 정책을 조회한다.
         List<BlockPolicy> allFamilyPolicies = blockPolicyRepository.findAllByFamilyId(requesterFamilyId);
+        Map<Long, BlockPolicy> allFamilyPolicyMap = allFamilyPolicies.stream()
+                .collect(Collectors.toMap(BlockPolicy::getId, policy -> policy));
 
         // 3. 요청받은 ID 리스트가 모두 우리 가족의 정책인지 검증한다.
         List<Long> requestActiveIds = request.blockPolicyIdList();
@@ -83,6 +89,10 @@ public class UpdateFamilyBlockPolicyStatusServiceImpl implements UpdateFamilyBlo
             blockPolicyRepository.bulkActivate(toActivate);
         }
         if (!toDeactivate.isEmpty()) {
+            Map<Long, List<Long>> activeSubIdsByPolicyId =
+                    policySubRepository.findActiveSubIdsByBlockPolicyIds(toDeactivate);
+
+            publishPolicyReleasedAlerts(activeSubIdsByPolicyId, allFamilyPolicyMap, requesterFamilyId);
 
             familyPolicyDeactivatePublisher.publish(toDeactivate, requesterFamilyId);
 
@@ -119,5 +129,33 @@ public class UpdateFamilyBlockPolicyStatusServiceImpl implements UpdateFamilyBlo
         if (!familyPolicyIds.containsAll(requestIds)) {
             throw new ApplicationException(PolicyErrorCode.POLICY_ACCESS_DENIED);
         }
+    }
+
+    private void publishPolicyReleasedAlerts(
+            Map<Long, List<Long>> activeSubIdsByPolicyId,
+            Map<Long, BlockPolicy> policyMap,
+            Long familyId
+    ) {
+        if (activeSubIdsByPolicyId == null || activeSubIdsByPolicyId.isEmpty()) {
+            return;
+        }
+
+        activeSubIdsByPolicyId.forEach((policyId, subIds) -> {
+            BlockPolicy policy = policyMap.get(policyId);
+            if (policy == null || subIds == null || subIds.isEmpty()) {
+                return;
+            }
+
+            subIds.stream()
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .forEach(subId -> userAlertNotificationOutboxPort.appendPolicyAlert(new PolicyAlertOutboxEvent(
+                            subId,
+                            familyId,
+                            policy.getName(),
+                            policy.getPolicyType(),
+                            AlertAction.RELEASED
+                    )));
+        });
     }
 }
