@@ -1,5 +1,9 @@
 package hotspot.user.kafka.mapper.strategy.usage;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import hotspot.user.common.exception.ApplicationException;
@@ -11,9 +15,21 @@ import hotspot.user.kafka.mapper.strategy.UserAlertEventMappingStrategy;
 import hotspot.user.kafka.mapper.support.AlertEventMappingSupport;
 import hotspot.user.kafka.mapper.template.AlertMessageTemplateRegistry;
 import hotspot.user.kafka.model.AlertNotificationMappingResult;
+import hotspot.user.presentData.service.port.PresentDataRepository;
 
 @Component
 public class UsageThresholdAlertEventMappingStrategy implements UserAlertEventMappingStrategy {
+
+    private final PresentDataRepository presentDataRepository;
+
+    public UsageThresholdAlertEventMappingStrategy() {
+        this.presentDataRepository = null;
+    }
+
+    @Autowired
+    public UsageThresholdAlertEventMappingStrategy(PresentDataRepository presentDataRepository) {
+        this.presentDataRepository = presentDataRepository;
+    }
 
     @Override
     public boolean supports(KafkaEventType eventType) {
@@ -34,7 +50,7 @@ public class UsageThresholdAlertEventMappingStrategy implements UserAlertEventMa
         }
 
         if (isGiftAlertType(normalizedAlertType)) {
-            String senderName = AlertEventMappingSupport.defaultIfBlank(event.presentSenderName(), "누군가");
+            String senderName = resolveGiftSenderName(event);
             return AlertMessageTemplateRegistry.create(resolveGiftNotificationType(threshold), senderName);
         }
 
@@ -81,5 +97,34 @@ public class UsageThresholdAlertEventMappingStrategy implements UserAlertEventMa
 
     private boolean isGiftAlertType(String alertType) {
         return "GIFT_REMAINING".equals(alertType);
+    }
+
+    private String resolveGiftSenderName(UserAlertEvent event) {
+        String senderNameFromEvent = AlertEventMappingSupport.defaultIfBlank(event.presentSenderName(), null);
+        if (senderNameFromEvent != null) {
+            return senderNameFromEvent;
+        }
+
+        Long giftId = parseGiftId(event.giftId());
+        if (giftId != null && presentDataRepository != null) {
+            Map<Long, String> giverNames = presentDataRepository.findGiftGiverNames(List.of(giftId));
+            String senderNameFromGift = giverNames.get(giftId);
+            if (senderNameFromGift != null && !senderNameFromGift.isBlank()) {
+                return senderNameFromGift;
+            }
+        }
+
+        return "누군가";
+    }
+
+    private Long parseGiftId(String giftIdRaw) {
+        if (giftIdRaw == null || giftIdRaw.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(giftIdRaw.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }
