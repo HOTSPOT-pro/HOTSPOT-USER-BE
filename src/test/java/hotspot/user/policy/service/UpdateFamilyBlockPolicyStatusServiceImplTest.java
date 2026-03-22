@@ -4,11 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -25,9 +28,11 @@ import hotspot.user.common.exception.code.PolicyErrorCode;
 import hotspot.user.member.domain.FamilyRole;
 import hotspot.user.member.domain.MemberDetailInfo;
 import hotspot.user.member.service.port.MemberRepository;
+import hotspot.user.outbox.notificationOutbox.service.port.UserAlertNotificationOutboxPort;
 import hotspot.user.policy.controller.request.UpdateFamilyBlockPolicyStatusRequest;
 import hotspot.user.policy.controller.response.UpdateFamilyBlockPolicyStatusResponse;
 import hotspot.user.policy.domain.BlockPolicy;
+import hotspot.user.policy.domain.PolicyType;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
 import hotspot.user.policy.service.util.FamilyPolicyDeactivatePublisher;
@@ -46,6 +51,9 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
 
     @Mock
     private FamilyPolicyDeactivatePublisher familyPolicyDeactivatePublisher;
+
+    @Mock
+    private UserAlertNotificationOutboxPort userAlertNotificationOutboxPort;
 
     @InjectMocks
     private UpdateFamilyBlockPolicyStatusServiceImpl service;
@@ -68,12 +76,19 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
                 .build();
         given(memberRepository.findDetailById(MEMBER_ID)).willReturn(Optional.of(memberDetail));
 
-        BlockPolicy p1 = BlockPolicy.builder().id(1L).isActive(true).build();
-        BlockPolicy p2 = BlockPolicy.builder().id(2L).isActive(false).build();
-        BlockPolicy p3 = BlockPolicy.builder().id(3L).isActive(true).build();
+        BlockPolicy p1 = BlockPolicy.builder().id(1L).isActive(true).policyType(PolicyType.SCHEDULED).build();
+        BlockPolicy p2 = BlockPolicy.builder().id(2L).isActive(false).policyType(PolicyType.SCHEDULED).build();
+        BlockPolicy p3 = BlockPolicy.builder()
+                .id(3L)
+                .name("night-block")
+                .isActive(true)
+                .policyType(PolicyType.ONCE)
+                .build();
 
         given(blockPolicyRepository.findAllByFamilyId(FAMILY_ID))
                 .willReturn(List.of(p1, p2, p3));
+        given(policySubRepository.findActiveSubIdsByBlockPolicyIds(List.of(3L)))
+                .willReturn(Map.of(3L, List.of(777L)));
 
         UpdateFamilyBlockPolicyStatusResponse response =
                 service.updateFamilyBlockPolicyStatus(request, MEMBER_ID, FAMILY_ID);
@@ -84,6 +99,11 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
         verify(blockPolicyRepository).bulkDeActive(List.of(3L));
 
         verify(policySubRepository).bulkDeActiveByBlockPolicyIds(List.of(3L));
+        verify(userAlertNotificationOutboxPort, times(1)).appendPolicyAlert(argThat(event ->
+                event.subId().equals(777L)
+                        && event.familyId().equals(FAMILY_ID)
+                        && event.policyName().equals("night-block")
+        ));
 
         assertThat(response.familyId()).isEqualTo(FAMILY_ID);
         assertThat(response.blockedPolicyIdList())
@@ -184,5 +204,7 @@ class UpdateFamilyBlockPolicyStatusServiceImplTest {
         verify(blockPolicyRepository, never()).bulkActivate(anyList());
         verify(blockPolicyRepository, never()).bulkDeActive(anyList());
         verify(policySubRepository, never()).bulkDeActiveByBlockPolicyIds(anyList());
-        verify(familyPolicyDeactivatePublisher, never()).publish(anyList(), anyLong());    }
+        verify(familyPolicyDeactivatePublisher, never()).publish(anyList(), anyLong());
+        verify(userAlertNotificationOutboxPort, never()).appendPolicyAlert(argThat(event -> true));
+    }
 }

@@ -2,6 +2,7 @@ package hotspot.user.kafka.mapper.orchestrator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,12 +21,13 @@ import hotspot.user.kafka.mapper.strategy.policy.PolicyAlertEventMappingStrategy
 import hotspot.user.kafka.mapper.strategy.present.PresentDataAlertEventMappingStrategy;
 import hotspot.user.kafka.mapper.strategy.usage.UsageThresholdAlertEventMappingStrategy;
 import hotspot.user.notification.domain.Notification;
+import hotspot.user.presentData.service.port.PresentDataRepository;
 
 class UserAlertEventNotificationMapperTest {
 
     private final UserAlertEventNotificationMapper mapper = new UserAlertEventNotificationMapper(
             new UserAlertEventMappingStrategyRegistry(List.of(
-                    new UsageThresholdAlertEventMappingStrategy(),
+                    new UsageThresholdAlertEventMappingStrategy(mock(PresentDataRepository.class)),
                     new PolicyAlertEventMappingStrategy(),
                     new AppServiceAlertEventMappingStrategy(),
                     new PresentDataAlertEventMappingStrategy(),
