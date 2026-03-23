@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
+import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.policy.controller.port.FindBlockStatusService;
@@ -21,9 +22,11 @@ import hotspot.user.policy.domain.BlockPolicy;
 import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.policy.domain.mapper.AppliedPolicyMapper;
+import hotspot.user.policy.infrastructure.schema.FamilyDataControl;
 import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
+import hotspot.user.policy.service.port.FamilyDataLimitRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -38,6 +41,7 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
     private final BlockPolicyRepository blockPolicyRepository;
     private final AppBlockedServiceRepository appBlockedServiceRepository;
     private final FindBlockStatusService findBlockStatusService;
+    private final FamilyDataLimitRepository familyDataLimitRepository;
 
     @Override
     @Transactional
@@ -100,7 +104,7 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
 
         boolean isBlocked = blockStatus.isCurrentlyBlocked();
 
-        return AppliedPolicyMapper.toAppliedPolicyResponse(
+        AppliedPolicyResponse base = AppliedPolicyMapper.toAppliedPolicyResponse(
                 familySub,
                 activePolicySubs,
                 blockedServiceSubs,
@@ -108,5 +112,20 @@ public class FindMemberAppliedPolicyServiceImpl implements FindMemberAppliedPoli
                 appBlockedServiceMap,
                 isBlocked
         );
+
+        // 8. Redis에서 실시간 데이터 한도 및 사용량 조회 후 결합
+        Long familyId = familySub.getFamily().getId();
+        FamilyDataControl familyDataControl =
+                familyDataLimitRepository.findFamilyDataLimit(familyId);
+
+        double limit = UsageCalculator.kbToGb(familySub.getDataLimit());
+        double usage = familyDataControl.subFamilies().stream()
+                .filter(sub -> sub.subId().equals(subId))
+                .findFirst()
+                .map(FamilyDataControl.SubFamilyDataControl::familyDataUsage)
+                .orElse(0L)
+                .doubleValue();
+
+        return AppliedPolicyMapper.mergeRedisUsage(base, limit, usage);
     }
 }
