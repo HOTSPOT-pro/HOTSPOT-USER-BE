@@ -104,7 +104,8 @@ class FindBlockedTimeServiceImplTest {
         assertThat(response.dayBlockedTimes().stream()
                 .filter(d -> d.day() == DayOfWeek.MONDAY)
                 .flatMap(d -> d.ranges().stream())
-                .anyMatch(r -> r.startTime().equals(LocalTime.of(10, 0, 0)) && r.endTime().equals(LocalTime.of(11, 0, 0))))
+                .anyMatch(r -> r.startTime().equals(
+                        LocalTime.of(10, 0, 0)) && r.endTime().equals(LocalTime.of(11, 0, 0))))
                 .isTrue();
     }
 
@@ -142,7 +143,8 @@ class FindBlockedTimeServiceImplTest {
         assertThat(response.dayBlockedTimes().stream()
                 .filter(d -> d.day() == DayOfWeek.MONDAY)
                 .flatMap(d -> d.ranges().stream())
-                .anyMatch(r -> r.startTime().equals(LocalTime.of(12, 0, 0)) && r.endTime().equals(LocalTime.of(13, 0, 0))))
+                .anyMatch(r -> r.startTime().equals(
+                        LocalTime.of(12, 0, 0)) && r.endTime().equals(LocalTime.of(13, 0, 0))))
                 .isTrue();
     }
 
