@@ -44,10 +44,6 @@ import hotspot.user.auth.controller.request.TokenRequest;
 import hotspot.user.auth.controller.response.MemberInfoResponse;
 import hotspot.user.auth.controller.response.OnboardingResponse;
 import hotspot.user.auth.controller.response.TokenResponse;
-import hotspot.user.auth.controller.swagger.AuthApi;
-import hotspot.user.common.ApiResponse;
-import hotspot.user.common.exception.ApplicationException;
-import hotspot.user.common.exception.code.AuthErrorCode;
 import hotspot.user.common.security.PrincipalDetails;
 import hotspot.user.common.security.jwt.JwtFilter;
 import hotspot.user.common.security.jwt.JwtProperties;
@@ -192,8 +188,10 @@ class AuthControllerTest {
                 .andReturn();
 
         List<String> cookies = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
-        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.ACCESS_TOKEN_NAME + "=") && c.contains("Max-Age=0"));
-        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.REFRESH_TOKEN_NAME + "=") && c.contains("Max-Age=0"));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.ACCESS_TOKEN_NAME + "=")
+                && c.contains("Max-Age=0"));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.REFRESH_TOKEN_NAME + "=")
+                && c.contains("Max-Age=0"));
     }
 
     @Test
@@ -217,8 +215,10 @@ class AuthControllerTest {
                 .andReturn();
 
         List<String> cookies = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
-        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.ACCESS_TOKEN_NAME + "=") && c.contains("Max-Age=0"));
-        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.REFRESH_TOKEN_NAME + "=") && c.contains("Max-Age=0"));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.ACCESS_TOKEN_NAME + "=")
+                && c.contains("Max-Age=0"));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.REFRESH_TOKEN_NAME + "=")
+                && c.contains("Max-Age=0"));
     }
 
     @Test
