@@ -1,5 +1,7 @@
 package hotspot.user.policy.controller.response;
 
+import java.time.LocalDateTime;
+
 import hotspot.user.policy.domain.PolicySnapshot;
 import hotspot.user.policy.domain.PolicyType;
 import lombok.Builder;
@@ -15,6 +17,7 @@ public record BlockPolicyResponse(
         PolicyType policyType,
         PolicySnapshot policySnapshot,
         String policyDescription,
-        boolean isActive
+        boolean isActive,
+        LocalDateTime modifiedTime
 ) {
 }

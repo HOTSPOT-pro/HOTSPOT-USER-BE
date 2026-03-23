@@ -26,6 +26,7 @@ public class PolicySubMapper {
                 .policySnapshot(blockPolicy.getPolicySnapshot())
                 .policyDescription(blockPolicy.getPolicyDescription())
                 .isActive(policySub.isActive())
+                .modifiedTime(policySub.getModifiedTime())
                 .build();
     }
 

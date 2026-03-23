@@ -1,7 +1,6 @@
 package hotspot.user.policy.domain;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -32,14 +31,10 @@ public class BlockedTime {
             return;
         }
 
-        if (type == PolicyType.SCHEDULED && snapshot.getDays() != null) {
+        if (snapshot.getDays() != null) {
             for (DayOfWeek day : snapshot.getDays()) {
                 addRangeWithMidnightSplit(day, snapshot.getStartLocalTime(), snapshot.getEndLocalTime());
             }
-        } else if (type == PolicyType.ONCE) {
-            // 일회성 정책은 현재 요일에만 적용
-            DayOfWeek today = LocalDate.now().getDayOfWeek();
-            addRangeWithMidnightSplit(today, snapshot.getStartLocalTime(), snapshot.getEndLocalTime());
         }
     }
 

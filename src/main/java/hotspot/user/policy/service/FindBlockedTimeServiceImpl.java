@@ -1,5 +1,7 @@
 package hotspot.user.policy.service;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,9 +18,12 @@ import hotspot.user.policy.controller.port.FindBlockedTimeService;
 import hotspot.user.policy.controller.port.FindFamilyAppliedPolicyService;
 import hotspot.user.policy.controller.port.FindMemberAppliedPolicyService;
 import hotspot.user.policy.controller.response.AppliedPolicyResponse;
+import hotspot.user.policy.controller.response.BlockPolicyResponse;
 import hotspot.user.policy.controller.response.BlockedTimeResponse;
 import hotspot.user.policy.controller.response.FamilyAppliedPolicyResponse;
 import hotspot.user.policy.domain.BlockedTime;
+import hotspot.user.policy.domain.PolicySnapshot;
+import hotspot.user.policy.domain.PolicyType;
 import hotspot.user.policy.domain.mapper.BlockedTimeMapper;
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +33,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
+
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     private final FindMemberAppliedPolicyService findMemberAppliedPolicyService;
     private final FindFamilyAppliedPolicyService findFamilyAppliedPolicyService;
@@ -89,13 +96,46 @@ public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
 
         // 2. 활성화된 정책 스냅샷들을 도메인 객체에 추가 (자정 넘김 처리 포함)
         policyResponse.blockPolicyResponseList().stream()
-                .filter(p -> p.isActive())
-                .forEach(p -> blockedTime.addPolicy(p.policySnapshot(), p.policyType()));
+                .filter(BlockPolicyResponse::isActive)
+                .forEach(p -> {
+                    if (p.policyType() == PolicyType.ONCE) {
+                        PolicySnapshot graphSnapshot = createGraphSnapshotForOncePolicy(p);
+                        // SCHEDULED로 처리하여 BlockedTime이 요일에 맞게 그리도록 유도
+                        blockedTime.addPolicy(graphSnapshot, PolicyType.SCHEDULED);
+                    } else {
+                        blockedTime.addPolicy(p.policySnapshot(), p.policyType());
+                    }
+                });
 
         // 3. 각 요일별로 겹치거나 맞닿아 있는 시간대들을 하나로 병합
         blockedTime.mergeAll();
 
         // 4. 도메인 객체를 최종 반환용 DTO로 변환
         return BlockedTimeMapper.toBlockedTimeResponse(policyResponse, blockedTime);
+    }
+
+    /**
+     * ONCE 정책인 경우 그래프 표시를 위해 실제 적용 시간(modifiedTime)을 기준으로 요일과 시간을 계산하여
+     * 새로운 PolicySnapshot(그래프용 스냅샷)을 생성
+     *
+     * @param p ONCE 타입의 정책 응답 객체
+     * @return 그래프 표시용 SCHEDULED 형태의 PolicySnapshot
+     */
+    private PolicySnapshot createGraphSnapshotForOncePolicy(BlockPolicyResponse p) {
+        PolicySnapshot snapshot = p.policySnapshot();
+        LocalTime start = snapshot.getStartTime() != null
+                ? snapshot.getStartLocalTime()
+                : p.modifiedTime().toLocalTime();
+
+        int duration = snapshot.getDurationMinutes() != null ? snapshot.getDurationMinutes() : 0;
+        LocalTime end = snapshot.getEndTime() != null
+                ? snapshot.getEndLocalTime()
+                : start.plusMinutes(duration);
+
+        return PolicySnapshot.builder()
+                .days(List.of(p.modifiedTime().getDayOfWeek()))
+                .startTime(start.format(TIME_FORMATTER))
+                .endTime(end.format(TIME_FORMATTER))
+                .build();
     }
 }

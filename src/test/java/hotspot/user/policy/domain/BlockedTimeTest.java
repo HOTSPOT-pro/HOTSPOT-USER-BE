@@ -62,18 +62,18 @@ class BlockedTimeTest {
     }
 
     @Test
-    @DisplayName("성공: 일회성(ONCE) 정책은 오늘 요일에만 적용된다")
-    void addOncePolicySuccess() {
+    @DisplayName("성공: 요일 정보가 포함된 정책은 해당 요일에 적용된다")
+    void addPolicyWithDaysSuccess() {
         BlockedTime blockedTime = new BlockedTime();
         PolicySnapshot snapshot = PolicySnapshot.builder()
+                .days(List.of(DayOfWeek.MONDAY))
                 .startTime("15:00")
                 .endTime("16:00")
                 .build();
 
-        blockedTime.addPolicy(snapshot, PolicyType.ONCE);
+        blockedTime.addPolicy(snapshot, PolicyType.SCHEDULED);
 
-        DayOfWeek today = java.time.LocalDate.now().getDayOfWeek();
-        assertThat(blockedTime.getDayRanges().get(today)).isNotEmpty();
+        assertThat(blockedTime.getDayRanges().get(DayOfWeek.MONDAY)).isNotEmpty();
     }
 
     @Test
