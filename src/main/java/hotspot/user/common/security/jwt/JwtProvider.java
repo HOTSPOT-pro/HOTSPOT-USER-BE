@@ -146,7 +146,7 @@ public class JwtProvider {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("accessToken".equals(cookie.getName())) {
+                if (jwtProperties.getAccessTokenName().equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
