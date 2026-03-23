@@ -67,6 +67,7 @@ class FindWeeklyReportServiceImplTest {
         // then
         assertThat(response).isNotNull();
         assertThat(response.subId()).isEqualTo(subId);
+        assertThat(response.title()).isEqualTo("2026년 3월 5주차 분석 리포트");
         assertThat(response.overview().tags()).contains("심야 사용 높음");
     }
 
@@ -121,8 +122,8 @@ class FindWeeklyReportServiceImplTest {
                 .weeklyReportId(reportId)
                 .subId(subId)
                 .name("Test Report")
-                .weekStartDate(LocalDate.now())
-                .weekEndDate(LocalDate.now())
+                .weekStartDate(LocalDate.of(2026, 3, 23))
+                .weekEndDate(LocalDate.of(2026, 3, 29))
                 .scoreData(ScoreData.builder()
                         .totalScore(80)
                         .scoreLevel(ScoreLevel.EXCELLENT)

@@ -86,9 +86,49 @@ class FindMonthlyWeeklyReportServiceImplTest {
         assertThat(response.yearMonth()).isEqualTo(yearMonth);
         assertThat(response.reports()).hasSize(2);
         assertThat(response.reports().get(0).reportId()).isEqualTo(101L);
-        assertThat(response.reports().get(0).title()).isEqualTo("2026년 3월 2주차 분석 리포트");
+        assertThat(response.reports().get(0).title()).isEqualTo("2026년 3월 3주차 분석 리포트");
         assertThat(response.reports().get(0).period()).isEqualTo("2026.03.11~2026.03.17");
-        assertThat(response.reports().get(1).title()).isEqualTo("2026년 3월 1주차 분석 리포트");
+        assertThat(response.reports().get(1).title()).isEqualTo("2026년 3월 2주차 분석 리포트");
+    }
+
+    @Test
+    @DisplayName("월 초 리포트가 비어 있어도 발행일 기준 달력 주차를 유지한다")
+    void findMonthlyWeeklyReportsUsesCalendarWeekOrder() {
+        Long requesterMemberId = 1L;
+        Long subId = 10L;
+        YearMonth yearMonth = YearMonth.of(2026, 3);
+        Family family = Family.builder().id(1000L).build();
+
+        given(familySubscriptionService.findByMemberId(requesterMemberId))
+                .willReturn(FamilySubscription.builder().family(family).build());
+        given(familySubscriptionService.findBySubId(subId))
+                .willReturn(FamilySubscription.builder()
+                        .family(family)
+                        .subscription(Subscription.builder()
+                                .id(subId)
+                                .member(Member.builder().name("홍길동").build())
+                                .build())
+                        .build());
+        given(weeklyReportRepository.findMonthlyReportsBySubId(subId, yearMonth))
+                .willReturn(List.of(
+                        WeeklyReport.builder()
+                                .weeklyReportId(201L)
+                                .subId(subId)
+                                .weekStartDate(LocalDate.of(2026, 3, 16))
+                                .weekEndDate(LocalDate.of(2026, 3, 22))
+                                .reportStatus(ReportStatus.COMPLETED)
+                                .build()
+                ));
+
+        MonthlyWeeklyReportResponse response = service.findMonthlyWeeklyReports(
+                requesterMemberId,
+                subId,
+                yearMonth
+        );
+
+        assertThat(response.reports()).hasSize(1);
+        assertThat(response.reports().get(0).title()).isEqualTo("2026년 3월 4주차 분석 리포트");
+        assertThat(response.reports().get(0).period()).isEqualTo("2026.03.16~2026.03.22");
     }
 
     @Test
