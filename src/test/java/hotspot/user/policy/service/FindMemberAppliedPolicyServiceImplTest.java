@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.user.common.exception.ApplicationException;
 import hotspot.user.common.exception.code.MemberErrorCode;
+import hotspot.user.family.domain.Family;
 import hotspot.user.family.domain.FamilySubscription;
 import hotspot.user.family.service.port.FamilySubscriptionRepository;
 import hotspot.user.member.domain.FamilyRole;
@@ -33,9 +34,11 @@ import hotspot.user.policy.domain.BlockedServiceSub;
 import hotspot.user.policy.domain.PolicySnapshot;
 import hotspot.user.policy.domain.PolicySub;
 import hotspot.user.policy.domain.PolicyType;
+import hotspot.user.policy.infrastructure.schema.FamilyDataControl;
 import hotspot.user.policy.service.port.AppBlockedServiceRepository;
 import hotspot.user.policy.service.port.BlockPolicyRepository;
 import hotspot.user.policy.service.port.BlockedServiceSubRepository;
+import hotspot.user.policy.service.port.FamilyDataLimitRepository;
 import hotspot.user.policy.service.port.PolicySubRepository;
 import hotspot.user.subscription.domain.Subscription;
 
@@ -60,15 +63,19 @@ class FindMemberAppliedPolicyServiceImplTest {
     @Mock
     private FindBlockStatusService findBlockStatusService;
 
+    @Mock
+    private FamilyDataLimitRepository familyDataLimitRepository;
+
     @InjectMocks
     private FindMemberAppliedPolicyServiceImpl findMemberAppliedPolicyService;
 
     @Test
-    @DisplayName("멤버 ID로 적용된 모든 정책 정보(시간+앱차단)를 통합 조회한다")
+    @DisplayName("멤버 ID로 적용된 모든 정책 정보(시간+앱차단+데이터사용량)를 통합 조회한다")
     void findAppliedPoliciesSuccess() {
 
         Long memberId = 1L;
         Long subId = 100L;
+        Long familyId = 10L;
         Long policyId = 50L;
         Long appId = 200L;
 
@@ -82,10 +89,15 @@ class FindMemberAppliedPolicyServiceImplTest {
                 .member(member)
                 .build();
 
+        Family family = Family.builder()
+                .id(familyId)
+                .build();
+
         FamilySubscription familySub = FamilySubscription.builder()
                 .subscription(sub)
+                .family(family)
                 .familyRole(FamilyRole.CHILD)
-                .dataLimit(1024 * 1024)
+                .dataLimit(2048 * 1024) // 2GB
                 .priority(1)
                 .build();
 
@@ -115,6 +127,11 @@ class FindMemberAppliedPolicyServiceImplTest {
                 .serviceCode("YOUTUBE")
                 .build();
 
+        FamilyDataControl familyDataControl = new FamilyDataControl(
+                10L,
+                List.of(new FamilyDataControl.SubFamilyDataControl(subId, 1L)) // 1GB 사용
+        );
+
         given(familySubscriptionRepository.findByMemberId(memberId))
                 .willReturn(Optional.of(familySub));
 
@@ -135,6 +152,9 @@ class FindMemberAppliedPolicyServiceImplTest {
                         .isCurrentlyBlocked(true)
                         .build());
 
+        given(familyDataLimitRepository.findFamilyDataLimit(familyId))
+                .willReturn(familyDataControl);
+
         AppliedPolicyResponse response =
                 findMemberAppliedPolicyService.findByMemberId(memberId);
 
@@ -142,6 +162,8 @@ class FindMemberAppliedPolicyServiceImplTest {
         assertThat(response.memberName()).isEqualTo("홍길동");
         assertThat(response.role()).isEqualTo(FamilyRole.CHILD);
         assertThat(response.isBlocked()).isTrue();
+        assertThat(response.familyDataSubLimit()).isEqualTo(2.0);
+        assertThat(response.familyDataUsage()).isEqualTo(1.0);
 
         assertThat(response.blockPolicyResponseList()).hasSize(1);
         assertThat(response.appBlockedServiceResponseList()).hasSize(1);
@@ -156,6 +178,7 @@ class FindMemberAppliedPolicyServiceImplTest {
 
         Long memberId = 1L;
         Long subId = 100L;
+        Long familyId = 10L;
 
         Long activePolicyId = 50L;
         Long expiredPolicyId = 51L;
@@ -170,8 +193,13 @@ class FindMemberAppliedPolicyServiceImplTest {
                 .member(member)
                 .build();
 
+        Family family = Family.builder()
+                .id(familyId)
+                .build();
+
         FamilySubscription familySub = FamilySubscription.builder()
                 .subscription(sub)
+                .family(family)
                 .familyRole(FamilyRole.CHILD)
                 .build();
 
@@ -222,6 +250,9 @@ class FindMemberAppliedPolicyServiceImplTest {
                 .willReturn(BlockedStatusResponse.builder()
                         .isCurrentlyBlocked(false)
                         .build());
+
+        given(familyDataLimitRepository.findFamilyDataLimit(familyId))
+                .willReturn(new FamilyDataControl(10L, List.of()));
 
         AppliedPolicyResponse response =
                 findMemberAppliedPolicyService.findByMemberId(memberId);
