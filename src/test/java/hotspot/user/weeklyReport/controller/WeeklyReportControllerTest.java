@@ -76,6 +76,7 @@ class WeeklyReportControllerTest {
         WeeklyReportResponse response = WeeklyReportResponse.builder()
                 .subId(subId)
                 .name("자녀 리포트")
+                .title("2026년 3월 3주차 분석 리포트")
                 .weekStartDate(LocalDate.of(2026, 3, 9))
                 .weekEndDate(LocalDate.of(2026, 3, 15))
                 .build();
@@ -88,6 +89,7 @@ class WeeklyReportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data.subId").value(subId))
-                .andExpect(jsonPath("$.data.name").value("자녀 리포트"));
+                .andExpect(jsonPath("$.data.name").value("자녀 리포트"))
+                .andExpect(jsonPath("$.data.title").value("2026년 3월 3주차 분석 리포트"));
     }
 }

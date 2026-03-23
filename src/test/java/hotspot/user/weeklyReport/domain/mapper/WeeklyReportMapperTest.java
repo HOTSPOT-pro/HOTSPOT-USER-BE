@@ -33,6 +33,7 @@ class WeeklyReportMapperTest {
         // then: 기본 필드 검증
         assertThat(response).isNotNull();
         assertThat(response.subId()).isEqualTo(10L);
+        assertThat(response.title()).isEqualTo("2026년 3월 3주차 분석 리포트");
         assertThat(response.overview().scoreData().totalScore()).isEqualTo(85);
 
         // 커버리지 확보를 위한 Record 객체별 세부 검증 (Accessor 호출)
