@@ -46,7 +46,7 @@ class FindFamilyReportMembersServiceImplTest {
     private FindFamilyReportMembersServiceImpl service;
 
     @Test
-    @DisplayName("가족 구성원 목록은 대표, 부모, 자녀 순으로 조회된다")
+    @DisplayName("가족 구성원 목록은 CHILD 역할인 멤버만 조회된다")
     void findMembersSuccess() {
         given(familySubscriptionRepository.findByFamilyId(1L))
                 .willReturn(List.of(
@@ -80,30 +80,21 @@ class FindFamilyReportMembersServiceImplTest {
         given(clock.instant()).willReturn(Instant.parse("2026-03-19T00:00:00Z"));
         given(clock.getZone()).willReturn(java.time.ZoneId.of("Asia/Seoul"));
         given(weeklyReportRepository.findCompletedCurrentWeekReportIdsBySubIds(
-                List.of(12L, 11L, 10L),
+                List.of(12L),
                 java.time.LocalDate.of(2026, 3, 16),
                 java.time.LocalDate.of(2026, 3, 22)))
                 .willReturn(Map.of(
-                        10L, 1001L,
-                        11L, 1002L
+                        12L, 1002L
                 ));
 
         FamilyReportMembersResponse result = service.findMembers(1L);
 
         assertThat(result.receiveDay()).isEqualTo(DayOfWeek.WEDNESDAY);
-        assertThat(result.members()).hasSize(3);
-        assertThat(result.members().get(0).subId()).isEqualTo(10L);
-        assertThat(result.members().get(0).name()).isEqualTo("홍길동");
-        assertThat(result.members().get(0).familyRole()).isEqualTo(FamilyRole.OWNER);
-        assertThat(result.members().get(0).reportId()).isEqualTo(1001L);
-        assertThat(result.members().get(1).subId()).isEqualTo(11L);
-        assertThat(result.members().get(1).name()).isEqualTo("김철수");
-        assertThat(result.members().get(1).familyRole()).isEqualTo(FamilyRole.PARENT);
-        assertThat(result.members().get(1).reportId()).isEqualTo(1002L);
-        assertThat(result.members().get(2).subId()).isEqualTo(12L);
-        assertThat(result.members().get(2).name()).isEqualTo("김영희");
-        assertThat(result.members().get(2).familyRole()).isEqualTo(FamilyRole.CHILD);
-        assertThat(result.members().get(2).reportId()).isNull();
+        assertThat(result.members()).hasSize(1);
+        assertThat(result.members().get(0).subId()).isEqualTo(12L);
+        assertThat(result.members().get(0).name()).isEqualTo("김영희");
+        assertThat(result.members().get(0).familyRole()).isEqualTo(FamilyRole.CHILD);
+        assertThat(result.members().get(0).reportId()).isEqualTo(1002L);
     }
 
     @Test
@@ -117,7 +108,7 @@ class FindFamilyReportMembersServiceImplTest {
                                         .id(10L)
                                         .member(Member.builder().id(1L).name("홍길동").build())
                                         .build())
-                                .familyRole(FamilyRole.OWNER)
+                                .familyRole(FamilyRole.CHILD)
                                 .build()
                 ));
         given(familyReportRepository.findActiveReceiveDayByFamilyId(1L))

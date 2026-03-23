@@ -27,12 +27,6 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class FindFamilyReportMembersServiceImpl implements FindFamilyReportMembersService {
 
-    private static final Map<FamilyRole, Integer> FAMILY_ROLE_ORDER = Map.of(
-            FamilyRole.OWNER, 0,
-            FamilyRole.PARENT, 1,
-            FamilyRole.CHILD, 2
-    );
-
     private final FamilySubscriptionRepository familySubscriptionRepository;
     private final FamilyReportRepository familyReportRepository;
     private final WeeklyReportRepository weeklyReportRepository;
@@ -40,36 +34,35 @@ public class FindFamilyReportMembersServiceImpl implements FindFamilyReportMembe
 
     @Override
     public FamilyReportMembersResponse findMembers(Long familyId) {
-        List<FamilySubscription> familySubscriptions =
-                familySubscriptionRepository.findByFamilyId(familyId);
+        // 1. 조회 후 CHILD 역할만 필터링
+        List<FamilySubscription> childSubscriptions =
+                familySubscriptionRepository.findByFamilyId(familyId).stream()
+                        .filter(fs -> fs.getFamilyRole() == FamilyRole.CHILD)
+                        .toList();
 
         Optional<DayOfWeek> receiveDay = familyReportRepository.findActiveReceiveDayByFamilyId(familyId);
 
         LocalDate currentWeekStartDate = getCurrentWeekStartDate();
         LocalDate currentWeekEndDate = currentWeekStartDate.plusDays(6);
 
+        // 2. 필터링된 CHILD 목록의 ID로 리포트 ID 조회
         Map<Long, Long> weeklyReportIdBySubId = weeklyReportRepository.findCompletedCurrentWeekReportIdsBySubIds(
-                familySubscriptions.stream()
-                        .map(familySubscription -> familySubscription.getSubscription().getId())
+                childSubscriptions.stream()
+                        .map(fs -> fs.getSubscription().getId())
                         .toList(),
                 currentWeekStartDate,
                 currentWeekEndDate
         );
 
-        List<FamilyReportMemberResponse> members = familySubscriptions
+        // 3. 응답 객체 매핑 (모두 CHILD이므로 ID 오름차순 정렬만 수행)
+        List<FamilyReportMemberResponse> members = childSubscriptions
                 .stream()
-                .sorted(Comparator
-                        .comparing((hotspot.user.family.domain.FamilySubscription familySubscription) ->
-                                FAMILY_ROLE_ORDER.getOrDefault(
-                                        familySubscription.getFamilyRole(),
-                                        Integer.MAX_VALUE
-                                ))
-                        .thenComparing(familySubscription -> familySubscription.getSubscription().getId()))
-                .map(familySubscription -> FamilyReportMemberResponse.builder()
-                        .subId(familySubscription.getSubscription().getId())
-                        .name(familySubscription.getSubscription().getMember().getName())
-                        .familyRole(familySubscription.getFamilyRole())
-                        .reportId(weeklyReportIdBySubId.get(familySubscription.getSubscription().getId()))
+                .sorted(Comparator.comparing(fs -> fs.getSubscription().getId()))
+                .map(fs -> FamilyReportMemberResponse.builder()
+                        .subId(fs.getSubscription().getId())
+                        .name(fs.getSubscription().getMember().getName())
+                        .familyRole(fs.getFamilyRole())
+                        .reportId(weeklyReportIdBySubId.get(fs.getSubscription().getId()))
                         .build())
                 .toList();
 
