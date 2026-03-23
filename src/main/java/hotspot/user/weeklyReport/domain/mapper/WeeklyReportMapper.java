@@ -4,12 +4,14 @@ import hotspot.user.common.util.UsageCalculator;
 import hotspot.user.weeklyReport.controller.response.WeeklyReportResponse;
 import hotspot.user.weeklyReport.domain.ReportTag;
 import hotspot.user.weeklyReport.domain.WeeklyReport;
+import hotspot.user.weeklyReport.domain.WeeklyReportTitleFormatter;
 
 public class WeeklyReportMapper {
     public static WeeklyReportResponse toWeeklyReportResponse(WeeklyReport domain) {
         return WeeklyReportResponse.builder()
                 .subId(domain.getSubId())
                 .name(domain.getName())
+                .title(WeeklyReportTitleFormatter.format(domain))
                 .weekStartDate(domain.getWeekStartDate())
                 .weekEndDate(domain.getWeekEndDate())
                 .overview(WeeklyReportResponse.Overview.builder()

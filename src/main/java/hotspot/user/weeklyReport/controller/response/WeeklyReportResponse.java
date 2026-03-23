@@ -10,6 +10,7 @@ import lombok.Builder;
 public record WeeklyReportResponse(
         Long subId,
         String name,
+        String title,
         LocalDate weekStartDate,
         LocalDate weekEndDate,
         Overview overview,
