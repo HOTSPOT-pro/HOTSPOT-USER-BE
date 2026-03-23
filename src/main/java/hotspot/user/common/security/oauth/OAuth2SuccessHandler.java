@@ -65,7 +65,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             String accessToken = jwtProvider.createOnboardingToken(authentication);
 
             ResponseCookie accessCookie = CookieUtil.createCookie(
-                    jwtProperties.getAccessTokenName(), accessToken, accessExpiration);
+                    JwtProperties.ACCESS_TOKEN_NAME, accessToken, accessExpiration);
             response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 
             targetUrl = determineOnboardingUrl();
@@ -83,9 +83,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
             // Access, Refresh Token을 HttpOnly Cookie에 저장
             ResponseCookie accessCookie = CookieUtil.createCookie(
-                    jwtProperties.getAccessTokenName(), accessToken, accessExpiration);
+                    JwtProperties.ACCESS_TOKEN_NAME, accessToken, accessExpiration);
             ResponseCookie refreshCookie = CookieUtil.createCookie(
-                    jwtProperties.getRefreshTokenName(), refreshToken, refreshExpiration);
+                    JwtProperties.REFRESH_TOKEN_NAME, refreshToken, refreshExpiration);
 
             response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
