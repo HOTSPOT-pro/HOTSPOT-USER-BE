@@ -119,7 +119,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("토큰 재발급(reissue) 성공 시 AccessToken과 RefreshToken이 모두 Cookie에 담겨야 한다")
     void reissueSuccess() throws Exception {
-        Cookie requestCookie = new Cookie("refreshToken", "old-refresh-token");
+        Cookie requestCookie = new Cookie(JwtProperties.REFRESH_TOKEN_NAME, "old-refresh-token");
         TokenResponse mockResponse = new TokenResponse(ACCESS_TOKEN, REFRESH_TOKEN);
 
         given(reissueTokenService.reissue(any(TokenRequest.class))).willReturn(mockResponse);
@@ -133,8 +133,8 @@ class AuthControllerTest {
                 .andReturn();
 
         List<String> cookies = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
-        assertThat(cookies).anyMatch(c -> c.contains("accessToken=" + ACCESS_TOKEN));
-        assertThat(cookies).anyMatch(c -> c.contains("refreshToken=" + REFRESH_TOKEN));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.ACCESS_TOKEN_NAME + "=" + ACCESS_TOKEN));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.REFRESH_TOKEN_NAME + "=" + REFRESH_TOKEN));
     }
 
     @Test
@@ -159,8 +159,8 @@ class AuthControllerTest {
                 .andReturn();
 
         List<String> cookies = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
-        assertThat(cookies).anyMatch(c -> c.contains("accessToken=" + ACCESS_TOKEN));
-        assertThat(cookies).anyMatch(c -> c.contains("refreshToken=" + REFRESH_TOKEN));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.ACCESS_TOKEN_NAME + "=" + ACCESS_TOKEN));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.REFRESH_TOKEN_NAME + "=" + REFRESH_TOKEN));
     }
 
     @Test
@@ -178,7 +178,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("로그아웃(logout) 성공 시 AccessToken과 RefreshToken 쿠키를 모두 삭제해야 한다")
     void logoutSuccess() throws Exception {
-        Cookie requestCookie = new Cookie("refreshToken", REFRESH_TOKEN);
+        Cookie requestCookie = new Cookie(JwtProperties.REFRESH_TOKEN_NAME, REFRESH_TOKEN);
         doNothing().when(logoutService).logout(anyLong(), any(TokenRequest.class));
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/logout")
@@ -188,8 +188,10 @@ class AuthControllerTest {
                 .andReturn();
 
         List<String> cookies = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
-        assertThat(cookies).anyMatch(c -> c.contains("accessToken=") && c.contains("Max-Age=0"));
-        assertThat(cookies).anyMatch(c -> c.contains("refreshToken=") && c.contains("Max-Age=0"));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.ACCESS_TOKEN_NAME + "=")
+                && c.contains("Max-Age=0"));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.REFRESH_TOKEN_NAME + "=")
+                && c.contains("Max-Age=0"));
     }
 
     @Test
@@ -203,7 +205,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("회원탈퇴(withdraw) 성공 시 AccessToken과 RefreshToken 쿠키를 모두 삭제해야 한다")
     void withdrawSuccess() throws Exception {
-        Cookie requestCookie = new Cookie("refreshToken", REFRESH_TOKEN);
+        Cookie requestCookie = new Cookie(JwtProperties.REFRESH_TOKEN_NAME, REFRESH_TOKEN);
         doNothing().when(withdrawService).withdraw(anyLong(), any(TokenRequest.class));
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/withdraw")
@@ -213,8 +215,10 @@ class AuthControllerTest {
                 .andReturn();
 
         List<String> cookies = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
-        assertThat(cookies).anyMatch(c -> c.contains("accessToken=") && c.contains("Max-Age=0"));
-        assertThat(cookies).anyMatch(c -> c.contains("refreshToken=") && c.contains("Max-Age=0"));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.ACCESS_TOKEN_NAME + "=")
+                && c.contains("Max-Age=0"));
+        assertThat(cookies).anyMatch(c -> c.contains(JwtProperties.REFRESH_TOKEN_NAME + "=")
+                && c.contains("Max-Age=0"));
     }
 
     @Test

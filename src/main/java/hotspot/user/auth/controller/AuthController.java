@@ -48,7 +48,7 @@ public class AuthController implements AuthApi {
     @Override
     @PostMapping("/reissue")
     public ResponseEntity<ApiResponse<TokenResponse>> reissue(
-            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
+            @CookieValue(value = JwtProperties.REFRESH_TOKEN_NAME, required = false) String refreshToken) {
         if (refreshToken == null) {
             throw new ApplicationException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
@@ -57,12 +57,12 @@ public class AuthController implements AuthApi {
         TokenResponse response = reissueTokenService.reissue(request);
 
         // 신규 Access Token 쿠키 설정
-        ResponseCookie accessCookie = CookieUtil.createCookie("accessToken",
+        ResponseCookie accessCookie = CookieUtil.createCookie(JwtProperties.ACCESS_TOKEN_NAME,
                 response.accessToken(),
                 jwtProperties.getAccessExpiration());
 
         // 신규 Refresh Token 쿠키 설정
-        ResponseCookie refreshCookie = CookieUtil.createCookie("refreshToken",
+        ResponseCookie refreshCookie = CookieUtil.createCookie(JwtProperties.REFRESH_TOKEN_NAME,
                 response.refreshToken(),
                 jwtProperties.getRefreshExpiration());
 
@@ -80,12 +80,12 @@ public class AuthController implements AuthApi {
         OnboardingResponse response = onboardingService.onboarding(principal.getId(), principal.getEmail(), request);
 
         // AccessToken 쿠키 설정
-        ResponseCookie accessCookie = CookieUtil.createCookie("accessToken",
+        ResponseCookie accessCookie = CookieUtil.createCookie(JwtProperties.ACCESS_TOKEN_NAME,
                 response.tokenResponse().accessToken(),
                 jwtProperties.getAccessExpiration());
 
         // Refresh Token 쿠키 설정
-        ResponseCookie refreshCookie = CookieUtil.createCookie("refreshToken",
+        ResponseCookie refreshCookie = CookieUtil.createCookie(JwtProperties.REFRESH_TOKEN_NAME,
                 response.tokenResponse().refreshToken(),
                 jwtProperties.getRefreshExpiration());
 
@@ -99,7 +99,7 @@ public class AuthController implements AuthApi {
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
+            @CookieValue(value = JwtProperties.REFRESH_TOKEN_NAME, required = false) String refreshToken) {
 
         if (refreshToken == null) {
             throw new ApplicationException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
@@ -108,8 +108,8 @@ public class AuthController implements AuthApi {
         TokenRequest request = new TokenRequest(refreshToken);
         logoutService.logout(principal.getId(), request); //  memberId 전달
 
-        ResponseCookie accessCookie = CookieUtil.deleteCookie("accessToken");
-        ResponseCookie refreshCookie = CookieUtil.deleteCookie("refreshToken");
+        ResponseCookie accessCookie = CookieUtil.deleteCookie(JwtProperties.ACCESS_TOKEN_NAME);
+        ResponseCookie refreshCookie = CookieUtil.deleteCookie(JwtProperties.REFRESH_TOKEN_NAME);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
@@ -121,7 +121,7 @@ public class AuthController implements AuthApi {
     @PostMapping("/withdraw")
     public ResponseEntity<ApiResponse<Void>> withdraw(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
+            @CookieValue(value = JwtProperties.REFRESH_TOKEN_NAME, required = false) String refreshToken) {
 
         if (refreshToken == null) {
             throw new ApplicationException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
@@ -130,8 +130,8 @@ public class AuthController implements AuthApi {
         TokenRequest request = new TokenRequest(refreshToken);
         withdrawService.withdraw(principal.getId(), request); //  memberId 전달
 
-        ResponseCookie accessCookie = CookieUtil.deleteCookie("accessToken");
-        ResponseCookie refreshCookie = CookieUtil.deleteCookie("refreshToken");
+        ResponseCookie accessCookie = CookieUtil.deleteCookie(JwtProperties.ACCESS_TOKEN_NAME);
+        ResponseCookie refreshCookie = CookieUtil.deleteCookie(JwtProperties.REFRESH_TOKEN_NAME);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())

@@ -17,6 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import hotspot.user.auth.controller.port.SaveTokenService;
 import hotspot.user.auth.controller.request.TokenRequest;
 import hotspot.user.common.security.PrincipalDetails;
+import hotspot.user.common.security.jwt.JwtProperties;
 import hotspot.user.common.security.jwt.JwtProvider;
 import hotspot.user.common.util.cookie.CookieUtil;
 import hotspot.user.member.domain.Status;
@@ -33,6 +34,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JwtProvider jwtProvider;
     private final SaveTokenService saveTokenService;
+    private final JwtProperties jwtProperties;
 
     @Value("${server.domain.local}")
     private String redirectUri;
@@ -62,7 +64,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             log.info("신규 사용자, 온보딩 페이지로 리다이렉트: memberId={}", principal.getId());
             String accessToken = jwtProvider.createOnboardingToken(authentication);
 
-            ResponseCookie accessCookie = CookieUtil.createCookie("accessToken", accessToken, accessExpiration);
+            ResponseCookie accessCookie = CookieUtil.createCookie(
+                    JwtProperties.ACCESS_TOKEN_NAME, accessToken, accessExpiration);
             response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 
             targetUrl = determineOnboardingUrl();
@@ -79,8 +82,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             saveTokenService.saveToken(principal.getId(), tokenRequest);
 
             // Access, Refresh Token을 HttpOnly Cookie에 저장
-            ResponseCookie accessCookie = CookieUtil.createCookie("accessToken", accessToken, accessExpiration);
-            ResponseCookie refreshCookie = CookieUtil.createCookie("refreshToken", refreshToken, refreshExpiration);
+            ResponseCookie accessCookie = CookieUtil.createCookie(
+                    JwtProperties.ACCESS_TOKEN_NAME, accessToken, accessExpiration);
+            ResponseCookie refreshCookie = CookieUtil.createCookie(
+                    JwtProperties.REFRESH_TOKEN_NAME, refreshToken, refreshExpiration);
 
             response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
