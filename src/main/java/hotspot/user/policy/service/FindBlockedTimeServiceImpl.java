@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
 
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:00");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     private final FindMemberAppliedPolicyService findMemberAppliedPolicyService;
     private final FindFamilyAppliedPolicyService findFamilyAppliedPolicyService;
@@ -99,22 +99,7 @@ public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
                 .filter(BlockPolicyResponse::isActive)
                 .forEach(p -> {
                     if (p.policyType() == PolicyType.ONCE) {
-                        // ONCE 정책인 경우 그래프 표시를 위해 실제 적용 시간(modifiedTime)을 기준으로 요일과 시간을 계산
-                        PolicySnapshot snapshot = p.policySnapshot();
-                        LocalTime start = snapshot.getStartTime() != null
-                                ? snapshot.getStartLocalTime()
-                                : p.modifiedTime().toLocalTime();
-
-                        int duration = snapshot.getDurationMinutes() != null ? snapshot.getDurationMinutes() : 0;
-                        LocalTime end = snapshot.getEndTime() != null
-                                ? snapshot.getEndLocalTime()
-                                : start.plusMinutes(duration);
-
-                        PolicySnapshot graphSnapshot = PolicySnapshot.builder()
-                                .days(List.of(p.modifiedTime().getDayOfWeek()))
-                                .startTime(start.format(TIME_FORMATTER))
-                                .endTime(end.format(TIME_FORMATTER))
-                                .build();
+                        PolicySnapshot graphSnapshot = createGraphSnapshotForOncePolicy(p);
                         // SCHEDULED로 처리하여 BlockedTime이 요일에 맞게 그리도록 유도
                         blockedTime.addPolicy(graphSnapshot, PolicyType.SCHEDULED);
                     } else {
@@ -127,5 +112,30 @@ public class FindBlockedTimeServiceImpl implements FindBlockedTimeService {
 
         // 4. 도메인 객체를 최종 반환용 DTO로 변환
         return BlockedTimeMapper.toBlockedTimeResponse(policyResponse, blockedTime);
+    }
+
+    /**
+     * ONCE 정책인 경우 그래프 표시를 위해 실제 적용 시간(modifiedTime)을 기준으로 요일과 시간을 계산하여
+     * 새로운 PolicySnapshot(그래프용 스냅샷)을 생성
+     *
+     * @param p ONCE 타입의 정책 응답 객체
+     * @return 그래프 표시용 SCHEDULED 형태의 PolicySnapshot
+     */
+    private PolicySnapshot createGraphSnapshotForOncePolicy(BlockPolicyResponse p) {
+        PolicySnapshot snapshot = p.policySnapshot();
+        LocalTime start = snapshot.getStartTime() != null
+                ? snapshot.getStartLocalTime()
+                : p.modifiedTime().toLocalTime();
+
+        int duration = snapshot.getDurationMinutes() != null ? snapshot.getDurationMinutes() : 0;
+        LocalTime end = snapshot.getEndTime() != null
+                ? snapshot.getEndLocalTime()
+                : start.plusMinutes(duration);
+
+        return PolicySnapshot.builder()
+                .days(List.of(p.modifiedTime().getDayOfWeek()))
+                .startTime(start.format(TIME_FORMATTER))
+                .endTime(end.format(TIME_FORMATTER))
+                .build();
     }
 }
